@@ -4,6 +4,8 @@ import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -26,7 +28,7 @@ class DailySignalsTest {
             assertEquals("{\"status\":\"ok\"}", health.body());
 
             HttpResponse<byte[]> audio = client.send(
-                HttpRequest.newBuilder(URI.create(base + "/editions/demo/audio")).GET().build(),
+                HttpRequest.newBuilder(URI.create(base + "/editions/demo-2026-01-15/audio")).GET().build(),
                 HttpResponse.BodyHandlers.ofByteArray());
             assertEquals(200, audio.statusCode());
             assertEquals("audio/wav", audio.headers().firstValue("Content-Type").orElseThrow());
@@ -35,6 +37,10 @@ class DailySignalsTest {
             assertEquals('I', audio.body()[1]);
             assertEquals('F', audio.body()[2]);
             assertEquals('F', audio.body()[3]);
+
+            assertEquals(404, client.send(
+                HttpRequest.newBuilder(URI.create(base + "/editions/unknown/audio")).GET().build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
 
             HttpResponse<String> editions = client.send(
                 HttpRequest.newBuilder(URI.create(base + "/api/editions")).GET().build(),
@@ -72,6 +78,36 @@ class DailySignalsTest {
                 HttpResponse.BodyHandlers.ofString()).body();
             assertTrue(queue.contains("{\"storyId\":\"demo-park-path\",\"headline\":\"New walking path opens in Riverside Park\",\"source\":\"Demo Civic Desk\",\"decision\":\"APPROVED\"}"));
             assertTrue(queue.contains("\"storyId\":\"demo-library-hours\"") && queue.contains("\"decision\":\"PENDING\""));
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void servesBuiltListenerUiWithoutLeavingTheWebRoot(@org.junit.jupiter.api.io.TempDir Path temp) throws Exception {
+        Path web = Files.createDirectories(temp.resolve("web"));
+        Files.writeString(web.resolve("index.html"), "<main>listener</main>");
+        Files.createDirectories(web.resolve("app"));
+        Files.writeString(web.resolve("app/main.js"), "export {};");
+        Files.writeString(temp.resolve("secret.html"), "secret");
+        HttpServer server = DailySignals.createServer(0, web);
+        server.start();
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort();
+            HttpClient client = HttpClient.newHttpClient();
+            HttpResponse<String> index = client.send(HttpRequest.newBuilder(URI.create(base + "/")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, index.statusCode());
+            assertEquals("<main>listener</main>", index.body());
+            HttpResponse<String> script = client.send(HttpRequest.newBuilder(URI.create(base + "/app/main.js")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+            assertTrue(script.headers().firstValue("Content-Type").orElseThrow().startsWith("text/javascript"));
+            assertEquals(404, client.send(HttpRequest.newBuilder(URI.create(base + "/../secret.html")).GET().build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(404, client.send(HttpRequest.newBuilder(URI.create(base + "/%2e%2e/secret.html")).GET().build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(200, client.send(HttpRequest.newBuilder(URI.create(base + "/health")).GET().build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
         } finally {
             server.stop(0);
         }

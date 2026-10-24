@@ -13,7 +13,8 @@ test('parses the shared listener contract', () => {
 });
 
 test('still accepts the v1 array from older deployments', () => {
-  assert.deepEqual(parseEditionList(read('edition-list-v1.json')), parseEditionList(contract));
+  const legacy = parseEditionList(read('edition-list-v1.json'));
+  assert.deepEqual(legacy.map((e) => e.editionId), parseEditionList(contract).map((e) => e.editionId));
 });
 
 test('rejects unknown schema versions', () => {

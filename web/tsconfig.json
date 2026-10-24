@@ -5,7 +5,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "dist/app",
     "strict": true,
     "noEmitOnError": true,
     "allowImportingTsExtensions": true,

@@ -22,7 +22,7 @@ public final class EditionCatalog {
 
     public static EditionCatalog fixture() {
         return new EditionCatalog(List.of(new Entry("demo-2026-01-15", LocalDate.of(2026, 1, 15),
-                "Daily Signals demo edition", "/editions/demo/audio")));
+                "Daily Signals demo edition", "/editions/demo-2026-01-15/audio")));
     }
 
     public List<Entry> entries() { return entries; }

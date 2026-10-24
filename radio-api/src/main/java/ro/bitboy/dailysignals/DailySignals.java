@@ -7,18 +7,35 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
 
 public final class DailySignals {
     private DailySignals() {
     }
 
+    private static final Map<String, String> WEB_TYPES = Map.of(
+            "html", "text/html; charset=utf-8", "js", "text/javascript; charset=utf-8", "css", "text/css; charset=utf-8");
+
     public static HttpServer createServer(int port) throws IOException {
+        return createServer(port, null);
+    }
+
+    /** Serves the API and, when {@code webRoot} is given, the built listener UI from that directory. */
+    public static HttpServer createServer(int port, Path webRoot) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
-        server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         EditionCatalog catalog = EditionCatalog.fixture();
+        server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
-        server.createContext("/editions/demo/audio", exchange -> {
+        server.createContext("/editions/", exchange -> {
+            var edition = catalog.entries().stream()
+                    .filter(entry -> entry.audioPath().equals(exchange.getRequestURI().getPath())).findFirst();
+            if (edition.isEmpty()) {
+                respond(exchange, 404, "text/plain", "Unknown edition".getBytes(StandardCharsets.UTF_8));
+                return;
+            }
             try (InputStream fixture = DailySignals.class.getResourceAsStream("/fixtures/demo-edition.wav")) {
                 if (fixture == null) {
                     respond(exchange, 500, "text/plain", "Audio fixture unavailable".getBytes(StandardCharsets.UTF_8));
@@ -56,6 +73,20 @@ public final class DailySignals {
                 }
             }
         });
+        if (webRoot != null) {
+            Path root = webRoot.toAbsolutePath().normalize();
+            server.createContext("/", exchange -> {
+                String requested = exchange.getRequestURI().getPath();
+                Path file = root.resolve(requested.equals("/") ? "index.html" : requested.substring(1)).normalize();
+                String name = file.getFileName() == null ? "" : file.getFileName().toString();
+                String type = WEB_TYPES.get(name.substring(name.lastIndexOf('.') + 1));
+                if (!file.startsWith(root) || type == null || !Files.isRegularFile(file)) {
+                    respond(exchange, 404, "text/plain", "Not found".getBytes(StandardCharsets.UTF_8));
+                    return;
+                }
+                respond(exchange, 200, type, Files.readAllBytes(file));
+            });
+        }
         return server;
     }
 
@@ -79,7 +110,8 @@ public final class DailySignals {
 
     public static void main(String[] args) throws IOException {
         int port = args.length == 0 ? 8151 : Integer.parseInt(args[0]);
-        HttpServer server = createServer(port);
+        String webRoot = System.getenv("DAILY_SIGNALS_WEB_ROOT");
+        HttpServer server = createServer(port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot));
         server.start();
         System.out.println("Daily Signals listening on http://127.0.0.1:" + server.getAddress().getPort());
     }

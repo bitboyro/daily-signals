@@ -1,0 +1,10 @@
+:root { color-scheme: light dark; font-family: system-ui, sans-serif; line-height: 1.5; }
+body { margin: 0 auto; max-width: 48rem; padding: 0 1rem 2rem; }
+.skip { position: absolute; left: -999px; }
+.skip:focus { left: 1rem; top: 1rem; }
+nav a { margin-right: 1rem; }
+audio { width: 100%; }
+.player-help { font-size: 0.875rem; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border-bottom: 1px solid; padding: 0.25rem 0.5rem; text-align: left; }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid; outline-offset: 2px; }
