@@ -15,6 +15,9 @@ public final class DailySignals {
     public static HttpServer createServer(int port) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
+        EditionCatalog catalog = EditionCatalog.fixture();
+        server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
+                catalog.toJson().getBytes(StandardCharsets.UTF_8)));
         server.createContext("/editions/demo/audio", exchange -> {
             try (InputStream fixture = DailySignals.class.getResourceAsStream("/fixtures/demo-edition.wav")) {
                 if (fixture == null) {

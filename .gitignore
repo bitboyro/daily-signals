@@ -8,3 +8,4 @@ rust-test.log
 release-manifest.json
 web/node_modules/
 web/dist/
+web/reports/
