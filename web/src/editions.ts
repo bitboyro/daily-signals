@@ -1,4 +1,5 @@
 import { escapeHtml } from './html.ts';
+import { readEnvelope } from './schema.ts';
 
 export interface EditionSummary {
   editionId: string;
@@ -16,11 +17,13 @@ function isSummary(value: unknown): value is EditionSummary {
     && typeof v.audioPath === 'string' && v.audioPath.startsWith('/');
 }
 
+/** Reads the v2 envelope; a bare v1 array is still accepted from older API deployments. */
 export function parseEditionList(payload: unknown): EditionSummary[] {
-  if (!Array.isArray(payload) || !payload.every(isSummary)) {
+  const editions = Array.isArray(payload) ? payload : readEnvelope(payload, 'editions');
+  if (!editions.every(isSummary)) {
     throw new Error('unexpected edition list response');
   }
-  return [...payload].sort((a, b) => b.airDate.localeCompare(a.airDate));
+  return [...editions].sort((a, b) => b.airDate.localeCompare(a.airDate));
 }
 
 export async function fetchEditions(apiBase: string, fetchImpl: typeof fetch = fetch): Promise<EditionSummary[]> {

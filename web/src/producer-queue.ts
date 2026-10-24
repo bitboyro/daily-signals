@@ -1,4 +1,5 @@
 import { escapeHtml } from './html.ts';
+import { readEnvelope } from './schema.ts';
 
 export type Decision = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -7,6 +8,21 @@ export interface QueueItem {
   headline: string;
   source: string;
   decision: Decision;
+}
+
+const DECISIONS: readonly string[] = ['PENDING', 'APPROVED', 'REJECTED'];
+
+function isQueueItem(value: unknown): value is QueueItem {
+  if (typeof value !== 'object' || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return typeof v.storyId === 'string' && typeof v.headline === 'string'
+    && typeof v.source === 'string' && typeof v.decision === 'string' && DECISIONS.includes(v.decision);
+}
+
+export function parseQueue(payload: unknown): QueueItem[] {
+  const items = readEnvelope(payload, 'items');
+  if (!items.every(isQueueItem)) throw new Error('unexpected review queue response');
+  return items;
 }
 
 export function pendingCount(items: QueueItem[]): number {

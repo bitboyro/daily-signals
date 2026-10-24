@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pendingCount, renderQueue, type QueueItem } from '../src/producer-queue.ts';
+import { parseQueue, pendingCount, renderQueue, type QueueItem } from '../src/producer-queue.ts';
 
 const items: QueueItem[] = [
   { storyId: 'story-1', headline: 'Rail <maintenance>', source: 'transit-desk', decision: 'PENDING' },
@@ -18,4 +18,10 @@ test('queue table has a caption, column headers and escaped headlines', () => {
   assert.equal(html.match(/<th scope="col">/g)?.length, 3);
   assert.match(html, /Rail &lt;maintenance&gt;/);
   assert.match(html, /data-story="story-2".*decision-approved/);
+});
+
+test('parses the versioned review queue envelope', () => {
+  assert.deepEqual(parseQueue({ schemaVersion: 2, items }), items);
+  assert.throws(() => parseQueue(items), /versioned response/);
+  assert.throws(() => parseQueue({ schemaVersion: 2, items: [{ ...items[0], decision: 'MAYBE' }] }), /review queue/);
 });

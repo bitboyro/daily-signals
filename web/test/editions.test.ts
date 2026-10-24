@@ -3,12 +3,22 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fetchEditions, parseEditionList, renderEditionList } from '../src/editions.ts';
 
-const contract = JSON.parse(readFileSync(new URL('../../contracts/edition-list-v1.json', import.meta.url), 'utf8'));
+const read = (name: string) => JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), 'utf8'));
+const contract = read('edition-list-v2.json');
 
 test('parses the shared listener contract', () => {
   const editions = parseEditionList(contract);
   assert.equal(editions.length, 1);
   assert.equal(editions[0].editionId, 'demo-2026-01-15');
+});
+
+test('still accepts the v1 array from older deployments', () => {
+  assert.deepEqual(parseEditionList(read('edition-list-v1.json')), parseEditionList(contract));
+});
+
+test('rejects unknown schema versions', () => {
+  assert.throws(() => parseEditionList({ schemaVersion: 3, editions: [] }), /unsupported schema version: 3/);
+  assert.throws(() => parseEditionList({ schemaVersion: 2 }), /missing editions/);
 });
 
 test('lists newest editions first and escapes titles', () => {
