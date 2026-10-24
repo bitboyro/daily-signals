@@ -16,8 +16,11 @@ public final class CandidateMerger {
         var byHeadline=new LinkedHashMap<String,CandidateReview.Candidate>();
         for (var candidate : ordered) {
             // Input is ranked before deduplication; preserve the first, best attributed candidate.
-            byHeadline.putIfAbsent(candidate.story().normalizedTitle(),candidate);
+            byHeadline.putIfAbsent(duplicateKey(candidate),candidate);
         }
         return List.copyOf(byHeadline.values());
+    }
+    private static String duplicateKey(CandidateReview.Candidate candidate) {
+        return candidate.story().normalizedTitle();
     }
 }
