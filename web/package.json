@@ -1,0 +1,16 @@
+{
+  "name": "daily-signals-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Listener and producer client for Daily Signals",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
+}

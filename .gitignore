@@ -6,3 +6,5 @@ streamer/target/
 .DS_Store
 rust-test.log
 release-manifest.json
+web/node_modules/
+web/dist/
