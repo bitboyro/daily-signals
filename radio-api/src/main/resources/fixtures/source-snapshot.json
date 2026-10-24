@@ -12,13 +12,22 @@
       "id": "demo-library-hours",
       "title": "Community library extends Saturday hours",
       "summary": "The fictional community library will stay open for two extra hours on Saturdays.",
-      "publishedAt": "2026-01-15T06:30:00Z"
+      "publishedAt": "2026-01-15T06:30:00Z",
+      "category": "community"
     },
     {
       "id": "demo-park-path",
       "title": "New walking path opens in Riverside Park",
       "summary": "A fictional walking path is open to the public after a short renovation.",
-      "publishedAt": "2026-01-15T06:45:00Z"
+      "publishedAt": "2026-01-15T06:45:00Z",
+      "category": "community"
+    },
+    {
+      "id": "demo-transit-link",
+      "title": "Neighborhood bus route adds an evening trip",
+      "summary": "A fictional bus route adds one evening departure for local riders.",
+      "publishedAt": "2026-01-15T06:50:00Z",
+      "category": "transport"
     }
   ]
 }

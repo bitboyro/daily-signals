@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class SourceSnapshotParser {
-    public record RawStory(String id, String title, String summary, Instant publishedAt) {}
+    public record RawStory(String id, String title, String summary, Instant publishedAt, String category) {}
     public record Snapshot(String snapshotId, Instant capturedAt, String sourceId, String sourceName,
                            String sourceUrl, List<RawStory> stories) {}
     private final ObjectMapper mapper = new ObjectMapper();
@@ -24,7 +24,7 @@ public final class SourceSnapshotParser {
         if (!root.path("stories").isArray()) throw new IllegalArgumentException("stories must be an array");
         for (JsonNode item : root.path("stories")) {
             stories.add(new RawStory(required(item,"id"),required(item,"title"),required(item,"summary"),
-                    Instant.parse(required(item,"publishedAt"))));
+                    Instant.parse(required(item,"publishedAt")), item.path("category").asText("general")));
         }
         return new Snapshot(required(root,"snapshotId"),Instant.parse(required(root,"capturedAt")),
                 required(source,"id"),required(source,"name"),required(source,"url"),List.copyOf(stories));
