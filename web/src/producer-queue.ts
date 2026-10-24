@@ -29,13 +29,40 @@ export function pendingCount(items: QueueItem[]): number {
   return items.filter((item) => item.decision === 'PENDING').length;
 }
 
-/** Read-only producer view; decisions are still taken in the Java service. */
+export type Role = 'PRODUCER' | 'EDITOR';
+
+export async function fetchQueue(apiBase: string, fetchImpl: typeof fetch = fetch): Promise<QueueItem[]> {
+  const response = await fetchImpl(`${apiBase}/api/review-queue`, { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error(`review queue unavailable: ${response.status}`);
+  return parseQueue(await response.json());
+}
+
+/** The Java service checks the role; the client only forwards it. */
+export async function submitDecision(apiBase: string, storyId: string, decision: Exclude<Decision, 'PENDING'>,
+  role: Role, fetchImpl: typeof fetch = fetch): Promise<void> {
+  const response = await fetchImpl(`${apiBase}/api/review-queue/${encodeURIComponent(storyId)}`, {
+    method: 'POST', body: decision, headers: { 'Content-Type': 'text/plain', 'X-Daily-Signals-Role': role },
+  });
+  if (response.status === 403) throw new Error('your role cannot review stories');
+  if (!response.ok) throw new Error(`decision rejected: ${response.status}`);
+}
+
+function controls(item: QueueItem): string {
+  if (item.decision !== 'PENDING') return '';
+  const headline = escapeHtml(item.headline);
+  const id = escapeHtml(item.storyId);
+  return `<button type="button" data-action="APPROVED" data-story="${id}" aria-label="Approve ${headline}">Approve</button>`
+    + `<button type="button" data-action="REJECTED" data-story="${id}" aria-label="Reject ${headline}">Reject</button>`;
+}
+
 export function renderQueue(items: QueueItem[]): string {
   const rows = items.map((item) =>
     `<tr data-story="${escapeHtml(item.storyId)}"><td>${escapeHtml(item.headline)}</td>`
-    + `<td>${escapeHtml(item.source)}</td><td class="decision-${item.decision.toLowerCase()}">${item.decision}</td></tr>`);
+    + `<td>${escapeHtml(item.source)}</td><td class="decision-${item.decision.toLowerCase()}">${item.decision}</td>`
+    + `<td>${controls(item)}</td></tr>`);
   return '<table class="producer-queue">'
     + `<caption>Review queue: ${pendingCount(items)} pending</caption>`
-    + '<thead><tr><th scope="col">Story</th><th scope="col">Source</th><th scope="col">Decision</th></tr></thead>'
+    + '<thead><tr><th scope="col">Story</th><th scope="col">Source</th><th scope="col">Decision</th>'
+    + '<th scope="col">Actions</th></tr></thead>'
     + `<tbody>${rows.join('')}</tbody></table>`;
 }

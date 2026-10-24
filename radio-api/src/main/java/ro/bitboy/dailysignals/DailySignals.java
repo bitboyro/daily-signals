@@ -27,7 +27,41 @@ public final class DailySignals {
                 respond(exchange, 200, "audio/wav", fixture.readAllBytes());
             }
         });
+        var reviews = new Object() {
+            private ReviewQueue queue;
+            synchronized ReviewQueue get() {
+                if (queue == null) queue = ReviewQueue.fixture();
+                return queue;
+            }
+        };
+        server.createContext("/api/review-queue", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+            if ("GET".equals(exchange.getRequestMethod()) && "/api/review-queue".equals(path)) {
+                respond(exchange, 200, "application/json", reviews.get().toJson().getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            String storyId = path.substring("/api/review-queue".length()).replaceFirst("^/", "");
+            if (!"POST".equals(exchange.getRequestMethod()) || storyId.isEmpty() || storyId.contains("/")) {
+                reply(exchange, 405);
+            } else if (!ProducerPermissions.mayReview(exchange.getRequestHeaders().getFirst("X-Daily-Signals-Role"))) {
+                reply(exchange, 403);
+            } else if (!reviews.get().contains(storyId)) {
+                reply(exchange, 404);
+            } else {
+                try (var body = exchange.getRequestBody()) {
+                    reviews.get().decide(storyId, new String(body.readNBytes(64), StandardCharsets.UTF_8));
+                    reply(exchange, 204);
+                } catch (IllegalArgumentException invalid) {
+                    reply(exchange, 400);
+                }
+            }
+        });
         return server;
+    }
+
+    private static void reply(HttpExchange exchange, int status) throws IOException {
+        exchange.sendResponseHeaders(status, -1);
+        exchange.close();
     }
 
     private static void respond(HttpExchange exchange, int status, String contentType, byte[] body) throws IOException {

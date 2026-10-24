@@ -46,4 +46,34 @@ class DailySignalsTest {
             server.stop(0);
         }
     }
+
+    @Test
+    void reviewDecisionsRequireAnEditorialRole() throws Exception {
+        HttpServer server = DailySignals.createServer(0);
+        server.start();
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort() + "/api/review-queue";
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest.Builder approve = HttpRequest.newBuilder(URI.create(base + "/demo-park-path"))
+                .POST(HttpRequest.BodyPublishers.ofString("APPROVED"));
+            assertEquals(403, client.send(approve.build(), HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(403, client.send(approve.header("X-Daily-Signals-Role", "LISTENER").build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
+            HttpRequest.Builder asEditor = HttpRequest.newBuilder(URI.create(base + "/demo-park-path"))
+                .header("X-Daily-Signals-Role", "EDITOR");
+            assertEquals(400, client.send(asEditor.POST(HttpRequest.BodyPublishers.ofString("PENDING")).build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(204, client.send(asEditor.POST(HttpRequest.BodyPublishers.ofString("APPROVED")).build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(404, client.send(HttpRequest.newBuilder(URI.create(base + "/missing"))
+                .header("X-Daily-Signals-Role", "PRODUCER").POST(HttpRequest.BodyPublishers.ofString("REJECTED")).build(),
+                HttpResponse.BodyHandlers.discarding()).statusCode());
+            String queue = client.send(HttpRequest.newBuilder(URI.create(base)).GET().build(),
+                HttpResponse.BodyHandlers.ofString()).body();
+            assertTrue(queue.contains("{\"storyId\":\"demo-park-path\",\"headline\":\"New walking path opens in Riverside Park\",\"source\":\"Demo Civic Desk\",\"decision\":\"APPROVED\"}"));
+            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\"") && queue.contains("\"decision\":\"PENDING\""));
+        } finally {
+            server.stop(0);
+        }
+    }
 }

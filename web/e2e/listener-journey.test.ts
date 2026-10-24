@@ -6,14 +6,16 @@ import { fileURLToPath } from 'node:url';
 import { readConfig } from '../src/config.ts';
 import { fetchEditions, renderEditionList } from '../src/editions.ts';
 import { renderPlayer } from '../src/player.ts';
+import { fetchQueue, renderQueue, submitDecision } from '../src/producer-queue.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const classes = `${root}radio-api/target/classes`;
+const classes = ['radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion']
+  .map((module) => `${root}${module}/target/classes`).join(':');
 let api: ChildProcess;
 let apiBase = '';
 
 before(async () => {
-  assert.ok(existsSync(classes), 'build the Java API first: mvn -B -ntp -DskipTests package');
+  assert.ok(classes.split(':').every((dir) => existsSync(dir)), 'build the Java API first: mvn -B -ntp -DskipTests package');
   api = spawn('java', ['-cp', classes, 'ro.bitboy.dailysignals.DailySignals', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
   apiBase = await new Promise<string>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Java API did not start')), 15000);
@@ -41,4 +43,16 @@ test('listener browses the archive and plays the newest edition', async () => {
   assert.equal(audio.headers.get('content-type'), 'audio/wav');
   const bytes = new Uint8Array(await audio.arrayBuffer());
   assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), 'RIFF');
+});
+
+test('producer approves a pending story and the queue reflects it', async () => {
+  const before = await fetchQueue(apiBase);
+  const pending = before.find((item) => item.decision === 'PENDING');
+  assert.ok(pending, 'fixture queue has a pending story');
+  assert.match(renderQueue(before), new RegExp(`Approve ${pending.headline}`));
+
+  await assert.rejects(submitDecision(apiBase, pending.storyId, 'APPROVED', 'LISTENER' as 'EDITOR'), /cannot review/);
+  await submitDecision(apiBase, pending.storyId, 'APPROVED', 'PRODUCER');
+  const after = await fetchQueue(apiBase);
+  assert.equal(after.find((item) => item.storyId === pending.storyId)?.decision, 'APPROVED');
 });

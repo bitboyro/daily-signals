@@ -7,4 +7,9 @@ public final class ProducerPermissions {
     public static boolean mayPublish(String role) {
         return "PRODUCER".equals(role);
     }
+
+    /** Story approval is editorial work; it never grants publication. */
+    public static boolean mayReview(String role) {
+        return "PRODUCER".equals(role) || "EDITOR".equals(role);
+    }
 }
