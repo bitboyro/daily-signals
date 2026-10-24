@@ -52,6 +52,19 @@ jobs:
           cargo build --manifest-path streamer/Cargo.toml
           python3 tools/dual-process-smoke.py
           python3 tools/voice-playback-smoke.py
+      - name: Record tag-bound release manifest
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 tools/create-release-manifest.py --tag "$RELEASE_TAG"
+      - name: Retain release manifest
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-manifest-${{ github.run_attempt }}
+          path: release-manifest.json
+          retention-days: 30
+          if-no-files-found: error
       - name: Retain Java reports
         if: always()
         uses: actions/upload-artifact@v4

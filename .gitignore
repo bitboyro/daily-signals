@@ -4,3 +4,5 @@ streamer/target/
 **/__pycache__/
 *.py[cod]
 .DS_Store
+rust-test.log
+release-manifest.json
