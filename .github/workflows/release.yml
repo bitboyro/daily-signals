@@ -4,6 +4,9 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+  # Weekly full qualification of the default branch, Mondays 03:00 UTC.
+  schedule:
+    - cron: '0 3 * * 1'
 jobs:
   release-qualification:
     runs-on: ubuntu-latest
