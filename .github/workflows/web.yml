@@ -39,7 +39,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-unit-junit-${{ github.run_attempt }}
-          path: web/reports/web-unit.xml
+          path: |
+            web/reports/web-unit.xml
+            web/reports/web-unit.lcov
           if-no-files-found: warn
   web-e2e:
     runs-on: ubuntu-latest
@@ -68,5 +70,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-e2e-junit-${{ github.run_attempt }}
-          path: web/reports/web-e2e.xml
+          path: |
+            web/reports/web-e2e.xml
+            web/reports/web-e2e.lcov
           if-no-files-found: warn

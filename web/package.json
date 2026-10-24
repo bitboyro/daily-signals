@@ -9,8 +9,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && cp -R public/. dist/",
-    "test": "mkdir -p reports && node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-unit.xml test/*.test.ts",
-    "e2e": "mkdir -p reports && node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-e2e.xml e2e/*.test.ts"
+    "test": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-unit.xml --test-reporter=lcov --test-reporter-destination=reports/web-unit.lcov test/*.test.ts",
+    "e2e": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-e2e.xml --test-reporter=lcov --test-reporter-destination=reports/web-e2e.lcov e2e/*.test.ts"
   },
   "devDependencies": {
     "typescript": "5.9.3"
