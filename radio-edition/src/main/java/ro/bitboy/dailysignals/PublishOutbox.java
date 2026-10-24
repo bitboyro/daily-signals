@@ -12,7 +12,10 @@ public final class PublishOutbox {
     @FunctionalInterface public interface ObjectWriter {
         void put(String key, byte[] bytes) throws IOException, InterruptedException;
     }
-    private record Pending(String editionId, String key, byte[] audio, String checksum) {}
+    private record ObjectMetadata(long sizeBytes, String checksumSha256) {
+        static ObjectMetadata from(byte[] bytes) { return new ObjectMetadata(bytes.length, sha256(bytes)); }
+    }
+    private record Pending(String editionId, String key, byte[] audio, ObjectMetadata metadata) {}
     private final Map<String, Pending> pending = new LinkedHashMap<>();
     private final Map<String, Pending> replacements = new LinkedHashMap<>();
     private final Map<String, PublicationManifest> published = new LinkedHashMap<>();
@@ -24,7 +27,7 @@ public final class PublishOutbox {
         if (pending.containsKey(editionId) || published.containsKey(editionId))
             throw new IllegalArgumentException("edition already staged");
         var copy = audio.clone();
-        pending.put(editionId, new Pending(editionId, key, copy, sha256(copy)));
+        pending.put(editionId, new Pending(editionId, key, copy, ObjectMetadata.from(copy)));
     }
     public synchronized PublicationManifest publish(String editionId, ObjectWriter writer) throws IOException, InterruptedException {
         if (published.containsKey(editionId)) return published.get(editionId);
@@ -33,7 +36,7 @@ public final class PublishOutbox {
         // Leave the outbox item pending on transfer failure so a later attempt can retry.
         writer.put(item.key(), item.audio().clone());
         var manifest = new PublicationManifest(1, editionId, "PUBLISHED", item.key(), "audio/wav",
-                item.audio().length, item.checksum());
+                item.metadata().sizeBytes(), item.metadata().checksumSha256());
         published.put(editionId, manifest);
         pending.remove(editionId);
         return manifest;
@@ -50,7 +53,7 @@ public final class PublishOutbox {
         if (key.equals(published.get(editionId).audioPath()))
             throw new IllegalArgumentException("replacement must have a new object key");
         var copy = audio.clone();
-        replacements.put(editionId, new Pending(editionId, key, copy, sha256(copy)));
+        replacements.put(editionId, new Pending(editionId, key, copy, ObjectMetadata.from(copy)));
     }
     public synchronized int replacementCount() { return replacements.size(); }
     /** Transfer a prepared re-render and make it available to the edition. */
