@@ -15,8 +15,8 @@ public final class CandidateMerger {
                 .thenComparing(Comparator.comparing((CandidateReview.Candidate c)->c.story().publishedAt()).reversed()));
         var byHeadline=new LinkedHashMap<String,CandidateReview.Candidate>();
         for (var candidate : ordered) {
-            // Keep the most recent matching entry after extending matching to headlines.
-            byHeadline.put(candidate.story().normalizedTitle(),candidate);
+            // Input is ranked before deduplication; preserve the first, best attributed candidate.
+            byHeadline.putIfAbsent(candidate.story().normalizedTitle(),candidate);
         }
         return List.copyOf(byHeadline.values());
     }
