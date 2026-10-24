@@ -33,6 +33,15 @@ public final class PublishOutbox {
         var copy = audio.clone();
         pending.put(editionId, new Pending(editionId, key, copy, ObjectMetadata.from(copy)));
     }
+    public synchronized PublicationManifest publish(String editionId, String role, ObjectWriter writer) throws IOException, InterruptedException {
+        if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
+        return publish(editionId, writer);
+    }
+    public synchronized PublicationManifest publishReplacement(String editionId, String role, ObjectWriter writer)
+            throws IOException, InterruptedException {
+        if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
+        return publishReplacement(editionId, writer);
+    }
     public synchronized PublicationManifest publish(String editionId, ObjectWriter writer) throws IOException, InterruptedException {
         if (published.containsKey(editionId)) return published.get(editionId);
         var item = pending.get(editionId);
