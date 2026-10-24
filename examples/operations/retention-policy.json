@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "classes": [
+    {"name": "published", "minimumDays": 365, "deleteWhilePublished": false},
+    {"name": "replaced", "minimumDays": 30, "deleteWhilePublished": false},
+    {"name": "staging", "minimumDays": 7, "deleteWhilePublished": false},
+  ],
+  "incidentHold": {"overridesClasses": true}
+}
