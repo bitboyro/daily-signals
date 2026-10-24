@@ -192,17 +192,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov
       - name: Rust build and tests
         shell: bash
         run: |
           set -o pipefail
           cargo test --manifest-path streamer/Cargo.toml 2>&1 | tee rust-test.log
+      - name: Rust line coverage
+        run: cargo llvm-cov --manifest-path streamer/Cargo.toml --lcov --output-path rust.lcov
       - name: Upload Rust test log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: rust-test-${{ github.run_attempt }}
-          path: rust-test.log
+          path: |
+            rust-test.log
+            rust.lcov
           if-no-files-found: warn
   voice-playback-system:
     runs-on: ubuntu-latest
