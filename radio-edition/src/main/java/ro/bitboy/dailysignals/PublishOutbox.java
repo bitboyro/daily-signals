@@ -67,9 +67,12 @@ public final class PublishOutbox {
         var item = replacements.get(editionId);
         if (item == null) throw new IllegalArgumentException("replacement not staged");
         writer.put(item.key(), item.audio().clone());
+        var manifest = new PublicationManifest(1, editionId, "PUBLISHED", item.key(), "audio/wav",
+                item.metadata().sizeBytes(), item.metadata().checksumSha256());
+        published.put(editionId, manifest);
         events.add(new ProducerEvent(editionId, "recording-transferred", item.key(), item.metadata().checksumSha256()));
         replacements.remove(editionId);
-        return published.get(editionId);
+        return manifest;
     }
     public synchronized List<ProducerEvent> producerEvents() { return List.copyOf(events); }
     private static String sha256(byte[] bytes) {
