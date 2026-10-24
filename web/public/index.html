@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Signals</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <a class="skip" href="#content">Skip to editions</a>
+  <header>
+    <h1>Daily Signals</h1>
+    <nav aria-label="Sections">
+      <a href="#content">Listen</a>
+      <a href="#producer">Produce</a>
+    </nav>
+  </header>
+  <main id="content">
+    <section aria-labelledby="archive-heading">
+      <h2 id="archive-heading">Edition archive</h2>
+      <div id="editions" aria-live="polite">Loading editions…</div>
+    </section>
+    <section aria-labelledby="player-heading">
+      <h2 id="player-heading">Now playing</h2>
+      <div id="player"></div>
+    </section>
+    <section id="producer" aria-labelledby="producer-heading">
+      <h2 id="producer-heading">Producer review</h2>
+      <label for="reviewer-token">Reviewer token</label>
+      <input id="reviewer-token" type="password" autocomplete="off" spellcheck="false"
+             aria-describedby="reviewer-token-help">
+      <p id="reviewer-token-help">Issued by the station; it decides whether you can approve stories.</p>
+      <div id="queue" aria-live="polite"></div>
+      <p id="queue-status" role="status"></p>
+    </section>
+  </main>
+  <script type="module" src="/app/main.js"></script>
+</body>
+</html>

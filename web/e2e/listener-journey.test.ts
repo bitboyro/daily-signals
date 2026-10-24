@@ -15,14 +15,20 @@ const classes = ['radio-api', 'radio-edition', 'radio-editorial', 'radio-ingesti
 // Generated per run; reviewer tokens are configuration, never committed values.
 const producerToken = `producer-${randomUUID()}`;
 const listenerToken = `listener-${randomUUID()}`;
+const webRoot = fileURLToPath(new URL('../dist', import.meta.url));
 let api: ChildProcess;
 let apiBase = '';
 
 before(async () => {
   assert.ok(classes.split(':').every((dir) => existsSync(dir)), 'build the Java API first: mvn -B -ntp -DskipTests package');
+  assert.ok(existsSync(`${webRoot}/index.html`), 'build the listener first: npm run build');
   api = spawn('java', ['-cp', classes, 'ro.bitboy.dailysignals.DailySignals', '0'], {
     stdio: ['ignore', 'pipe', 'inherit'],
-    env: { ...process.env, DAILY_SIGNALS_REVIEW_TOKENS: `${producerToken}=PRODUCER,${listenerToken}=LISTENER` },
+    env: {
+      ...process.env,
+      DAILY_SIGNALS_WEB_ROOT: webRoot,
+      DAILY_SIGNALS_REVIEW_TOKENS: `${producerToken}=PRODUCER,${listenerToken}=LISTENER`,
+    },
   });
   apiBase = await new Promise<string>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Java API did not start')), 15000);
@@ -35,6 +41,19 @@ before(async () => {
 });
 
 after(() => { api?.kill(); });
+
+test('the API serves the listener UI and its module', async () => {
+  const page = await fetch(`${apiBase}/`);
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.match(html, /<main id="content">/);
+  const script = /<script type="module" src="([^"]+)"/.exec(html)?.[1];
+  assert.equal(script, '/app/main.js');
+  const module = await fetch(`${apiBase}${script}`);
+  assert.equal(module.status, 200);
+  assert.match(module.headers.get('content-type') ?? '', /javascript/);
+  assert.match(await module.text(), /from "\.\/editions\.js"/);
+});
 
 test('listener browses the archive and plays the newest edition', async () => {
   const config = readConfig(apiBase);
