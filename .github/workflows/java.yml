@@ -19,3 +19,11 @@ jobs:
         run: mvn -B -ntp verify
       - name: Check fixtures and example
         run: python3 tools/check-fixtures.py && python3 tools/check-source-example.py
+      - name: Upload Java test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-junit-${{ github.run_attempt }}
+          path: '**/target/surefire-reports/TEST-*.xml'
+          if-no-files-found: warn
+
