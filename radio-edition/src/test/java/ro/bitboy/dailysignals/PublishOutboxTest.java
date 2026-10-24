@@ -7,6 +7,17 @@ import java.util.HexFormat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublishOutboxTest {
+    @Test void replacementPublicationPointsListenersAtNewRecording() throws Exception {
+        var outbox = new PublishOutbox();
+        outbox.stage("edition-1", "editions/first.wav", new byte[]{'R','I','F','F',1});
+        outbox.publish("edition-1", (key, bytes) -> {});
+        var revised = new byte[]{'R','I','F','F',2,3};
+        outbox.stageReplacement("edition-1", "editions/revised.wav", revised);
+        var manifest = outbox.publishReplacement("edition-1", (key, bytes) -> assertArrayEquals(revised, bytes));
+        assertEquals("editions/revised.wav", manifest.audioPath());
+        assertEquals(revised.length, manifest.sizeBytes());
+        assertEquals(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(revised)), manifest.checksumSha256());
+    }
     @Test void stagesAReplacementWithoutChangingThePublishedRevision() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-1", "editions/one.wav", new byte[]{'R','I','F','F',1});
