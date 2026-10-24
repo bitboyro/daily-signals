@@ -5,6 +5,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CandidateMergerTest {
+    @Test void equivalentTitlesAcrossSourcesKeepHighestPriorityAttribution() {
+        var high=CandidateReviewTest.candidate("first","Morning transit update",1);
+        var low=CandidateReviewTest.candidate("second","MORNING—transit update!",8);
+        assertEquals("first",new CandidateMerger().merge(List.of(low,high)).get(0).story().id());
+    }
     @Test void reviewPathExcludesPendingCandidate() {
         var pending=CandidateReviewTest.candidate("p","Pending",1);
         var approved=CandidateReviewTest.candidate("a","Approved",1).withDecision(CandidateReview.Decision.APPROVED);
