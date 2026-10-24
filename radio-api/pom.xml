@@ -10,6 +10,8 @@
   </parent>
   <artifactId>radio-api</artifactId>
   <dependencies>
+    <dependency><groupId>ro.bitboy</groupId><artifactId>radio-editorial</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>ro.bitboy</groupId><artifactId>radio-edition</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>ro.bitboy</groupId><artifactId>radio-ingestion</artifactId><version>${project.version}</version></dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
