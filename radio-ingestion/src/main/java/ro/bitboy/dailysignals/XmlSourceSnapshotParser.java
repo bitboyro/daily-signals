@@ -30,7 +30,7 @@ public final class XmlSourceSnapshotParser {
         for (int i = 0; i < nodes.getLength(); i++) {
             var story = (Element) nodes.item(i);
             stories.add(new SourceSnapshotParser.RawStory(required(story, "id"), text(story, "title"),
-                    text(story, "summary"), Instant.parse(required(story, "publishedAt"))));
+                    text(story, "summary"), Instant.parse(required(story, "publishedAt")), story.hasAttribute("category") ? story.getAttribute("category") : "general"));
         }
         return new SourceSnapshotParser.Snapshot(required(root, "snapshotId"),
                 Instant.parse(required(root, "capturedAt")), required(source, "id"),

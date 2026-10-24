@@ -11,6 +11,7 @@ class MigrationResourceTest {
             String ddl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
             assertTrue(ddl.contains("PUBLISHED"));
             assertTrue(ddl.contains("revision INTEGER NOT NULL"));
+            assertTrue(ddl.contains("source_category VARCHAR(80) NOT NULL DEFAULT 'general'"));
         }
     }
 }
