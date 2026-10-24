@@ -9,7 +9,7 @@ impl Response {
         Self { status, headers: vec![("Content-Type".into(), content_type.into())], body }
     }
     fn wire(&self) -> Vec<u8> {
-        let reason = match self.status { 200 => "OK", 206 => "Partial Content", 404 => "Not Found", 405 => "Method Not Allowed", 416 => "Range Not Satisfiable", _ => "Internal Server Error" };
+        let reason = match self.status { 200 => "OK", 206 => "Partial Content", 304 => "Not Modified", 404 => "Not Found", 405 => "Method Not Allowed", 416 => "Range Not Satisfiable", _ => "Internal Server Error" };
         let mut wire = format!("HTTP/1.1 {} {}\r\nContent-Length: {}\r\nConnection: close\r\n", self.status, reason, self.body.len()).into_bytes();
         for (key, value) in &self.headers { wire.extend_from_slice(format!("{}: {}\r\n", key, value).as_bytes()); }
         wire.extend_from_slice(b"\r\n"); wire.extend_from_slice(&self.body); wire
@@ -25,6 +25,10 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     let mut response = Response::new(200, audio.to_vec(), &manifest.content_type);
     response.headers.push(("ETag".into(), etag.clone()));
     response.headers.push(("Accept-Ranges".into(), "bytes".into()));
+    if request.lines().any(|line| line.strip_prefix("If-None-Match: ") == Some(etag.as_str())) {
+        response.status = 304; response.body.clear();
+        return response;
+    }
     let range = request.lines().find_map(|line| line.strip_prefix("Range: bytes="));
     // Full-object responses keep their ETag; ranges retain the same identity.
     if let Some(range) = range {
@@ -63,6 +67,8 @@ mod tests {
         assert!(response.headers.iter().any(|(k, v)| k == "Content-Range" && v == "bytes 1-3/9"));
         assert!(response.headers.iter().any(|(k, _)| k == "ETag"));
         assert_eq!(route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=99-100\r\n", &manifest, b"RIFF-demo").status, 416);
+        let cached = route(&format!("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nIf-None-Match: \"{}\"\r\n", manifest.checksum_sha256), &manifest, b"RIFF-demo");
+        assert_eq!(cached.status, 304); assert!(cached.body.is_empty());
     }
     #[test]
     fn serves_only_published_route() {
