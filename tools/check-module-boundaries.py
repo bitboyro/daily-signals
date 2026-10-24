@@ -8,6 +8,7 @@ EXPECTED = {
     'radio-ingestion': set(),
     'radio-editorial': {'radio-ingestion'},
     'radio-edition': {'radio-editorial'},
+    'radio-persistence': {'radio-edition'},
     'radio-api': {'radio-ingestion', 'radio-editorial', 'radio-edition'},
 }
 reactor = ET.parse(ROOT / 'pom.xml').getroot()

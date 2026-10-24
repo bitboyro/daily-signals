@@ -11,6 +11,7 @@
     <module>radio-ingestion</module>
     <module>radio-editorial</module>
     <module>radio-edition</module>
+    <module>radio-persistence</module>
     <module>radio-api</module>
   </modules>
   <properties>
