@@ -7,6 +7,7 @@ public final class ScriptAssembler {
     public record Script(String text, List<String> storyIds) {
         public Script { storyIds = List.copyOf(storyIds); }
     }
+    private final PronunciationDictionary pronunciation = new PronunciationDictionary();
     public Script assemble(EditionAssembler.Edition edition) {
         if (edition == null || edition.segments().isEmpty()) throw new IllegalArgumentException("edition needs approved stories");
         var lines = new java.util.ArrayList<String>();
@@ -18,6 +19,6 @@ public final class ScriptAssembler {
             lines.add(story.title().strip() + ". " + story.summary().strip());
             ids.add(story.id());
         }
-        return new Script(String.join("\n", lines) + "\n", ids);
+        return new Script(pronunciation.speakable(String.join("\n", lines) + "\n"), ids);
     }
 }
