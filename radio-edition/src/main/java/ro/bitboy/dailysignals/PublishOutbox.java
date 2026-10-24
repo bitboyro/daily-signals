@@ -53,6 +53,15 @@ public final class PublishOutbox {
         replacements.put(editionId, new Pending(editionId, key, copy, sha256(copy)));
     }
     public synchronized int replacementCount() { return replacements.size(); }
+    /** Transfer a prepared re-render and make it available to the edition. */
+    public synchronized PublicationManifest publishReplacement(String editionId, ObjectWriter writer)
+            throws IOException, InterruptedException {
+        var item = replacements.get(editionId);
+        if (item == null) throw new IllegalArgumentException("replacement not staged");
+        writer.put(item.key(), item.audio().clone());
+        replacements.remove(editionId);
+        return published.get(editionId);
+    }
     private static String sha256(byte[] bytes) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); }
         catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
