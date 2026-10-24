@@ -49,7 +49,7 @@ public final class PublishOutbox {
         // Leave the outbox item pending on transfer failure so a later attempt can retry.
         writer.put(item.key(), item.audio().clone());
         var manifest = new PublicationManifest(1, editionId, "PUBLISHED", item.key(), "audio/wav",
-                item.metadata().sizeBytes(), item.metadata().checksumSha256());
+                item.metadata().sizeBytes(), item.metadata().checksumSha256(), null);
         published.put(editionId, manifest);
         events.add(new ProducerEvent(editionId, "published", item.key(), item.metadata().checksumSha256()));
         pending.remove(editionId);
@@ -77,7 +77,7 @@ public final class PublishOutbox {
         if (item == null) throw new IllegalArgumentException("replacement not staged");
         writer.put(item.key(), item.audio().clone());
         var manifest = new PublicationManifest(1, editionId, "PUBLISHED", item.key(), "audio/wav",
-                item.metadata().sizeBytes(), item.metadata().checksumSha256());
+                item.metadata().sizeBytes(), item.metadata().checksumSha256(), null);
         published.put(editionId, manifest);
         events.add(new ProducerEvent(editionId, "recording-transferred", item.key(), item.metadata().checksumSha256()));
         replacements.remove(editionId);

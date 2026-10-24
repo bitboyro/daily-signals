@@ -19,7 +19,7 @@ public final class FixturePublication {
             Files.createDirectories(target.getParent());
             Files.write(target, bytes);
         });
-        String json = "{\"schemaVersion\":1,\"editionId\":\"fixture-edition\","
+        String json = "{\"schemaVersion\":2,\"editionId\":\"fixture-edition\",\"airDate\":\"2026-01-15\","
                 + "\"status\":\"PUBLISHED\",\"audioPath\":\"" + manifest.audioPath() + "\","
                 + "\"contentType\":\"audio/wav\",\"sizeBytes\":" + manifest.sizeBytes() + ","
                 + "\"checksumSha256\":\"" + manifest.checksumSha256() + "\"}";

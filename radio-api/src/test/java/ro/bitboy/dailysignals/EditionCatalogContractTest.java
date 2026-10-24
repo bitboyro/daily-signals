@@ -12,7 +12,7 @@ class EditionCatalogContractTest {
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Test void fixtureCatalogMatchesSharedListenerContract() throws Exception {
-        var contract = mapper.readTree(Files.readString(Path.of("../contracts/edition-list-v1.json")));
+        var contract = mapper.readTree(Files.readString(Path.of("../contracts/edition-list-v2.json")));
         assertEquals(contract, mapper.readTree(EditionCatalog.fixture().toJson()));
     }
 
@@ -21,7 +21,8 @@ class EditionCatalogContractTest {
                 new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Plain", "/editions/older/audio"),
                 new EditionCatalog.Entry("newer", LocalDate.of(2026, 1, 2), "Quote \" and \\ slash", "/editions/newer/audio")));
         var json = mapper.readTree(catalog.toJson());
-        assertEquals("newer", json.get(0).get("editionId").asText());
-        assertEquals("Quote \" and \\ slash", json.get(0).get("title").asText());
+        assertEquals(EditionCatalog.SCHEMA_VERSION, json.get("schemaVersion").asInt());
+        assertEquals("newer", json.get("editions").get(0).get("editionId").asText());
+        assertEquals("Quote \" and \\ slash", json.get("editions").get(0).get("title").asText());
     }
 }

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "editionId": "demo-2026-01-15",
+  "airDate": "2026-01-15",
+  "status": "PUBLISHED",
+  "audioPath": "fixtures/demo-edition.wav",
+  "contentType": "audio/wav",
+  "sizeBytes": 16044,
+  "checksumSha256": "f9efab5003000788f6851091398494c71506d3319e03f2abea702aa8214bc8f0"
+}

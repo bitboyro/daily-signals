@@ -27,16 +27,19 @@ public final class EditionCatalog {
 
     public List<Entry> entries() { return entries; }
 
+    public static final int SCHEMA_VERSION = 2;
+
     public String toJson() {
-        var json = new StringBuilder("[");
+        var json = new StringBuilder("{\"schemaVersion\":" + SCHEMA_VERSION + ",\"editions\":[");
+        int first = json.length();
         for (var entry : entries) {
-            if (json.length() > 1) json.append(',');
+            if (json.length() > first) json.append(',');
             json.append("{\"editionId\":").append(quote(entry.editionId()))
                     .append(",\"airDate\":").append(quote(entry.airDate().toString()))
                     .append(",\"title\":").append(quote(entry.title()))
                     .append(",\"audioPath\":").append(quote(entry.audioPath())).append('}');
         }
-        return json.append(']').toString();
+        return json.append("]}").toString();
     }
 
     private static String quote(String value) {

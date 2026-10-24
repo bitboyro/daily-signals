@@ -41,7 +41,7 @@ class DailySignalsTest {
                 HttpResponse.BodyHandlers.ofString());
             assertEquals(200, editions.statusCode());
             assertEquals("application/json", editions.headers().firstValue("Content-Type").orElseThrow());
-            assertTrue(editions.body().startsWith("[{\"editionId\":\"demo-2026-01-15\""));
+            assertTrue(editions.body().startsWith("{\"schemaVersion\":2,\"editions\":[{\"editionId\":\"demo-2026-01-15\""));
         } finally {
             server.stop(0);
         }
