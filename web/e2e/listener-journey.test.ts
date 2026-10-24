@@ -1,20 +1,29 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, type ChildProcess } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readConfig } from '../src/config.ts';
 import { fetchEditions, renderEditionList } from '../src/editions.ts';
 import { renderPlayer } from '../src/player.ts';
+import { fetchQueue, renderQueue, submitDecision } from '../src/producer-queue.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const classes = `${root}radio-api/target/classes`;
+const classes = ['radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion']
+  .map((module) => `${root}${module}/target/classes`).join(':');
+// Generated per run; reviewer tokens are configuration, never committed values.
+const producerToken = `producer-${randomUUID()}`;
+const listenerToken = `listener-${randomUUID()}`;
 let api: ChildProcess;
 let apiBase = '';
 
 before(async () => {
-  assert.ok(existsSync(classes), 'build the Java API first: mvn -B -ntp -DskipTests package');
-  api = spawn('java', ['-cp', classes, 'ro.bitboy.dailysignals.DailySignals', '0'], { stdio: ['ignore', 'pipe', 'inherit'] });
+  assert.ok(classes.split(':').every((dir) => existsSync(dir)), 'build the Java API first: mvn -B -ntp -DskipTests package');
+  api = spawn('java', ['-cp', classes, 'ro.bitboy.dailysignals.DailySignals', '0'], {
+    stdio: ['ignore', 'pipe', 'inherit'],
+    env: { ...process.env, DAILY_SIGNALS_REVIEW_TOKENS: `${producerToken}=PRODUCER,${listenerToken}=LISTENER` },
+  });
   apiBase = await new Promise<string>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Java API did not start')), 15000);
     api.stdout!.on('data', (chunk: Buffer) => {
@@ -41,4 +50,17 @@ test('listener browses the archive and plays the newest edition', async () => {
   assert.equal(audio.headers.get('content-type'), 'audio/wav');
   const bytes = new Uint8Array(await audio.arrayBuffer());
   assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), 'RIFF');
+});
+
+test('producer approves a pending story and the queue reflects it', async () => {
+  const before = await fetchQueue(apiBase);
+  const pending = before.find((item) => item.decision === 'PENDING');
+  assert.ok(pending, 'fixture queue has a pending story');
+  assert.match(renderQueue(before), new RegExp(`Approve ${pending.headline}`));
+
+  await assert.rejects(submitDecision(apiBase, pending.storyId, 'APPROVED', ''), /reviewer token/);
+  await assert.rejects(submitDecision(apiBase, pending.storyId, 'APPROVED', listenerToken), /cannot review/);
+  await submitDecision(apiBase, pending.storyId, 'APPROVED', producerToken);
+  const after = await fetchQueue(apiBase);
+  assert.equal(after.find((item) => item.storyId === pending.storyId)?.decision, 'APPROVED');
 });
