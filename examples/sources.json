@@ -1,5 +1,5 @@
 {
   "sources": [
-    {"id":"demo-civic-desk","name":"Demo Civic Desk","url":"http://example.invalid/daily-signals/demo-civic-desk","priority":1}
+    {"id":"demo-civic-desk","name":"Demo Civic Desk","url":"https://example.invalid/daily-signals/demo-civic-desk","priority":1}
   ]
 }
