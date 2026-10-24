@@ -28,6 +28,23 @@ jobs:
           name: java-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*.xml'
           if-no-files-found: warn
+  schedule-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Cross-zone schedule tests
+        run: mvn -B -ntp -pl radio-edition -am -Dtest=ScheduledEditionClockTest -Dsurefire.failIfNoSpecifiedTests=false test
+      - name: Upload schedule reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-junit-${{ github.run_attempt }}
+          path: '**/target/surefire-reports/TEST-*ScheduledEditionClockTest.xml'
+          if-no-files-found: warn
   postgres-reference:
     runs-on: ubuntu-latest
     services:
