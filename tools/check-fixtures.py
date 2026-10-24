@@ -9,7 +9,8 @@ FIXTURES = ROOT / "radio-api/src/main/resources/fixtures"
 
 source = json.loads((FIXTURES / "source-snapshot.json").read_text())
 assert source["license"] == "synthetic-test-content"
-assert source["snapshotId"] and len(source["stories"]) >= 2
+assert source["snapshotId"] and len(source["stories"]) == 3
+assert source["stories"][2]["category"] == "transport"
 assert len({story["id"] for story in source["stories"]}) == len(source["stories"])
 alternate = json.loads((FIXTURES / "alternate-source-snapshot.json").read_text())
 assert alternate["license"] == "synthetic-test-content"

@@ -10,7 +10,8 @@ class SourceSnapshotParserTest {
             var snapshot=new SourceSnapshotParser().parse(input);
             assertEquals("synthetic-2026-01-15-morning",snapshot.snapshotId());
             assertEquals("demo-civic-desk",snapshot.sourceId());
-            assertEquals(2,snapshot.stories().size());
+            assertEquals(3,snapshot.stories().size());
+            assertEquals("transport", snapshot.stories().get(2).category());
             assertEquals(Instant.parse("2026-01-15T06:30:00Z"),snapshot.stories().get(0).publishedAt());
         }
     }
