@@ -1,0 +1,2342 @@
+{
+ "schemaVersion": 1,
+ "description": "Public feature annotations for Daily Signals. Feature IDs are stable across moves and languages; rules map fnmatch path patterns (* crosses /) to feature relations or an explicit classification. introducedIn/retiredIn are first-parent revisions; null introducedIn means the paths arrived with the rule. Imported code-graph links are evidence only and never override authored-review rules. Audit: python3 tools/check-annotations.py.",
+ "features": {
+  "SRC-01": "source registry",
+  "SRC-02": "fetch windows",
+  "SRC-03": "HTTP snapshots",
+  "SRC-04": "parsing adapters",
+  "SRC-05": "robots and rate policy",
+  "STO-01": "normalization",
+  "STO-02": "deduplication",
+  "STO-03": "attribution",
+  "STO-04": "categorization",
+  "STO-05": "correction",
+  "EDT-01": "candidate review",
+  "EDT-02": "selection",
+  "EDT-03": "ordering",
+  "EDT-04": "approvals",
+  "EDT-05": "rejection audit",
+  "EDI-01": "dated edition",
+  "EDI-02": "timezone and schedule",
+  "EDI-03": "versioning",
+  "EDI-04": "status transitions",
+  "EDI-05": "archive",
+  "VOC-01": "script",
+  "VOC-02": "pronunciation",
+  "VOC-03": "render request",
+  "VOC-04": "provider adapter",
+  "VOC-05": "audio validation",
+  "OBJ-01": "recording metadata",
+  "OBJ-02": "checksum",
+  "OBJ-03": "S3-compatible adapter",
+  "OBJ-04": "retention",
+  "OBJ-05": "object access",
+  "PUB-01": "manifest",
+  "PUB-02": "atomic publish",
+  "PUB-03": "retry and outbox",
+  "PUB-04": "unpublish",
+  "PUB-05": "feed",
+  "STR-01": "playback",
+  "STR-02": "byte ranges",
+  "STR-03": "cache and ETag",
+  "STR-04": "missing-object behavior",
+  "STR-05": "stream metrics",
+  "PLT-01": "API and contract",
+  "PLT-02": "database migrations",
+  "PLT-03": "permissions",
+  "PLT-04": "scheduled jobs",
+  "PLT-05": "packaging and deploy",
+  "WEB-01": "edition browser",
+  "WEB-02": "audio player",
+  "WEB-03": "producer queue",
+  "WEB-04": "source editor",
+  "WEB-05": "accessibility"
+ },
+ "projects": {
+  "radio-ingestion": "java",
+  "radio-editorial": "java",
+  "radio-edition": "java",
+  "radio-persistence": "java",
+  "radio-api": "java",
+  "streamer": "rust",
+  "web": "typescript",
+  "contracts": "shared",
+  "deploy": "deploy",
+  "tools": "tooling",
+  "docs": "documentation",
+  "examples": "documentation",
+  ".github": "ci"
+ },
+ "rules": [
+  {
+   "paths": [
+    "*/src/main/java/*/SourceRegistry.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "cff5a90ccdde9d6aab1077d14b177c1c20bf15f8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/SourceRegistryTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "cff5a90ccdde9d6aab1077d14b177c1c20bf15f8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/FetchWindowPolicy.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "implements"
+    },
+    {
+     "id": "EDI-02",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "1649a6ab4afc417e90c5d0222eb940523724b039",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/FetchWindowPolicyTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "1649a6ab4afc417e90c5d0222eb940523724b039",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/SnapshotParser.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-03",
+     "relation": "implements"
+    },
+    {
+     "id": "SRC-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3448473e9f78d4dd15a0337bec0ca4144bd88211",
+   "retiredIn": "88846d34fd787e2319f01a8794f4574d5115a207"
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/SnapshotParserTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-03",
+     "relation": "tests"
+    },
+    {
+     "id": "SRC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3448473e9f78d4dd15a0337bec0ca4144bd88211",
+   "retiredIn": "88846d34fd787e2319f01a8794f4574d5115a207"
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/SourceSnapshotParser.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-03",
+     "relation": "implements"
+    },
+    {
+     "id": "SRC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "STO-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "88846d34fd787e2319f01a8794f4574d5115a207",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/SourceSnapshotParserTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-03",
+     "relation": "tests"
+    },
+    {
+     "id": "SRC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "STO-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "88846d34fd787e2319f01a8794f4574d5115a207",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/XmlSourceSnapshotParser.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "STO-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "b94f831e3788c1f33058b2f912f7c5c1580e60e0",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/XmlSourceSnapshotParserTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "STO-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "b94f831e3788c1f33058b2f912f7c5c1580e60e0",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/StoryNormalizer.java"
+   ],
+   "features": [
+    {
+     "id": "STO-01",
+     "relation": "implements"
+    },
+    {
+     "id": "STO-03",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "5f37ee49da518ca5adc2b58083d1212cb2d59ac1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/StoryNormalizerTest.java"
+   ],
+   "features": [
+    {
+     "id": "STO-01",
+     "relation": "tests"
+    },
+    {
+     "id": "STO-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "5f37ee49da518ca5adc2b58083d1212cb2d59ac1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/CandidateMerger.java"
+   ],
+   "features": [
+    {
+     "id": "STO-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "5ec171fc11adbe3f55608363053d8a937da5a4d8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/CandidateMergerTest.java"
+   ],
+   "features": [
+    {
+     "id": "STO-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "5ec171fc11adbe3f55608363053d8a937da5a4d8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/CandidateReview.java"
+   ],
+   "features": [
+    {
+     "id": "EDT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "EDT-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "2ac7cb7502bd1b0d10bcaa08487be9291b38e43e",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/CandidateReviewTest.java"
+   ],
+   "features": [
+    {
+     "id": "EDT-01",
+     "relation": "tests"
+    },
+    {
+     "id": "EDT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "2ac7cb7502bd1b0d10bcaa08487be9291b38e43e",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/fixtures/source-snapshot.json",
+    "*/fixtures/alternate-source-snapshot.json",
+    "*/fixtures/source-snapshot.xml"
+   ],
+   "features": [
+    {
+     "id": "SRC-03",
+     "relation": "tests"
+    },
+    {
+     "id": "SRC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "STO-01",
+     "relation": "tests"
+    },
+    {
+     "id": "STO-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "204f45f4f8461734f987365c92fd62e656798bf1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "examples/sources.json"
+   ],
+   "features": [
+    {
+     "id": "SRC-01",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "58e7740f77d66e56877c7416b34b3b6fbc43589f",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/source-configuration.md"
+   ],
+   "features": [
+    {
+     "id": "SRC-01",
+     "relation": "documents"
+    },
+    {
+     "id": "SRC-05",
+     "relation": "documents"
+    },
+    {
+     "id": "WEB-04",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "58e7740f77d66e56877c7416b34b3b6fbc43589f",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/check-source-example.py"
+   ],
+   "features": [
+    {
+     "id": "SRC-01",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "58e7740f77d66e56877c7416b34b3b6fbc43589f",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ReviewQueue.java"
+   ],
+   "features": [
+    {
+     "id": "EDT-01",
+     "relation": "calls"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "bf2e0595ca47c93ec2fb9ead8715b81f42c2ffe3",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ReviewerTokens.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-03",
+     "relation": "implements"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "bf2e0595ca47c93ec2fb9ead8715b81f42c2ffe3",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ReviewerTokensTest.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "bf2e0595ca47c93ec2fb9ead8715b81f42c2ffe3",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/EditionAssembler.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-01",
+     "relation": "implements"
+    },
+    {
+     "id": "EDT-02",
+     "relation": "calls"
+    },
+    {
+     "id": "EDT-03",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "medium",
+   "provenance": "authored-review",
+   "introducedIn": "907f5adb092dd97107ad81c3ed031b28ff4ba372",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/EditionAssemblerTest.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-01",
+     "relation": "tests"
+    },
+    {
+     "id": "EDT-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "medium",
+   "provenance": "authored-review",
+   "introducedIn": "907f5adb092dd97107ad81c3ed031b28ff4ba372",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ScheduledEditionClock.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-02",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "510b6dd350198d5180f44ef2102e23778e237fbe",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ScheduledEditionClockTest.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-02",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "510b6dd350198d5180f44ef2102e23778e237fbe",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/EditionCatalog.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-05",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3ee6927d56c29f4e3db98b762032cd89a88d1b13",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/EditionCatalogContractTest.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-05",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3ee6927d56c29f4e3db98b762032cd89a88d1b13",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/AudioManifest.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-01",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "medium",
+   "provenance": "authored-review",
+   "introducedIn": "5ec171fc11adbe3f55608363053d8a937da5a4d8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/AudioManifestTest.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "medium",
+   "provenance": "authored-review",
+   "introducedIn": "5ec171fc11adbe3f55608363053d8a937da5a4d8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/main/java/*/EditionRepository.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-04",
+     "relation": "implements"
+    },
+    {
+     "id": "EDI-03",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "medium",
+   "provenance": "authored-review",
+   "introducedIn": "8aa649ef44d7972a2fed6f1e11cdea38c19db278",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/main/java/*/MigrationRunner.java",
+    "radio-persistence/src/main/resources/db/migration/*.sql"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "implements"
+    },
+    {
+     "id": "EDI-04",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "ec2f08477199064663b47ccccbaf781dcc4daad8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/test/java/*/EditionRepository*Test.java"
+   ],
+   "features": [
+    {
+     "id": "EDI-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "8aa649ef44d7972a2fed6f1e11cdea38c19db278",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/test/java/*/LegacyMigrationPostgresTest.java",
+    "radio-persistence/src/test/java/*/MigrationResourceTest.java",
+    "radio-persistence/src/test/resources/db/*.sql"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "ec2f08477199064663b47ccccbaf781dcc4daad8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ScriptAssembler.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "4f72fd181e76f8571decef3cc00483e0350bc675",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ScriptAssemblerTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "4f72fd181e76f8571decef3cc00483e0350bc675",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/PronunciationDictionary.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "d6ccd4aadaa53c7d9f0f7dfcdc60798dfa12330c",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/PronunciationDictionaryTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "d6ccd4aadaa53c7d9f0f7dfcdc60798dfa12330c",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/VoiceProvider.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-03",
+     "relation": "implements"
+    },
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "a6bd16b65b6717ee29b45124d78cd7de4da38a50",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/FixtureVoiceProvider.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "VOC-05",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "a6bd16b65b6717ee29b45124d78cd7de4da38a50",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/FixtureVoiceProviderTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "VOC-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "a6bd16b65b6717ee29b45124d78cd7de4da38a50",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-edition/src/main/resources/fixtures/fixture-voice.wav",
+    "radio-api/src/main/resources/fixtures/demo-edition.wav"
+   ],
+   "features": [
+    {
+     "id": "VOC-05",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-01",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "204f45f4f8461734f987365c92fd62e656798bf1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/check-audio-fixture.py",
+    "tools/check-fixtures.py"
+   ],
+   "features": [
+    {
+     "id": "VOC-05",
+     "relation": "guards"
+    },
+    {
+     "id": "SRC-03",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "204f45f4f8461734f987365c92fd62e656798bf1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/LocalS3ObjectAdapter.java"
+   ],
+   "features": [
+    {
+     "id": "OBJ-03",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-05",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "7c6f15421b790ac49cdf4a119f4950bfdae7ecd5",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/LocalS3ObjectAdapterTest.java"
+   ],
+   "features": [
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "7c6f15421b790ac49cdf4a119f4950bfdae7ecd5",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/PublishOutbox.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-02",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f011b40bc17bd14e2fcbaeebdf9c24644659bb41",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/PublishOutboxTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-02",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f011b40bc17bd14e2fcbaeebdf9c24644659bb41",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/PublicationManifest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "c0e1bffe4921204583c895b2e8d95aab36042dcd",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/PublicationManifestContractTest.java",
+    "*/src/test/java/*/PublicationEventContractTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "c0e1bffe4921204583c895b2e8d95aab36042dcd",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/PublicationEvent.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f8b990931900ba01861dbf5f01db944f81809fde",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/PublicationConsumer.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "EDI-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "64c7daa930f5a92c65f86bca4264beeb17e8fc66",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/PublicationConsumerTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "EDI-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "64c7daa930f5a92c65f86bca4264beeb17e8fc66",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ProducerPermissions.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-03",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-02",
+     "relation": "guards"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "913f885ac0ccc694d7129582040c7736443a86e9",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ProducerPermissionsTest.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "2c977e6578799a001c0da8898f199420509524cf",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/FixturePublication.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-02",
+     "relation": "calls"
+    },
+    {
+     "id": "VOC-04",
+     "relation": "calls"
+    },
+    {
+     "id": "PUB-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "d7815b21250272d4d6349651382d5499b186171c",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/bridge/StreamerManifestBridge.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "91fd30053ebd38e0c39b9c380507badc5d02ca94",
+   "retiredIn": "89d28ab74075b60f53e2084ee40267b05f10b893"
+  },
+  {
+   "paths": [
+    "*/bridge/StreamerManifestBridgeTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "91fd30053ebd38e0c39b9c380507badc5d02ca94",
+   "retiredIn": "89d28ab74075b60f53e2084ee40267b05f10b893"
+  },
+  {
+   "paths": [
+    "docs/local-object-store.md"
+   ],
+   "features": [
+    {
+     "id": "OBJ-03",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "7c6f15421b790ac49cdf4a119f4950bfdae7ecd5",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/recording-revision-qualification.md"
+   ],
+   "features": [
+    {
+     "id": "OBJ-01",
+     "relation": "documents"
+    },
+    {
+     "id": "PUB-02",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "d9f609d02e4d019f3cd820fc4318b89adf1ef31a",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/operations/recording-retention.md"
+   ],
+   "features": [
+    {
+     "id": "OBJ-04",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f2f17dfe265da1baf6834d0905c2903f05b2341d",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "examples/operations/retention-policy.json"
+   ],
+   "features": [
+    {
+     "id": "OBJ-04",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f2f17dfe265da1baf6834d0905c2903f05b2341d",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/operations/incident-runbook.md"
+   ],
+   "features": [
+    {
+     "id": "STR-04",
+     "relation": "documents"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "documents"
+    },
+    {
+     "id": "OBJ-05",
+     "relation": "documents"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f2f17dfe265da1baf6834d0905c2903f05b2341d",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "streamer/src/server.rs"
+   ],
+   "features": [
+    {
+     "id": "STR-01",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-02",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-03",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-04",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-05",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "2e831b4a0bad24b1af53ae69eb81693406a16c83",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "streamer/src/manifest.rs"
+   ],
+   "features": [
+    {
+     "id": "PUB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "c0e1bffe4921204583c895b2e8d95aab36042dcd",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "streamer/src/lib.rs",
+    "streamer/src/main.rs"
+   ],
+   "features": [
+    {
+     "id": "STR-01",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "0bf4ddec1a7447fbf406f50ec17154d0b2afcfc5",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "streamer/Cargo.toml"
+   ],
+   "features": [
+    {
+     "id": "STR-01",
+     "relation": "configures"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "0bf4ddec1a7447fbf406f50ec17154d0b2afcfc5",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "streamer/Cargo.lock",
+    "web/package-lock.json"
+   ],
+   "classification": "generated",
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "ef0f75b4b7af8da2707d57366c06e9a7f8964a16",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/stream-diagnostics.md"
+   ],
+   "features": [
+    {
+     "id": "STR-01",
+     "relation": "documents"
+    },
+    {
+     "id": "STR-02",
+     "relation": "documents"
+    },
+    {
+     "id": "STR-03",
+     "relation": "documents"
+    },
+    {
+     "id": "OBJ-05",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "97b1da6d6a85cd60807f4bb6b5491e42eaf70472",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/dual-process-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "STR-01",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-02",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-03",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "37934f2c18ff4060b20a0d4d005d55dffdc14e51",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/voice-playback-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "d7815b21250272d4d6349651382d5499b186171c",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/DailySignals.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-01",
+     "relation": "implements"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "calls"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "6c41fb26a1f917232f65e7c206f80ff1a2c6e838",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/DailySignalsTest.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-03",
+     "relation": "tests"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "db4c2365c65870cff062ca94ded1a46f3fe29b36",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/LegacyRoutes.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "a2d2bda2971403539343d426509579996b9d4c45",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/test/java/*/LegacyRoutesContractTest.java"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "a2d2bda2971403539343d426509579996b9d4c45",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "contracts/edition-list-*.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "EDI-05",
+     "relation": "configures"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3ee6927d56c29f4e3db98b762032cd89a88d1b13",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "contracts/publication-manifest-*.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-01",
+     "relation": "configures"
+    },
+    {
+     "id": "STR-01",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "c0e1bffe4921204583c895b2e8d95aab36042dcd",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "contracts/publication-event-*.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f8b990931900ba01861dbf5f01db944f81809fde",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "contracts/legacy-routes.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "a2d2bda2971403539343d426509579996b9d4c45",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "pom.xml",
+    "*/pom.xml"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "6c41fb26a1f917232f65e7c206f80ff1a2c6e838",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    ".github/workflows/*.yml"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "690fdb2085613bbd1ddf966e137c593a88692f23",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "deploy/*.Dockerfile",
+    "deploy/compose.yaml",
+    ".dockerignore"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "96e392bb96202b6b9cc9bc67d8781ee13230d2eb",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "deploy/runtime.env"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    },
+    {
+     "id": "OBJ-05",
+     "relation": "configures"
+    },
+    {
+     "id": "STR-01",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "96e392bb96202b6b9cc9bc67d8781ee13230d2eb",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/container-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-05",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "96e392bb96202b6b9cc9bc67d8781ee13230d2eb",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/check-module-boundaries.py",
+    "tools/check-annotations.py",
+    "public-annotations.yaml"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "80a5a33d588fc163abf74e13320ae65741d059c0",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/create-release-manifest.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-01",
+     "relation": "calls"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "716aad19fbbe06cd6645f946c0d7168fe6c39d44",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/list-changed-tests.py"
+   ],
+   "classification": "shared",
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "690fdb2085613bbd1ddf966e137c593a88692f23",
+   "retiredIn": null,
+   "note": "CI helper listing changed JUnit classes"
+  },
+  {
+   "paths": [
+    "tools/check-docs.py"
+   ],
+   "features": [
+    {
+     "id": "OBJ-04",
+     "relation": "guards"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "f2f17dfe265da1baf6834d0905c2903f05b2341d",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/container-runtime.md",
+    "docs/release-qualification.md"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "716aad19fbbe06cd6645f946c0d7168fe6c39d44",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/postgresql-reference.md"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "ec2f08477199064663b47ccccbaf781dcc4daad8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "README.md",
+    "docs/e0-qualification.md"
+   ],
+   "classification": "documentation",
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "6c41fb26a1f917232f65e7c206f80ff1a2c6e838",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    ".gitignore"
+   ],
+   "classification": "shared",
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "6c41fb26a1f917232f65e7c206f80ff1a2c6e838",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/__pycache__/*"
+   ],
+   "classification": "generated",
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "690fdb2085613bbd1ddf966e137c593a88692f23",
+   "retiredIn": "dc2ba0edc9db6543217725a2ddc0acb235405cf7",
+   "note": "bytecode committed once by mistake and later removed"
+  },
+  {
+   "paths": [
+    "web/src/config.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-02",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/editions.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "EDI-05",
+     "relation": "calls"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3ee6927d56c29f4e3db98b762032cd89a88d1b13",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/schema.ts"
+   ],
+   "features": [
+    {
+     "id": "PLT-01",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "calls"
+    },
+    {
+     "id": "WEB-03",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "0d91d23c9bd6c4d40fde94222848b8ffd5738e25",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/player.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-02",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-05",
+     "relation": "implements"
+    },
+    {
+     "id": "STR-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "364c3729d454db0435e5b11bdf7a9238ea8bef63",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/producer-queue.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "calls"
+    },
+    {
+     "id": "PLT-03",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "6cbe5b162959b61a86aaf5383ca20f9ef18b137b",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/source-editor.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-04",
+     "relation": "implements"
+    },
+    {
+     "id": "SRC-01",
+     "relation": "calls"
+    },
+    {
+     "id": "WEB-05",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "48080f5916c2d45829e7776236cda0105a4e74bb",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/html.ts"
+   ],
+   "classification": "shared",
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3ee6927d56c29f4e3db98b762032cd89a88d1b13",
+   "retiredIn": null,
+   "note": "HTML escaping used by every view"
+  },
+  {
+   "paths": [
+    "web/src/main.ts",
+    "web/public/index.html"
+   ],
+   "features": [
+    {
+     "id": "WEB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-02",
+     "relation": "calls"
+    },
+    {
+     "id": "WEB-03",
+     "relation": "calls"
+    },
+    {
+     "id": "WEB-05",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/public/styles.css"
+   ],
+   "features": [
+    {
+     "id": "WEB-05",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "9b7097c3f712936b330eb822a21ad353d18d836d",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/index.html"
+   ],
+   "features": [
+    {
+     "id": "WEB-01",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
+   "retiredIn": "9b7097c3f712936b330eb822a21ad353d18d836d"
+  },
+  {
+   "paths": [
+    "web/test/editions.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "3ee6927d56c29f4e3db98b762032cd89a88d1b13",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/test/player.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-02",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "364c3729d454db0435e5b11bdf7a9238ea8bef63",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/test/producer-queue.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "6cbe5b162959b61a86aaf5383ca20f9ef18b137b",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/test/source-editor.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-04",
+     "relation": "tests"
+    },
+    {
+     "id": "SRC-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "48080f5916c2d45829e7776236cda0105a4e74bb",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/e2e/*.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-01",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-02",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "364c3729d454db0435e5b11bdf7a9238ea8bef63",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/package.json",
+    "web/tsconfig.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
+   "retiredIn": null
+  }
+ ],
+ "intersections": [
+  {
+   "features": [
+    "STO-01",
+    "STO-02",
+    "EDT-01"
+   ],
+   "check": "java.yml:java-unit",
+   "tests": [
+    {
+     "path": "radio-editorial/src/test/java/ro/bitboy/dailysignals/CandidateMergerTest.java"
+    },
+    {
+     "path": "radio-editorial/src/test/java/ro/bitboy/dailysignals/CandidateReviewTest.java"
+    }
+   ]
+  },
+  {
+   "features": [
+    "EDI-02",
+    "SRC-02",
+    "EDI-01"
+   ],
+   "check": "java.yml:schedule-test",
+   "tests": [
+    {
+     "path": "radio-edition/src/test/java/ro/bitboy/dailysignals/ScheduledEditionClockTest.java"
+    },
+    {
+     "path": "radio-ingestion/src/test/java/ro/bitboy/dailysignals/FetchWindowPolicyTest.java"
+    }
+   ]
+  },
+  {
+   "features": [
+    "VOC-01",
+    "VOC-04",
+    "OBJ-02",
+    "PUB-01",
+    "STR-01"
+   ],
+   "check": "java.yml:voice-playback-system",
+   "tests": [
+    {
+     "path": "tools/voice-playback-smoke.py"
+    }
+   ]
+  },
+  {
+   "features": [
+    "EDI-04",
+    "PUB-03"
+   ],
+   "check": "java.yml:publish-integration",
+   "tests": [
+    {
+     "path": "radio-edition/src/test/java/ro/bitboy/dailysignals/PublicationConsumerTest.java"
+    }
+   ]
+  },
+  {
+   "features": [
+    "PUB-02",
+    "STR-03"
+   ],
+   "check": "java.yml:stream-integration",
+   "tests": [
+    {
+     "path": "tools/dual-process-smoke.py"
+    }
+   ]
+  },
+  {
+   "features": [
+    "PLT-01",
+    "STR-01",
+    "WEB-01"
+   ],
+   "check": "java.yml:java-unit",
+   "tests": [
+    {
+     "path": "radio-api/src/test/java/ro/bitboy/dailysignals/PublicationManifestContractTest.java"
+    },
+    {
+     "path": "web/test/editions.test.ts"
+    }
+   ]
+  },
+  {
+   "features": [
+    "OBJ-05",
+    "STR-01",
+    "PLT-05"
+   ],
+   "check": "container.yml:container-smoke",
+   "tests": [
+    {
+     "path": "tools/container-smoke.py"
+    }
+   ]
+  },
+  {
+   "features": [
+    "PLT-03",
+    "EDT-04",
+    "WEB-03"
+   ],
+   "check": "web.yml:web-e2e",
+   "tests": [
+    {
+     "path": "radio-api/src/test/java/ro/bitboy/dailysignals/DailySignalsTest.java"
+    },
+    {
+     "path": "web/e2e/listener-journey.test.ts"
+    }
+   ]
+  },
+  {
+   "features": [
+    "SRC-01",
+    "WEB-04"
+   ],
+   "check": "web.yml:web-unit",
+   "tests": [
+    {
+     "path": "web/test/source-editor.test.ts"
+    }
+   ]
+  }
+ ]
+}
