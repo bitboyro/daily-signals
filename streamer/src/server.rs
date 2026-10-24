@@ -15,6 +15,12 @@ impl Response {
         wire.extend_from_slice(b"\r\n"); wire.extend_from_slice(&self.body); wire
     }
 }
+pub fn route_for_object(request: &str, manifest: &PublicationManifest, audio: Option<&[u8]>) -> Response {
+    match audio {
+        Some(bytes) => route(request, manifest, bytes),
+        None => Response::new(404, vec![], "text/plain"),
+    }
+}
 pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Response {
     let mut parts = request.lines().next().unwrap_or("").split_whitespace();
     let method = parts.next().unwrap_or(""); let path = parts.next().unwrap_or("");
@@ -41,18 +47,24 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     }
     response
 }
-fn serve(mut stream: TcpStream, manifest: &PublicationManifest, audio: &[u8]) -> std::io::Result<()> {
+fn serve(mut stream: TcpStream, manifest: &PublicationManifest, audio: Option<&[u8]>) -> std::io::Result<()> {
     let mut buffer = [0_u8; 8192]; let size = stream.read(&mut buffer)?;
     let request = String::from_utf8_lossy(&buffer[..size]);
-    stream.write_all(&route(&request, manifest, audio).wire())
+    stream.write_all(&route_for_object(&request, manifest, audio).wire())
 }
 pub fn listen(port: u16, manifest_path: &Path, audio_root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let manifest: PublicationManifest = serde_json::from_slice(&std::fs::read(manifest_path)?)?;
     manifest.validate()?;
-    let audio = std::fs::read(audio_root.join(&manifest.audio_path))?;
-    if audio.len() as u64 != manifest.size_bytes { return Err("audio size does not match manifest".into()); }
+    let audio = match std::fs::read(audio_root.join(&manifest.audio_path)) {
+        Ok(bytes) => Some(bytes),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
+        Err(error) => return Err(error.into()),
+    };
+    if let Some(bytes) = &audio {
+        if bytes.len() as u64 != manifest.size_bytes { return Err("audio size does not match manifest".into()); }
+    }
     let listener = TcpListener::bind(("127.0.0.1", port))?;
-    for incoming in listener.incoming() { if let Ok(stream) = incoming { let _ = serve(stream, &manifest, &audio); } }
+    for incoming in listener.incoming() { if let Ok(stream) = incoming { let _ = serve(stream, &manifest, audio.as_deref()); } }
     Ok(())
 }
 #[cfg(test)]
@@ -77,6 +89,12 @@ mod tests {
         assert_eq!(final_byte.status, 206);
         assert_eq!(final_byte.body, b"o");
         assert!(final_byte.headers.iter().any(|(k, v)| k == "Content-Range" && v == "bytes 8-8/9"));
+    }
+    #[test]
+    fn missing_audio_object_is_not_found() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let response = route_for_object("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n", &manifest, None);
+        assert_eq!(response.status, 404);
     }
     #[test]
     fn serves_only_published_route() {
