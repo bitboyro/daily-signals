@@ -1,0 +1,9 @@
+{
+  "routes": [
+    {
+      "from": "/editions/demo/audio",
+      "to": "/editions/demo-2026-01-15/audio",
+      "status": 308
+    }
+  ]
+}

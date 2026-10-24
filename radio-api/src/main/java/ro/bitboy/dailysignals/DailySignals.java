@@ -38,6 +38,12 @@ public final class DailySignals {
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
         server.createContext("/editions/", exchange -> {
+            var legacy = LegacyRoutes.redirectFor(exchange.getRequestURI().getPath());
+            if (legacy.isPresent()) {
+                exchange.getResponseHeaders().set("Location", legacy.get());
+                reply(exchange, 308);
+                return;
+            }
             var edition = catalog.entries().stream()
                     .filter(entry -> entry.audioPath().equals(exchange.getRequestURI().getPath())).findFirst();
             if (edition.isEmpty()) {

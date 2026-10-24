@@ -71,6 +71,14 @@ test('listener browses the archive and plays the newest edition', async () => {
   assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), 'RIFF');
 });
 
+test('links to the retired demo player still reach the edition audio', async () => {
+  const legacy = await fetch(`${apiBase}/editions/demo/audio`, { redirect: 'manual' });
+  assert.equal(legacy.status, 308);
+  const followed = await fetch(`${apiBase}/editions/demo/audio`);
+  assert.equal(followed.status, 200);
+  assert.equal(followed.headers.get('content-type'), 'audio/wav');
+});
+
 test('producer approves a pending story and the queue reflects it', async () => {
   const before = await fetchQueue(apiBase);
   const pending = before.find((item) => item.decision === 'PENDING');
