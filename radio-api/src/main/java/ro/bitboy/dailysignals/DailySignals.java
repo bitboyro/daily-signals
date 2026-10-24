@@ -32,7 +32,13 @@ public final class DailySignals {
 
     /** Serves the API and, when {@code webRoot} is given, the built listener UI from that directory. */
     public static HttpServer createServer(int port, Path webRoot, ReviewerTokens reviewers) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", port), 0);
+        return createServer("127.0.0.1", port, webRoot, reviewers);
+    }
+
+    /** Loopback by default; container images bind every interface through DAILY_SIGNALS_BIND_ADDRESS. */
+    public static HttpServer createServer(String bindAddress, int port, Path webRoot, ReviewerTokens reviewers)
+            throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
@@ -129,9 +135,10 @@ public final class DailySignals {
     public static void main(String[] args) throws IOException {
         int port = args.length == 0 ? 8151 : Integer.parseInt(args[0]);
         String webRoot = System.getenv("DAILY_SIGNALS_WEB_ROOT");
-        HttpServer server = createServer(port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
+        String bind = System.getenv().getOrDefault("DAILY_SIGNALS_BIND_ADDRESS", "127.0.0.1");
+        HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ReviewerTokens.parse(System.getenv("DAILY_SIGNALS_REVIEW_TOKENS")));
         server.start();
-        System.out.println("Daily Signals listening on http://127.0.0.1:" + server.getAddress().getPort());
+        System.out.println("Daily Signals listening on http://" + bind + ":" + server.getAddress().getPort());
     }
 }

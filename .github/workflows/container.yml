@@ -1,0 +1,29 @@
+name: Container verification
+on:
+  push:
+  pull_request:
+jobs:
+  container-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build services for host-run descriptor check
+        run: |
+          mvn -B -ntp -DskipTests package
+          cargo build --manifest-path streamer/Cargo.toml
+          npm --prefix web ci
+          npm --prefix web run build
+      - name: Descriptor and host-run startup check
+        run: python3 tools/container-smoke.py
+      - name: Compose image startup and playback
+        run: python3 tools/container-smoke.py --docker
