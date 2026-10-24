@@ -7,6 +7,14 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ScriptAssemblerTest {
+    @Test void validatesScriptIdsAndPunctuation() {
+        assertThrows(IllegalArgumentException.class, () -> new ScriptAssembler.Script("hi", List.of("a", "a")));
+        var attribution = new StoryNormalizer.Attribution("desk", "Desk", URI.create("https://example.test"), "snapshot");
+        var story = new StoryNormalizer.Story("s1", "Why now?", "A  useful  update!", Instant.parse("2026-01-15T08:00:00Z"), "why now", attribution);
+        var candidate = new CandidateReview.Candidate(story, 1, CandidateReview.Decision.APPROVED);
+        var edition = new EditionAssembler.Edition(LocalDate.of(2026,1,15), ZoneId.of("UTC"), List.of(candidate));
+        assertTrue(new ScriptAssembler().assemble(edition).text().contains("Why now? A useful update!"));
+    }
     @Test void retainsEditorialOrderAndAttributionIds() {
         var attribution = new StoryNormalizer.Attribution("desk", "Desk", URI.create("https://example.test"), "snapshot");
         var story = new StoryNormalizer.Story("s1", "Title", "Summary", Instant.parse("2026-01-15T08:00:00Z"), "title", attribution);
@@ -14,6 +22,6 @@ class ScriptAssemblerTest {
         var edition = new EditionAssembler.Edition(LocalDate.of(2026,1,15), ZoneId.of("UTC"), List.of(candidate));
         var script = new ScriptAssembler().assemble(edition);
         assertEquals(List.of("s1"), script.storyIds());
-        assertEquals("Daily Signals for 2026-01-15.\nTitle. Summary\n", script.text());
+        assertEquals("Daily Signals for 2026-01-15.\nTitle. Summary.\n", script.text());
     }
 }
