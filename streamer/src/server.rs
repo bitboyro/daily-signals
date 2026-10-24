@@ -21,7 +21,20 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     if method != "GET" { return Response::new(405, vec![], "text/plain"); }
     if path == "/health" { return Response::new(200, crate::health_body().as_bytes().to_vec(), "application/json"); }
     if path != format!("/editions/{}/audio", manifest.edition_id) { return Response::new(404, vec![], "text/plain"); }
-    Response::new(200, audio.to_vec(), &manifest.content_type)
+    let etag = format!("\"{}\"", manifest.checksum_sha256);
+    let mut response = Response::new(200, audio.to_vec(), &manifest.content_type);
+    response.headers.push(("ETag".into(), etag.clone()));
+    response.headers.push(("Accept-Ranges".into(), "bytes".into()));
+    let range = request.lines().find_map(|line| line.strip_prefix("Range: bytes="));
+    if let Some(range) = range {
+        let (start, end) = match range.split_once('-') { Some(value) => value, None => return Response::new(416, vec![], "text/plain") };
+        let start = match start.parse::<usize>() { Ok(value) => value, Err(_) => return Response::new(416, vec![], "text/plain") };
+        let end = if end.is_empty() { audio.len().saturating_sub(1) } else { match end.parse::<usize>() { Ok(value) => value, Err(_) => return Response::new(416, vec![], "text/plain") } };
+        if start >= audio.len() || end < start || end >= audio.len() { return Response::new(416, vec![], "text/plain"); }
+        response.status = 206; response.body = audio[start..=end].to_vec();
+        response.headers.push(("Content-Range".into(), format!("bytes {}-{}/{}", start, end, audio.len())));
+    }
+    response
 }
 fn serve(mut stream: TcpStream, manifest: &PublicationManifest, audio: &[u8]) -> std::io::Result<()> {
     let mut buffer = [0_u8; 8192]; let size = stream.read(&mut buffer)?;
@@ -40,6 +53,16 @@ pub fn listen(port: u16, manifest_path: &Path, audio_root: &Path) -> Result<(), 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn serves_range_and_etag() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let response = route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=1-3\r\n", &manifest, b"RIFF-demo");
+        assert_eq!(response.status, 206);
+        assert_eq!(response.body, b"IFF");
+        assert!(response.headers.iter().any(|(k, v)| k == "Content-Range" && v == "bytes 1-3/9"));
+        assert!(response.headers.iter().any(|(k, _)| k == "ETag"));
+        assert_eq!(route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=99-100\r\n", &manifest, b"RIFF-demo").status, 416);
+    }
     #[test]
     fn serves_only_published_route() {
         let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
