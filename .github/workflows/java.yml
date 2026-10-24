@@ -63,4 +63,21 @@ jobs:
           name: postgres-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*.xml'
           if-no-files-found: warn
+  rust-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Rust build and tests
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo test --manifest-path streamer/Cargo.toml 2>&1 | tee rust-test.log
+      - name: Upload Rust test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rust-test-${{ github.run_attempt }}
+          path: rust-test.log
+          if-no-files-found: warn
 
