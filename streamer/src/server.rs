@@ -92,7 +92,7 @@ mod tests {
     use super::*;
     #[test]
     fn serves_range_and_etag() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         let response = route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=1-3\r\n", &manifest, b"RIFF-demo");
         assert_eq!(response.status, 206);
         assert_eq!(response.body, b"IFF");
@@ -104,7 +104,7 @@ mod tests {
     }
     #[test]
     fn inclusive_range_end_and_single_byte_boundary() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         let final_byte = route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=8-8\r\n", &manifest, b"RIFF-demo");
         assert_eq!(final_byte.status, 206);
         assert_eq!(final_byte.body, b"o");
@@ -112,7 +112,7 @@ mod tests {
     }
     #[test]
     fn missing_audio_object_is_not_found() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         let response = route_for_object("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n", &manifest, None);
         assert_eq!(response.status, 404);
     }
@@ -130,7 +130,7 @@ mod tests {
     }
     #[test]
     fn serves_only_published_route() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         let audio = b"RIFF-demo";
         let response = route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n", &manifest, audio);
         assert_eq!(response.status, 200); assert_eq!(response.body, audio);
