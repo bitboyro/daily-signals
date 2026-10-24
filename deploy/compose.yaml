@@ -1,0 +1,19 @@
+name: daily-signals
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/api.Dockerfile
+    env_file: runtime.env
+    ports:
+      - "127.0.0.1:8151:8151"
+  streamer:
+    build:
+      context: ..
+      dockerfile: deploy/streamer.Dockerfile
+    env_file: runtime.env
+    ports:
+      - "127.0.0.1:8152:8152"
+    volumes:
+      - ../contracts/publication-manifest-v2.json:/srv/published/manifest.json:ro
+      - ../radio-api/src/main/resources/fixtures:/srv/published/fixtures:ro

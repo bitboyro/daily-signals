@@ -52,7 +52,7 @@ fn serve(mut stream: TcpStream, manifest: &PublicationManifest, audio: Option<&[
     let request = String::from_utf8_lossy(&buffer[..size]);
     stream.write_all(&route_for_object(&request, manifest, audio).wire())
 }
-pub fn listen(port: u16, manifest_path: &Path, audio_root: &Path) -> Result<(), Box<dyn std::error::Error>> {
+pub fn listen(bind: &str, port: u16, manifest_path: &Path, audio_root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let manifest: PublicationManifest = serde_json::from_slice(&std::fs::read(manifest_path)?)?;
     manifest.validate()?;
     let audio = match std::fs::read(audio_root.join(&manifest.audio_path)) {
@@ -63,7 +63,7 @@ pub fn listen(port: u16, manifest_path: &Path, audio_root: &Path) -> Result<(), 
     if let Some(bytes) = &audio {
         if bytes.len() as u64 != manifest.size_bytes { return Err("audio size does not match manifest".into()); }
     }
-    let listener = TcpListener::bind(("127.0.0.1", port))?;
+    let listener = TcpListener::bind((bind, port))?;
     for incoming in listener.incoming() { if let Ok(stream) = incoming { let _ = serve(stream, &manifest, audio.as_deref()); } }
     Ok(())
 }
