@@ -11,11 +11,20 @@ pub struct PublicationManifest {
     pub content_type: String,
     pub size_bytes: u64,
     pub checksum_sha256: String,
+    /// Required from schema version 2; absent in version 1 manifests.
+    #[serde(default)]
+    pub air_date: Option<String>,
 }
 impl PublicationManifest {
     pub fn validate(&self) -> Result<(), &'static str> {
-        if self.schema_version != 1 || self.status != "PUBLISHED" || self.edition_id.is_empty() {
+        if !matches!(self.schema_version, 1 | 2) || self.status != "PUBLISHED" || self.edition_id.is_empty() {
             return Err("unpublished or unsupported manifest");
+        }
+        let dated = self.air_date.as_deref().is_some_and(|d| {
+            d.len() == 10 && d.bytes().enumerate().all(|(i, b)| if i == 4 || i == 7 { b == b'-' } else { b.is_ascii_digit() })
+        });
+        if (self.schema_version == 2) != dated || (self.schema_version == 1 && self.air_date.is_some()) {
+            return Err("air date does not match schema version");
         }
         if self.content_type != "audio/wav" || self.size_bytes == 0 || self.checksum_sha256.len() != 64 {
             return Err("invalid audio metadata");
@@ -35,6 +44,23 @@ mod tests {
         let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
         manifest.validate().unwrap();
         assert!(manifest.audio_path.ends_with(".wav"));
+    }
+    #[test]
+    fn parses_shared_v2_fixture_with_air_date() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        manifest.validate().unwrap();
+        assert_eq!(manifest.air_date.as_deref(), Some("2026-01-15"));
+    }
+    #[test]
+    fn air_date_must_match_schema_version() {
+        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        manifest.air_date = None;
+        assert!(manifest.validate().is_err());
+        manifest.air_date = Some("15/01/2026".into());
+        assert!(manifest.validate().is_err());
+        manifest.schema_version = 1;
+        manifest.air_date = Some("2026-01-15".into());
+        assert!(manifest.validate().is_err());
     }
     #[test]
     fn rejects_unpublished_manifest_and_traversal() {
