@@ -3,6 +3,7 @@ package ro.bitboy.dailysignals;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Clock;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,6 +24,12 @@ public final class PublishOutbox {
     private final Map<String, PublicationManifest> published = new LinkedHashMap<>();
     public record ProducerEvent(String editionId, String action, String objectKey, String checksumSha256) {}
     private final List<ProducerEvent> events = new ArrayList<>();
+    private final List<PublicationEvent> outbound = new ArrayList<>();
+    private final Clock clock;
+    private long sequence;
+
+    public PublishOutbox() { this(Clock.systemUTC()); }
+    public PublishOutbox(Clock clock) { this.clock = clock; }
 
     public synchronized void stage(String editionId, String key, byte[] audio) {
         if (editionId == null || !editionId.matches("[a-zA-Z0-9-]+") || key == null || !key.matches("[a-zA-Z0-9][a-zA-Z0-9/_.-]*") || key.contains("..") || audio == null || audio.length < 4
@@ -52,6 +59,7 @@ public final class PublishOutbox {
                 item.metadata().sizeBytes(), item.metadata().checksumSha256(), null);
         published.put(editionId, manifest);
         events.add(new ProducerEvent(editionId, "published", item.key(), item.metadata().checksumSha256()));
+        emit(PublicationEvent.PUBLISHED, manifest);
         pending.remove(editionId);
         return manifest;
     }
@@ -80,10 +88,21 @@ public final class PublishOutbox {
                 item.metadata().sizeBytes(), item.metadata().checksumSha256(), null);
         published.put(editionId, manifest);
         events.add(new ProducerEvent(editionId, "recording-transferred", item.key(), item.metadata().checksumSha256()));
+        emit(PublicationEvent.RECORDING_REPLACED, manifest);
         replacements.remove(editionId);
         return manifest;
     }
     public synchronized List<ProducerEvent> producerEvents() { return List.copyOf(events); }
+    private void emit(String type, PublicationManifest manifest) {
+        outbound.add(new PublicationEvent(1, manifest.editionId() + ":" + (++sequence), type, manifest.editionId(),
+                clock.instant().toString(), manifest));
+    }
+    /** Hand undelivered publication events to a consumer; delivery is at-least-once. */
+    public synchronized List<PublicationEvent> drainEvents() {
+        var drained = List.copyOf(outbound);
+        outbound.clear();
+        return drained;
+    }
     private static String sha256(byte[] bytes) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); }
         catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }

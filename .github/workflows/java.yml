@@ -88,13 +88,13 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Publish outbox integration
-        run: mvn -B -ntp -pl radio-edition -am -Dtest=PublishOutboxTest -Dsurefire.failIfNoSpecifiedTests=false test
+        run: mvn -B -ntp -pl radio-edition -am -Dtest='PublishOutboxTest,PublicationConsumerTest' -Dsurefire.failIfNoSpecifiedTests=false test
       - name: Upload publish reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: publish-junit-${{ github.run_attempt }}
-          path: '**/target/surefire-reports/TEST-*PublishOutboxTest.xml'
+          path: '**/target/surefire-reports/TEST-*Publi*Test.xml'
           if-no-files-found: warn
   audio-check:
     runs-on: ubuntu-latest
