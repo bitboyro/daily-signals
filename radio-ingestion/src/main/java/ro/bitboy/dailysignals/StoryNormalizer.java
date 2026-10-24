@@ -11,7 +11,7 @@ public final class StoryNormalizer {
     public record Story(String id, String title, String summary, Instant publishedAt,
                         String normalizedTitle, Attribution attribution) {}
 
-    public List<Story> normalize(SnapshotParser.Snapshot snapshot, SourceRegistry.Source registered) {
+    public List<Story> normalize(SourceSnapshotParser.Snapshot snapshot, SourceRegistry.Source registered) {
         if (!snapshot.sourceId().equals(registered.id()) || !snapshot.sourceUrl().equals(registered.url().toString())) {
             throw new IllegalArgumentException("snapshot source does not match configured source");
         }

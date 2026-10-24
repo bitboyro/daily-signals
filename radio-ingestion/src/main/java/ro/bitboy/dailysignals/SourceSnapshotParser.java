@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class SnapshotParser {
+public final class SourceSnapshotParser {
     public record RawStory(String id, String title, String summary, Instant publishedAt) {}
     public record Snapshot(String snapshotId, Instant capturedAt, String sourceId, String sourceName,
                            String sourceUrl, List<RawStory> stories) {}
