@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render fixture audio in Java, publish manifest, and play it through Rust."""
+"""Render fixture audio in Java, publish through the event consumer, and play it through Rust."""
 import hashlib
 import json
 from pathlib import Path
@@ -24,6 +24,10 @@ with tempfile.TemporaryDirectory() as temp:
     manifest = json.loads((folder / 'manifest.json').read_text())
     wav = (folder / manifest['audioPath']).read_bytes()
     assert hashlib.sha256(wav).hexdigest() == manifest['checksumSha256']
+    events = [json.loads(line) for line in (folder / 'events.jsonl').read_text().splitlines()]
+    assert [event['type'] for event in events] == ['edition.published'], events
+    assert events[0]['manifest']['checksumSha256'] == manifest['checksumSha256']
+    assert manifest['schemaVersion'] == 2 and manifest['airDate'] == '2026-01-15'
     port = free_port()
     rust = subprocess.Popen([str(ROOT / 'streamer/target/debug/daily-signals-streamer'), str(port),
                              str(folder / 'manifest.json'), str(folder)], stdout=subprocess.DEVNULL)
