@@ -96,6 +96,12 @@ jobs:
           name: publish-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*PublishOutboxTest.xml'
           if-no-files-found: warn
+  audio-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate pinned synthetic audio
+        run: python3 tools/check-audio-fixture.py
   postgres-reference:
     runs-on: ubuntu-latest
     services:
