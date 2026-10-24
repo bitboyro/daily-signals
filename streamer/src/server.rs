@@ -71,6 +71,14 @@ mod tests {
         assert_eq!(cached.status, 304); assert!(cached.body.is_empty());
     }
     #[test]
+    fn inclusive_range_end_and_single_byte_boundary() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let final_byte = route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=8-8\r\n", &manifest, b"RIFF-demo");
+        assert_eq!(final_byte.status, 206);
+        assert_eq!(final_byte.body, b"o");
+        assert!(final_byte.headers.iter().any(|(k, v)| k == "Content-Range" && v == "bytes 8-8/9"));
+    }
+    #[test]
     fn serves_only_published_route() {
         let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
         let audio = b"RIFF-demo";
