@@ -26,6 +26,7 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     response.headers.push(("ETag".into(), etag.clone()));
     response.headers.push(("Accept-Ranges".into(), "bytes".into()));
     let range = request.lines().find_map(|line| line.strip_prefix("Range: bytes="));
+    // Full-object responses keep their ETag; ranges retain the same identity.
     if let Some(range) = range {
         let (start, end) = match range.split_once('-') { Some(value) => value, None => return Response::new(416, vec![], "text/plain") };
         let start = match start.parse::<usize>() { Ok(value) => value, Err(_) => return Response::new(416, vec![], "text/plain") };
