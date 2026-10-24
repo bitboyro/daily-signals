@@ -9,11 +9,30 @@ impl Response {
         Self { status, headers: vec![("Content-Type".into(), content_type.into())], body }
     }
     fn wire(&self) -> Vec<u8> {
-        let reason = match self.status { 200 => "OK", 206 => "Partial Content", 304 => "Not Modified", 404 => "Not Found", 405 => "Method Not Allowed", 416 => "Range Not Satisfiable", _ => "Internal Server Error" };
+        let reason = match self.status { 200 => "OK", 206 => "Partial Content", 304 => "Not Modified", 403 => "Forbidden", 404 => "Not Found", 405 => "Method Not Allowed", 416 => "Range Not Satisfiable", _ => "Internal Server Error" };
         let mut wire = format!("HTTP/1.1 {} {}\r\nContent-Length: {}\r\nConnection: close\r\n", self.status, reason, self.body.len()).into_bytes();
         for (key, value) in &self.headers { wire.extend_from_slice(format!("{}: {}\r\n", key, value).as_bytes()); }
         wire.extend_from_slice(b"\r\n"); wire.extend_from_slice(&self.body); wire
     }
+}
+/// Object key prefixes listeners may read; `None` leaves every published object readable.
+#[derive(Debug, Clone, Default)]
+pub struct AccessPolicy { public_prefixes: Option<Vec<String>> }
+impl AccessPolicy {
+    pub fn from_prefixes(value: Option<&str>) -> Self {
+        let prefixes = value.map(|v| v.split(',').map(str::trim).filter(|p| !p.is_empty()).map(String::from).collect());
+        Self { public_prefixes: prefixes }
+    }
+    pub fn allows(&self, object_key: &str) -> bool {
+        self.public_prefixes.as_ref().map_or(true, |prefixes| prefixes.iter().any(|p| object_key.starts_with(p.as_str())))
+    }
+}
+pub fn route_with_policy(request: &str, manifest: &PublicationManifest, audio: Option<&[u8]>, policy: &AccessPolicy) -> Response {
+    let path = request.lines().next().unwrap_or("").split_whitespace().nth(1).unwrap_or("");
+    if path.starts_with("/editions/") && !policy.allows(&manifest.audio_path) {
+        return Response::new(403, vec![], "text/plain");
+    }
+    route_for_object(request, manifest, audio)
 }
 pub fn route_for_object(request: &str, manifest: &PublicationManifest, audio: Option<&[u8]>) -> Response {
     match audio {
@@ -47,10 +66,10 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     }
     response
 }
-fn serve(mut stream: TcpStream, manifest: &PublicationManifest, audio: Option<&[u8]>) -> std::io::Result<()> {
+fn serve(mut stream: TcpStream, manifest: &PublicationManifest, audio: Option<&[u8]>, policy: &AccessPolicy) -> std::io::Result<()> {
     let mut buffer = [0_u8; 8192]; let size = stream.read(&mut buffer)?;
     let request = String::from_utf8_lossy(&buffer[..size]);
-    stream.write_all(&route_for_object(&request, manifest, audio).wire())
+    stream.write_all(&route_with_policy(&request, manifest, audio, policy).wire())
 }
 pub fn listen(bind: &str, port: u16, manifest_path: &Path, audio_root: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let manifest: PublicationManifest = serde_json::from_slice(&std::fs::read(manifest_path)?)?;
@@ -63,8 +82,9 @@ pub fn listen(bind: &str, port: u16, manifest_path: &Path, audio_root: &Path) ->
     if let Some(bytes) = &audio {
         if bytes.len() as u64 != manifest.size_bytes { return Err("audio size does not match manifest".into()); }
     }
+    let policy = AccessPolicy::from_prefixes(std::env::var("STREAMER_PUBLIC_PREFIXES").ok().as_deref());
     let listener = TcpListener::bind((bind, port))?;
-    for incoming in listener.incoming() { if let Ok(stream) = incoming { let _ = serve(stream, &manifest, audio.as_deref()); } }
+    for incoming in listener.incoming() { if let Ok(stream) = incoming { let _ = serve(stream, &manifest, audio.as_deref(), &policy); } }
     Ok(())
 }
 #[cfg(test)]
@@ -95,6 +115,18 @@ mod tests {
         let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
         let response = route_for_object("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n", &manifest, None);
         assert_eq!(response.status, 404);
+    }
+    #[test]
+    fn access_policy_limits_listener_reads_to_public_prefixes() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        let request = "GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n";
+        let open = AccessPolicy::from_prefixes(None);
+        assert_eq!(route_with_policy(request, &manifest, Some(b"RIFF-demo"), &open).status, 200);
+        let fixtures = AccessPolicy::from_prefixes(Some("editions/, fixtures/"));
+        assert_eq!(route_with_policy(request, &manifest, Some(b"RIFF-demo"), &fixtures).status, 200);
+        let editions_only = AccessPolicy::from_prefixes(Some("editions/"));
+        assert_eq!(route_with_policy(request, &manifest, Some(b"RIFF-demo"), &editions_only).status, 403);
+        assert_eq!(route_with_policy("GET /health HTTP/1.1\r\n", &manifest, Some(b"RIFF-demo"), &editions_only).status, 200);
     }
     #[test]
     fn serves_only_published_route() {
