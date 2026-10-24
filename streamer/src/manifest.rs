@@ -41,9 +41,16 @@ mod tests {
     use super::*;
     #[test]
     fn parses_shared_published_fixture() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         manifest.validate().unwrap();
         assert!(manifest.audio_path.ends_with(".wav"));
+    }
+    #[test]
+    fn still_accepts_v1_manifests_without_air_date() {
+        let v1 = r#"{"schemaVersion":1,"editionId":"demo-2026-01-15","status":"PUBLISHED","audioPath":"fixtures/demo-edition.wav","contentType":"audio/wav","sizeBytes":16044,"checksumSha256":"f9efab5003000788f6851091398494c71506d3319e03f2abea702aa8214bc8f0"}"#;
+        let manifest: PublicationManifest = serde_json::from_str(v1).unwrap();
+        manifest.validate().unwrap();
+        assert!(manifest.air_date.is_none());
     }
     #[test]
     fn parses_shared_v2_fixture_with_air_date() {
@@ -64,7 +71,7 @@ mod tests {
     }
     #[test]
     fn rejects_unpublished_manifest_and_traversal() {
-        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         manifest.status = "READY".into();
         assert!(manifest.validate().is_err());
         manifest.status = "PUBLISHED".into();

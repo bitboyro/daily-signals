@@ -3,7 +3,7 @@
 from pathlib import Path
 import json, socket, subprocess, time, urllib.request
 ROOT = Path(__file__).resolve().parents[1]
-manifest = json.loads((ROOT / 'contracts/publication-manifest-v1.json').read_text())
+manifest = json.loads((ROOT / 'contracts/publication-manifest-v2.json').read_text())
 
 def port():
     with socket.socket() as sock:
@@ -11,7 +11,7 @@ def port():
 
 java_port, rust_port = port(), port()
 java = subprocess.Popen(['java', '-cp', str(ROOT / 'radio-api/target/classes'), 'ro.bitboy.dailysignals.DailySignals', str(java_port)], stdout=subprocess.DEVNULL)
-rust = subprocess.Popen([str(ROOT / 'streamer/target/debug/daily-signals-streamer'), str(rust_port), str(ROOT / 'contracts/publication-manifest-v1.json'), str(ROOT / 'radio-api/src/main/resources')], stdout=subprocess.DEVNULL)
+rust = subprocess.Popen([str(ROOT / 'streamer/target/debug/daily-signals-streamer'), str(rust_port), str(ROOT / 'contracts/publication-manifest-v2.json'), str(ROOT / 'radio-api/src/main/resources')], stdout=subprocess.DEVNULL)
 try:
     for _ in range(50):
         if java.poll() is not None or rust.poll() is not None: raise RuntimeError('one service exited')
