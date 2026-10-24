@@ -6,6 +6,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public final class CandidateMerger {
+    public List<CandidateReview.Candidate> mergeApproved(List<CandidateReview.Candidate> input) {
+        return merge(input.stream().filter(c -> c.decision()==CandidateReview.Decision.APPROVED).toList());
+    }
     public List<CandidateReview.Candidate> merge(List<CandidateReview.Candidate> input) {
         var ordered=new ArrayList<>(input);
         ordered.sort(Comparator.comparingInt(CandidateReview.Candidate::sourcePriority)
