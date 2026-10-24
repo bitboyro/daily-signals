@@ -14,6 +14,7 @@ public final class PublishOutbox {
     }
     private record Pending(String editionId, String key, byte[] audio, String checksum) {}
     private final Map<String, Pending> pending = new LinkedHashMap<>();
+    private final Map<String, Pending> replacements = new LinkedHashMap<>();
     private final Map<String, PublicationManifest> published = new LinkedHashMap<>();
 
     public synchronized void stage(String editionId, String key, byte[] audio) {
@@ -38,6 +39,20 @@ public final class PublishOutbox {
         return manifest;
     }
     public synchronized int pendingCount() { return pending.size(); }
+    /** Prepare a new recording revision without changing the published edition yet. */
+    public synchronized void stageReplacement(String editionId, String key, byte[] audio) {
+        if (!published.containsKey(editionId)) throw new IllegalArgumentException("edition not published");
+        if (replacements.containsKey(editionId)) throw new IllegalArgumentException("replacement already staged");
+        if (key == null || !key.matches("[a-zA-Z0-9][a-zA-Z0-9/_.-]*") || key.contains("..")
+                || audio == null || audio.length < 4 || audio[0] != 'R' || audio[1] != 'I'
+                || audio[2] != 'F' || audio[3] != 'F')
+            throw new IllegalArgumentException("valid replacement WAV and key required");
+        if (key.equals(published.get(editionId).audioPath()))
+            throw new IllegalArgumentException("replacement must have a new object key");
+        var copy = audio.clone();
+        replacements.put(editionId, new Pending(editionId, key, copy, sha256(copy)));
+    }
+    public synchronized int replacementCount() { return replacements.size(); }
     private static String sha256(byte[] bytes) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); }
         catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
