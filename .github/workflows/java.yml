@@ -15,6 +15,8 @@ jobs:
           java-version: '21'
       - name: Changed test inventory
         run: python3 tools/list-changed-tests.py HEAD^ || true
+      - name: Check module boundaries
+        run: python3 tools/check-module-boundaries.py
       - name: Always run Java unit tests
         run: mvn -B -ntp verify
       - name: Check fixtures and example

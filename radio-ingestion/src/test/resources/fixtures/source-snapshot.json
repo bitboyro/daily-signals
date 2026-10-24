@@ -1,0 +1,24 @@
+{
+  "snapshotId": "synthetic-2026-01-15-morning",
+  "capturedAt": "2026-01-15T07:00:00Z",
+  "license": "synthetic-test-content",
+  "source": {
+    "id": "demo-civic-desk",
+    "name": "Demo Civic Desk",
+    "url": "https://example.invalid/daily-signals/demo-civic-desk"
+  },
+  "stories": [
+    {
+      "id": "demo-library-hours",
+      "title": "Community library extends Saturday hours",
+      "summary": "The fictional community library will stay open for two extra hours on Saturdays.",
+      "publishedAt": "2026-01-15T06:30:00Z"
+    },
+    {
+      "id": "demo-park-path",
+      "title": "New walking path opens in Riverside Park",
+      "summary": "A fictional walking path is open to the public after a short renovation.",
+      "publishedAt": "2026-01-15T06:45:00Z"
+    }
+  ]
+}

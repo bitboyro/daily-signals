@@ -1,0 +1,10 @@
+{
+  "snapshotId": "synthetic-2026-01-15-alt",
+  "capturedAt": "2026-01-15T07:05:00Z",
+  "license": "synthetic-test-content",
+  "source": {"id":"alternate-desk","name":"Alternate Desk","url":"https://example.invalid/daily-signals/alternate-desk"},
+  "stories": [
+    {"id":"alt-library-hours","title":"Community library extends Saturday hours!","summary":"A second synthetic source describes the same change.","publishedAt":"2026-01-15T06:35:00Z"},
+    {"id":"alt-civic-park","title":"Park volunteers plan spring cleanup","summary":"Synthetic volunteers will meet in the park.","publishedAt":"2026-01-15T06:40:00Z"}
+  ]
+}
