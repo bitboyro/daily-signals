@@ -28,6 +28,13 @@ jobs:
           name: java-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*.xml'
           if-no-files-found: warn
+      - name: Upload java-unit coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-unit-jacoco-${{ github.run_attempt }}
+          path: '**/target/site/jacoco/jacoco.xml'
+          if-no-files-found: warn
   annotation-audit:
     runs-on: ubuntu-latest
     steps:
@@ -53,6 +60,13 @@ jobs:
           name: schedule-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*ScheduledEditionClockTest.xml'
           if-no-files-found: warn
+      - name: Upload schedule-test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schedule-test-jacoco-${{ github.run_attempt }}
+          path: '**/target/site/jacoco/jacoco.xml'
+          if-no-files-found: warn
   voice-contract:
     runs-on: ubuntu-latest
     steps:
@@ -69,6 +83,13 @@ jobs:
         with:
           name: voice-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*FixtureVoiceProviderTest.xml'
+          if-no-files-found: warn
+      - name: Upload voice-contract coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-contract-jacoco-${{ github.run_attempt }}
+          path: '**/target/site/jacoco/jacoco.xml'
           if-no-files-found: warn
   object-integration:
     runs-on: ubuntu-latest
@@ -87,6 +108,13 @@ jobs:
           name: object-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*LocalS3ObjectAdapterTest.xml'
           if-no-files-found: warn
+      - name: Upload object-integration coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: object-integration-jacoco-${{ github.run_attempt }}
+          path: '**/target/site/jacoco/jacoco.xml'
+          if-no-files-found: warn
   publish-integration:
     runs-on: ubuntu-latest
     steps:
@@ -103,6 +131,13 @@ jobs:
         with:
           name: publish-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*Publi*Test.xml'
+          if-no-files-found: warn
+      - name: Upload publish-integration coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-integration-jacoco-${{ github.run_attempt }}
+          path: '**/target/site/jacoco/jacoco.xml'
           if-no-files-found: warn
   audio-check:
     runs-on: ubuntu-latest
@@ -144,6 +179,13 @@ jobs:
         with:
           name: postgres-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*.xml'
+          if-no-files-found: warn
+      - name: Upload postgres-reference coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: postgres-reference-jacoco-${{ github.run_attempt }}
+          path: '**/target/site/jacoco/jacoco.xml'
           if-no-files-found: warn
   rust-build:
     runs-on: ubuntu-latest
