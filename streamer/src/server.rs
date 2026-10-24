@@ -36,7 +36,7 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
         let start = match start.parse::<usize>() { Ok(value) => value, Err(_) => return Response::new(416, vec![], "text/plain") };
         let end = if end.is_empty() { audio.len().saturating_sub(1) } else { match end.parse::<usize>() { Ok(value) => value, Err(_) => return Response::new(416, vec![], "text/plain") } };
         if start >= audio.len() || end < start || end >= audio.len() { return Response::new(416, vec![], "text/plain"); }
-        response.status = 206; response.body = audio[start..end].to_vec();
+        response.status = 206; response.body = audio[start..=end].to_vec();
         response.headers.push(("Content-Range".into(), format!("bytes {}-{}/{}", start, end, audio.len())));
     }
     response
