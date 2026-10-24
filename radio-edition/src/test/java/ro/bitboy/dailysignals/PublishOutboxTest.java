@@ -7,6 +7,21 @@ import java.util.HexFormat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublishOutboxTest {
+    @Test void failedReplacementLeavesPreviousObjectPublishedUntilRetry() throws Exception {
+        var outbox = new PublishOutbox();
+        outbox.stage("edition-1", "editions/first.wav", new byte[]{'R','I','F','F',1});
+        var first = outbox.publish("edition-1", (key, bytes) -> {});
+        var revised = new byte[]{'R','I','F','F',4,5};
+        outbox.stageReplacement("edition-1", "editions/revised.wav", revised);
+        revised[4] = 0;
+        assertThrows(IOException.class, () -> outbox.publishReplacement("edition-1", (key, bytes) -> { throw new IOException("upload unavailable"); }));
+        assertEquals(1, outbox.replacementCount());
+        assertSame(first, outbox.publish("edition-1", (key, bytes) -> fail("must not upload previous object")));
+        var replacement = outbox.publishReplacement("edition-1", (key, bytes) -> assertEquals(4, bytes[4]));
+        assertEquals(0, outbox.replacementCount());
+        assertEquals("editions/revised.wav", replacement.audioPath());
+        assertEquals(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(new byte[]{'R','I','F','F',4,5})), replacement.checksumSha256());
+    }
     @Test void replacementPublicationPointsListenersAtNewRecording() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-1", "editions/first.wav", new byte[]{'R','I','F','F',1});
