@@ -28,6 +28,14 @@ jobs:
           name: java-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*.xml'
           if-no-files-found: warn
+  annotation-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Feature annotation coverage and history
+        run: python3 tools/check-annotations.py
   schedule-test:
     runs-on: ubuntu-latest
     steps:
