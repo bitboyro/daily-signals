@@ -52,4 +52,25 @@ class PublicationConsumerTest {
         assertTrue(consumer.apply(event));
         assertEquals(PublicationConsumer.EditionStatus.PUBLISHED, consumer.status("edition-1").orElseThrow());
     }
+
+    @Test void redeliveredEventsDoNotRewriteTheManifestOrChangeStatus() throws Exception {
+        var written = new ArrayList<PublicationManifest>();
+        var consumer = new PublicationConsumer(written::add);
+        outbox.stage("edition-1", "editions/first.wav", new byte[]{'R','I','F','F',1});
+        outbox.publish("edition-1", "PRODUCER", (key, bytes) -> {});
+        var published = outbox.drainEvents().get(0);
+        outbox.stageReplacement("edition-1", "editions/second.wav", new byte[]{'R','I','F','F',2});
+        outbox.publishReplacement("edition-1", "PRODUCER", (key, bytes) -> {});
+        var replaced = outbox.drainEvents().get(0);
+
+        assertTrue(consumer.apply(published));
+        assertFalse(consumer.apply(published));
+        assertTrue(consumer.apply(replaced));
+        assertFalse(consumer.apply(published));
+        assertFalse(consumer.apply(replaced));
+
+        assertEquals(2, written.size());
+        assertEquals("editions/second.wav", written.get(1).audioPath());
+        assertEquals(PublicationConsumer.EditionStatus.RECORDING_REPLACED, consumer.status("edition-1").orElseThrow());
+    }
 }
