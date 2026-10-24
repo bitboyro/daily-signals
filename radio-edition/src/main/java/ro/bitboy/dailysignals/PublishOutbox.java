@@ -6,6 +6,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /** In-memory reference outbox with idempotent publish and SHA-256 evidence. */
 public final class PublishOutbox {
@@ -19,6 +21,8 @@ public final class PublishOutbox {
     private final Map<String, Pending> pending = new LinkedHashMap<>();
     private final Map<String, Pending> replacements = new LinkedHashMap<>();
     private final Map<String, PublicationManifest> published = new LinkedHashMap<>();
+    public record ProducerEvent(String editionId, String action, String objectKey, String checksumSha256) {}
+    private final List<ProducerEvent> events = new ArrayList<>();
 
     public synchronized void stage(String editionId, String key, byte[] audio) {
         if (editionId == null || !editionId.matches("[a-zA-Z0-9-]+") || key == null || !key.matches("[a-zA-Z0-9][a-zA-Z0-9/_.-]*") || key.contains("..") || audio == null || audio.length < 4
@@ -38,6 +42,7 @@ public final class PublishOutbox {
         var manifest = new PublicationManifest(1, editionId, "PUBLISHED", item.key(), "audio/wav",
                 item.metadata().sizeBytes(), item.metadata().checksumSha256());
         published.put(editionId, manifest);
+        events.add(new ProducerEvent(editionId, "published", item.key(), item.metadata().checksumSha256()));
         pending.remove(editionId);
         return manifest;
     }
@@ -62,9 +67,11 @@ public final class PublishOutbox {
         var item = replacements.get(editionId);
         if (item == null) throw new IllegalArgumentException("replacement not staged");
         writer.put(item.key(), item.audio().clone());
+        events.add(new ProducerEvent(editionId, "recording-transferred", item.key(), item.metadata().checksumSha256()));
         replacements.remove(editionId);
         return published.get(editionId);
     }
+    public synchronized List<ProducerEvent> producerEvents() { return List.copyOf(events); }
     private static String sha256(byte[] bytes) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(bytes)); }
         catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException(impossible); }
