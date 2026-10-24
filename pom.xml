@@ -15,7 +15,7 @@
     <module>radio-api</module>
   </modules>
   <properties>
-    <maven.compiler.release>21</maven.compiler.release>
+    <maven.compiler.release>99</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <build>
@@ -24,7 +24,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.14.1</version>
+          <version>3.15.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
