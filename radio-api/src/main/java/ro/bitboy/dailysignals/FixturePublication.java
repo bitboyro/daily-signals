@@ -14,7 +14,7 @@ public final class FixturePublication {
         var audio = new FixtureVoiceProvider().render(script);
         var outbox = new PublishOutbox();
         outbox.stage("fixture-edition", "editions/fixture-edition.wav", audio.bytes());
-        var manifest = outbox.publish("fixture-edition", (key, bytes) -> {
+        var manifest = outbox.publish("fixture-edition", "PRODUCER", (key, bytes) -> {
             var target = root.resolve(key);
             Files.createDirectories(target.getParent());
             Files.write(target, bytes);

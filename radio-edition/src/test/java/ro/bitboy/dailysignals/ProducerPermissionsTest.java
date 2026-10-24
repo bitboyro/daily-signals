@@ -4,6 +4,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProducerPermissionsTest {
+    @Test void noRolePublicationEntryPointsAreNotPublic() {
+        assertThrows(NoSuchMethodException.class, () -> PublishOutbox.class.getMethod(
+                "publish", String.class, PublishOutbox.ObjectWriter.class));
+        assertThrows(NoSuchMethodException.class, () -> PublishOutbox.class.getMethod(
+                "publishReplacement", String.class, PublishOutbox.ObjectWriter.class));
+    }
+
     @Test void onlyProducerCanPublishNewRecording() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-1", "editions/one.wav", new byte[]{'R','I','F','F',1});

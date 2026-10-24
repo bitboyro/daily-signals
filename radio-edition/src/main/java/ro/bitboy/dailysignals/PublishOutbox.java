@@ -42,7 +42,7 @@ public final class PublishOutbox {
         if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
         return publishReplacement(editionId, writer);
     }
-    public synchronized PublicationManifest publish(String editionId, ObjectWriter writer) throws IOException, InterruptedException {
+    private synchronized PublicationManifest publish(String editionId, ObjectWriter writer) throws IOException, InterruptedException {
         if (published.containsKey(editionId)) return published.get(editionId);
         var item = pending.get(editionId);
         if (item == null) throw new IllegalArgumentException("edition not staged");
@@ -71,7 +71,7 @@ public final class PublishOutbox {
     }
     public synchronized int replacementCount() { return replacements.size(); }
     /** Transfer a prepared re-render and make it available to the edition. */
-    public synchronized PublicationManifest publishReplacement(String editionId, ObjectWriter writer)
+    private synchronized PublicationManifest publishReplacement(String editionId, ObjectWriter writer)
             throws IOException, InterruptedException {
         var item = replacements.get(editionId);
         if (item == null) throw new IllegalArgumentException("replacement not staged");
