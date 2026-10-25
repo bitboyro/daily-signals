@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { readConfig } from '../src/config.ts';
 import { fetchEditions, renderEditionList } from '../src/editions.ts';
 import { renderPlayer } from '../src/player.ts';
-import { fetchQueue, renderQueue, submitDecision } from '../src/producer-queue.ts';
+import { fetchQueue, filterQueue, renderQueue, submitDecision } from '../src/producer-queue.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const classes = ['radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion']
@@ -87,7 +87,9 @@ test('producer approves a pending story and the queue reflects it', async () => 
 
   await assert.rejects(submitDecision(apiBase, pending.storyId, 'APPROVED', ''), /reviewer token/);
   await assert.rejects(submitDecision(apiBase, pending.storyId, 'APPROVED', listenerToken), /cannot review/);
-  await submitDecision(apiBase, pending.storyId, 'APPROVED', producerToken);
+  const receipt = await submitDecision(apiBase, pending.storyId, 'APPROVED', producerToken);
+  assert.deepEqual(receipt, { storyId: pending.storyId, decision: 'APPROVED' });
   const after = await fetchQueue(apiBase);
   assert.equal(after.find((item) => item.storyId === pending.storyId)?.decision, 'APPROVED');
+  assert.equal(filterQueue(after, 'PENDING').some((item) => item.storyId === pending.storyId), false);
 });
