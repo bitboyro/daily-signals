@@ -77,6 +77,10 @@ public final class DailySignals {
                 respond(exchange, 200, "application/json", reviews.get().toJson().getBytes(StandardCharsets.UTF_8));
                 return;
             }
+            if ("GET".equals(exchange.getRequestMethod()) && "/api/review-queue/audit".equals(path)) {
+                respond(exchange, 200, "application/json", reviews.get().auditToJson().getBytes(StandardCharsets.UTF_8));
+                return;
+            }
             String storyId = path.substring("/api/review-queue".length()).replaceFirst("^/", "");
             var role = reviewers.roleFor(exchange.getRequestHeaders().getFirst("Authorization"));
             if (!"POST".equals(exchange.getRequestMethod()) || storyId.isEmpty() || storyId.contains("/")) {

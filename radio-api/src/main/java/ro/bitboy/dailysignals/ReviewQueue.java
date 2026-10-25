@@ -2,14 +2,24 @@ package ro.bitboy.dailysignals;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Producer-facing review decisions over the current candidate set; synthetic candidates until ingestion is wired in. */
 public final class ReviewQueue {
     private final CandidateReview review = new CandidateReview();
+    private final List<DecisionAudit> audit = new ArrayList<>();
 
     public record DecisionReceipt(String storyId, CandidateReview.Decision decision) {
         String toJson() {
             return "{\"storyId\":" + quote(storyId) + ",\"decision\":\"" + decision + "\"}";
+        }
+    }
+
+    public record DecisionAudit(int sequence, String storyId, CandidateReview.Decision decision) {
+        String toJson() {
+            return "{\"sequence\":" + sequence + ",\"storyId\":" + quote(storyId)
+                    + ",\"decision\":\"" + decision + "\"}";
         }
     }
 
@@ -37,6 +47,7 @@ public final class ReviewQueue {
             throw new IllegalArgumentException("decision must be APPROVED or REJECTED");
         }
         review.decide(storyId, parsed);
+        audit.add(new DecisionAudit(audit.size() + 1, storyId, parsed));
         return new DecisionReceipt(storyId, parsed);
     }
 
@@ -56,6 +67,11 @@ public final class ReviewQueue {
                     .append(",\"decision\":\"").append(candidate.decision()).append("\"}");
         }
         return json.append("]}").toString();
+    }
+
+    public synchronized String auditToJson() {
+        return "{\"schemaVersion\":1,\"decisions\":[" + audit.stream()
+                .map(DecisionAudit::toJson).reduce((left, right) -> left + "," + right).orElse("") + "]}";
     }
 
     private static String quote(String value) {
