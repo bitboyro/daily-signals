@@ -25,13 +25,13 @@ public final class ReviewQueue {
 
     public static ReviewQueue fixture() {
         var queue = new ReviewQueue();
-        var attribution = new StoryNormalizer.Attribution("demo-civic-desk", "Demo Civic Desk",
-                URI.create("https://example.invalid/daily-signals/demo-civic-desk"), "synthetic-2026-01-15-morning");
         String[][] stories = {
-                {"demo-library-hours", "Community library extends Saturday hours"},
-                {"demo-park-path", "New walking path opens in Riverside Park"},
-                {"demo-transit-night", "Night bus pilot adds two stops"}};
+                {"demo-library-hours", "Community library extends Saturday hours", "education", "Demo Education Desk"},
+                {"demo-park-path", "New walking path opens in Riverside Park", "civic", "Demo Civic Desk"},
+                {"demo-transit-night", "Night bus pilot adds two stops", "civic", "Demo Civic Desk"}};
         for (String[] story : stories) {
+            var attribution = new StoryNormalizer.Attribution("demo-" + story[2] + "-desk", story[3],
+                    URI.create("https://example.invalid/daily-signals/demo-" + story[2] + "-desk"), "synthetic-2026-01-15-morning");
             queue.review.submit(new CandidateReview.Candidate(new StoryNormalizer.Story(story[0], story[1], story[1],
                     Instant.parse("2026-01-15T06:30:00Z"), StoryNormalizer.canonical(story[1]), attribution),
                     1, CandidateReview.Decision.PENDING));

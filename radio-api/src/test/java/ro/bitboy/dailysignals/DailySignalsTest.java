@@ -92,7 +92,7 @@ class DailySignalsTest {
             String queue = client.send(HttpRequest.newBuilder(URI.create(base)).GET().build(),
                 HttpResponse.BodyHandlers.ofString()).body();
             assertTrue(queue.contains("{\"storyId\":\"demo-park-path\",\"headline\":\"New walking path opens in Riverside Park\",\"source\":\"Demo Civic Desk\",\"decision\":\"APPROVED\"}"));
-            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\"") && queue.contains("\"decision\":\"PENDING\""));
+            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\",\"headline\":\"Community library extends Saturday hours\",\"source\":\"Demo Education Desk\",\"decision\":\"PENDING\""));
         } finally {
             server.stop(0);
         }
