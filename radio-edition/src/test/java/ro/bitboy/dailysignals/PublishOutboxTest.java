@@ -4,9 +4,19 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.time.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublishOutboxTest {
+    @Test void publishesScheduledEditionOnlyWhenDue() throws Exception {
+        var outbox = new PublishOutbox();
+        outbox.stage("edition-2", "editions/two.wav", new byte[]{'R','I','F','F',2});
+        var schedule = new ScheduledEditionClock(ZoneId.of("Europe/Bucharest"), LocalTime.of(8, 30));
+        assertThrows(IllegalStateException.class, () -> outbox.publishScheduled("edition-2", LocalDate.of(2026, 1, 15), schedule,
+                Instant.parse("2026-01-15T06:29:59Z"), "PRODUCER", (key, bytes) -> fail("not due")));
+        assertEquals("edition-2", outbox.publishScheduled("edition-2", LocalDate.of(2026, 1, 15), schedule,
+                Instant.parse("2026-01-15T06:30:00Z"), "PRODUCER", (key, bytes) -> {}).editionId());
+    }
     @Test void failedReplacementLeavesPreviousObjectPublishedUntilRetry() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-1", "editions/first.wav", new byte[]{'R','I','F','F',1});
