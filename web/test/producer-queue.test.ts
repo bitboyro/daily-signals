@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseQueue, pendingCount, renderQueue, submitDecision, type QueueItem } from '../src/producer-queue.ts';
+import { filterQueue, parseQueue, pendingCount, renderQueue, submitDecision, type QueueItem } from '../src/producer-queue.ts';
 
 const items: QueueItem[] = [
   { storyId: 'story-1', headline: 'Rail <maintenance>', source: 'transit-desk', decision: 'PENDING' },
@@ -31,6 +31,16 @@ test('only pending stories get labelled approval controls', () => {
   assert.equal(html.match(/data-action="APPROVED"/g)?.length, 2);
   assert.match(html, /aria-label="Approve Rail &lt;maintenance&gt;"/);
   assert.doesNotMatch(html, /aria-label="Approve Library hours"/);
+});
+
+test('filters the queue by decision and escaped free-text fields', () => {
+  assert.deepEqual(filterQueue(items, 'PENDING').map((item) => item.storyId), ['story-1', 'story-3']);
+  assert.deepEqual(filterQueue(items, 'ALL', 'CITY').map((item) => item.storyId), ['story-2', 'story-3']);
+  const html = renderQueue(items, 'PENDING', 'bridge');
+  assert.match(html, /aria-label="Filter review queue"/);
+  assert.match(html, /option value="PENDING" selected/);
+  assert.match(html, /Bridge works/);
+  assert.doesNotMatch(html, /Library hours/);
 });
 
 test('decisions send the reviewer token and surface denials', async () => {

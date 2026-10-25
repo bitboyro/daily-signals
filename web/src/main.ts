@@ -1,7 +1,7 @@
 import { readConfig } from './config.ts';
 import { fetchEditions, renderEditionList, type EditionSummary } from './editions.ts';
 import { renderPlayer } from './player.ts';
-import { fetchQueue, renderQueue, submitDecision } from './producer-queue.ts';
+import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 
@@ -32,20 +32,27 @@ const DEFAULT_SOURCES: SourceConfig[] = [
   { id: 'public-desk', name: 'Public desk', url: 'https://news.example.invalid/public.xml', priority: 10 },
 ];
 
-async function showQueue(apiBase: string, target: HTMLElement): Promise<void> {
+async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilter = 'ALL', query = ''): Promise<void> {
   const status = element('queue-status');
   try {
-    target.innerHTML = renderQueue(await fetchQueue(apiBase));
+    target.innerHTML = renderQueue(await fetchQueue(apiBase), filter, query);
   } catch {
     target.textContent = 'The review queue is unavailable.';
   }
+  target.querySelector<HTMLFormElement>('form.queue-filter')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const nextFilter = form.elements.namedItem('decision') as HTMLSelectElement;
+    const nextQuery = form.elements.namedItem('query') as HTMLInputElement;
+    void showQueue(apiBase, target, nextFilter.value as QueueFilter, nextQuery.value);
+  });
   target.querySelectorAll<HTMLButtonElement>('button[data-action]').forEach((button) => {
     button.addEventListener('click', async () => {
       const token = (element('reviewer-token') as HTMLInputElement).value.trim();
       try {
         await submitDecision(apiBase, button.dataset.story!, button.dataset.action as 'APPROVED' | 'REJECTED', token);
         status.textContent = 'Decision saved.';
-        await showQueue(apiBase, target);
+        await showQueue(apiBase, target, filter, query);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : 'Decision failed.';
       }
