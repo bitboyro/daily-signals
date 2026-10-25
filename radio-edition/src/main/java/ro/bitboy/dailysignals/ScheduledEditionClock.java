@@ -20,4 +20,11 @@ public record ScheduledEditionClock(ZoneId zone, LocalTime airTime) {
         if (now == null) throw new IllegalArgumentException("current time required");
         return !now.isBefore(scheduledAt(airDate));
     }
+    /** First scheduled edition strictly after the supplied instant, in station-local time. */
+    public Instant nextScheduledAt(Instant now) {
+        if (now == null) throw new IllegalArgumentException("current time required");
+        LocalDate stationDate = now.atZone(zone).toLocalDate();
+        Instant today = scheduledAt(stationDate);
+        return now.isBefore(today) ? today : scheduledAt(stationDate.plusDays(1));
+    }
 }
