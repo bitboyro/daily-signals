@@ -50,8 +50,8 @@ async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilt
     button.addEventListener('click', async () => {
       const token = (element('reviewer-token') as HTMLInputElement).value.trim();
       try {
-        await submitDecision(apiBase, button.dataset.story!, button.dataset.action as 'APPROVED' | 'REJECTED', token);
-        status.textContent = 'Decision saved.';
+        const receipt = await submitDecision(apiBase, button.dataset.story!, button.dataset.action as 'APPROVED' | 'REJECTED', token);
+        status.textContent = `${receipt.decision} saved for ${receipt.storyId}.`;
         await showQueue(apiBase, target, filter, query);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : 'Decision failed.';

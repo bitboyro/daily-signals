@@ -90,8 +90,8 @@ public final class DailySignals {
                 reply(exchange, 404);
             } else {
                 try (var body = exchange.getRequestBody()) {
-                    reviews.get().decide(storyId, new String(body.readNBytes(64), StandardCharsets.UTF_8));
-                    reply(exchange, 204);
+                    var receipt = reviews.get().decide(storyId, new String(body.readNBytes(64), StandardCharsets.UTF_8));
+                    respondWrite(exchange, 200, "application/json", receipt.toJson().getBytes(StandardCharsets.UTF_8));
                 } catch (IllegalArgumentException invalid) {
                     reply(exchange, 400);
                 }
@@ -117,6 +117,14 @@ public final class DailySignals {
     private static void reply(HttpExchange exchange, int status) throws IOException {
         exchange.sendResponseHeaders(status, -1);
         exchange.close();
+    }
+
+    private static void respondWrite(HttpExchange exchange, int status, String contentType, byte[] body) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(status, body.length);
+        try (var output = exchange.getResponseBody()) {
+            output.write(body);
+        }
     }
 
     private static void respond(HttpExchange exchange, int status, String contentType, byte[] body) throws IOException {

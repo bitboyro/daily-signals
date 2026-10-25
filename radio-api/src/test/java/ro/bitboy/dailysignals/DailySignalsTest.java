@@ -80,7 +80,9 @@ class DailySignalsTest {
                 HttpResponse.BodyHandlers.discarding()).statusCode());
             assertEquals(403, client.send(decide.apply(listener, "APPROVED"), HttpResponse.BodyHandlers.discarding()).statusCode());
             assertEquals(400, client.send(decide.apply(editor, "PENDING"), HttpResponse.BodyHandlers.discarding()).statusCode());
-            assertEquals(204, client.send(decide.apply(editor, "APPROVED"), HttpResponse.BodyHandlers.discarding()).statusCode());
+            HttpResponse<String> accepted = client.send(decide.apply(editor, "APPROVED"), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, accepted.statusCode());
+            assertEquals("{\"storyId\":\"demo-park-path\",\"decision\":\"APPROVED\"}", accepted.body());
             assertEquals(404, client.send(HttpRequest.newBuilder(URI.create(base + "/missing"))
                 .header("Authorization", "Bearer " + producer).POST(HttpRequest.BodyPublishers.ofString("REJECTED")).build(),
                 HttpResponse.BodyHandlers.discarding()).statusCode());

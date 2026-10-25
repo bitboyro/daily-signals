@@ -7,6 +7,12 @@ import java.time.Instant;
 public final class ReviewQueue {
     private final CandidateReview review = new CandidateReview();
 
+    public record DecisionReceipt(String storyId, CandidateReview.Decision decision) {
+        String toJson() {
+            return "{\"storyId\":" + quote(storyId) + ",\"decision\":\"" + decision + "\"}";
+        }
+    }
+
     public static ReviewQueue fixture() {
         var queue = new ReviewQueue();
         var attribution = new StoryNormalizer.Attribution("demo-civic-desk", "Demo Civic Desk",
@@ -23,7 +29,7 @@ public final class ReviewQueue {
         return queue;
     }
 
-    public synchronized void decide(String storyId, String decision) {
+    public synchronized DecisionReceipt decide(String storyId, String decision) {
         CandidateReview.Decision parsed;
         try {
             parsed = CandidateReview.Decision.valueOf(decision == null ? "" : decision.strip());
@@ -31,6 +37,7 @@ public final class ReviewQueue {
             throw new IllegalArgumentException("decision must be APPROVED or REJECTED");
         }
         review.decide(storyId, parsed);
+        return new DecisionReceipt(storyId, parsed);
     }
 
     public synchronized boolean contains(String storyId) {

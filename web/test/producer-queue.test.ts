@@ -53,3 +53,10 @@ test('decisions send the reviewer token and surface denials', async () => {
   assert.equal(headers['X-Daily-Signals-Role'], undefined);
   assert.equal(seen[0].body, 'APPROVED');
 });
+
+test('returns the server-issued decision receipt', async () => {
+  const accepted = async () => new Response(JSON.stringify({ storyId: 'story-1', decision: 'APPROVED' }), { status: 200 });
+  await assert.doesNotReject(submitDecision('http://api.invalid', 'story-1', 'APPROVED', 'secret-token', accepted as typeof fetch));
+  const malformed = async () => new Response(JSON.stringify({ storyId: 'another-story', decision: 'APPROVED' }), { status: 200 });
+  await assert.rejects(submitDecision('http://api.invalid', 'story-1', 'APPROVED', 'secret-token', malformed as typeof fetch), /unexpected decision response/);
+});

@@ -10,6 +10,11 @@ export interface QueueItem {
   decision: Decision;
 }
 
+export interface DecisionReceipt {
+  storyId: string;
+  decision: Exclude<Decision, 'PENDING'>;
+}
+
 export type QueueFilter = 'ALL' | Decision;
 
 const DECISIONS: readonly string[] = ['PENDING', 'APPROVED', 'REJECTED'];
@@ -46,13 +51,16 @@ export async function fetchQueue(apiBase: string, fetchImpl: typeof fetch = fetc
 
 /** The Java service maps the reviewer token to a role; the client never asserts one. */
 export async function submitDecision(apiBase: string, storyId: string, decision: Exclude<Decision, 'PENDING'>,
-  token: string, fetchImpl: typeof fetch = fetch): Promise<void> {
+  token: string, fetchImpl: typeof fetch = fetch): Promise<DecisionReceipt> {
   const response = await fetchImpl(`${apiBase}/api/review-queue/${encodeURIComponent(storyId)}`, {
     method: 'POST', body: decision, headers: { 'Content-Type': 'text/plain', Authorization: `Bearer ${token}` },
   });
   if (response.status === 401) throw new Error('sign in with a reviewer token first');
   if (response.status === 403) throw new Error('your role cannot review stories');
   if (!response.ok) throw new Error(`decision rejected: ${response.status}`);
+  const receipt = await response.json() as Partial<DecisionReceipt>;
+  if (receipt.storyId !== storyId || receipt.decision !== decision) throw new Error('unexpected decision response');
+  return receipt as DecisionReceipt;
 }
 
 function controls(item: QueueItem): string {

@@ -7,7 +7,8 @@ explicit classifications. Checks: every tracked path is covered by an active rul
 active rule is stale; retired rules match nothing; recorded introduction/retirement
 revisions agree with first-parent history (null introducedIn means the
 paths arrived in the commit that added the rule); intersections name known features and
-existing tests. `--suggest` prints the revisions history implies; `--index` prints the
+existing tests. Merge-aware topology history keeps authored PR commits visible after a
+normal merge. `--suggest` prints the revisions history implies; `--index` prints the
 feature-to-path index for the current tree.
 """
 import fnmatch
@@ -31,8 +32,8 @@ def matches(rule, paths):
 
 
 def history():
-    """(sha, tracked paths) along first-parent history of HEAD, oldest first."""
-    shas = git('rev-list', '--first-parent', '--reverse', 'HEAD').split()
+    """(sha, tracked paths) along topology-aware reachable history of HEAD, oldest first."""
+    shas = git('rev-list', '--topo-order', '--reverse', 'HEAD').split()
     return [(sha, set(git('ls-tree', '-r', '--name-only', sha).split())) for sha in shas]
 
 
