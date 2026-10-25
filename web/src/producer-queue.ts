@@ -10,6 +10,13 @@ export interface QueueItem {
   decision: Decision;
 }
 
+export interface DecisionReceipt {
+  storyId: string;
+  decision: Exclude<Decision, 'PENDING'>;
+}
+
+export type QueueFilter = 'ALL' | Decision;
+
 const DECISIONS: readonly string[] = ['PENDING', 'APPROVED', 'REJECTED'];
 
 function isQueueItem(value: unknown): value is QueueItem {
@@ -29,6 +36,13 @@ export function pendingCount(items: QueueItem[]): number {
   return items.filter((item) => item.decision === 'PENDING').length;
 }
 
+/** Applies a local producer view filter; decisions and their server-side authority remain unchanged. */
+export function filterQueue(items: QueueItem[], filter: QueueFilter, query = ''): QueueItem[] {
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  return items.filter((item) => (filter === 'ALL' || item.decision === filter)
+    && (!normalizedQuery || `${item.headline} ${item.source}`.toLocaleLowerCase().includes(normalizedQuery)));
+}
+
 export async function fetchQueue(apiBase: string, fetchImpl: typeof fetch = fetch): Promise<QueueItem[]> {
   const response = await fetchImpl(`${apiBase}/api/review-queue`, { headers: { Accept: 'application/json' } });
   if (!response.ok) throw new Error(`review queue unavailable: ${response.status}`);
@@ -37,13 +51,16 @@ export async function fetchQueue(apiBase: string, fetchImpl: typeof fetch = fetc
 
 /** The Java service maps the reviewer token to a role; the client never asserts one. */
 export async function submitDecision(apiBase: string, storyId: string, decision: Exclude<Decision, 'PENDING'>,
-  token: string, fetchImpl: typeof fetch = fetch): Promise<void> {
+  token: string, fetchImpl: typeof fetch = fetch): Promise<DecisionReceipt> {
   const response = await fetchImpl(`${apiBase}/api/review-queue/${encodeURIComponent(storyId)}`, {
     method: 'POST', body: decision, headers: { 'Content-Type': 'text/plain', Authorization: `Bearer ${token}` },
   });
   if (response.status === 401) throw new Error('sign in with a reviewer token first');
   if (response.status === 403) throw new Error('your role cannot review stories');
   if (!response.ok) throw new Error(`decision rejected: ${response.status}`);
+  const receipt = await response.json() as Partial<DecisionReceipt>;
+  if (receipt.storyId !== storyId || receipt.decision !== decision) throw new Error('unexpected decision response');
+  return receipt as DecisionReceipt;
 }
 
 function controls(item: QueueItem): string {
@@ -54,14 +71,21 @@ function controls(item: QueueItem): string {
     + `<button type="button" data-action="REJECTED" data-story="${id}" aria-label="Reject ${headline}">Reject</button>`;
 }
 
-export function renderQueue(items: QueueItem[]): string {
-  const rows = items.map((item) =>
+export function renderQueue(items: QueueItem[], filter: QueueFilter = 'ALL', query = ''): string {
+  const visible = filterQueue(items, filter, query);
+  const filterControl = '<form class="queue-filter" aria-label="Filter review queue">'
+    + '<label for="queue-filter">Decision</label>'
+    + `<select id="queue-filter" name="decision">${(['ALL', ...DECISIONS] as QueueFilter[]).map((value) =>
+      `<option value="${value}"${value === filter ? ' selected' : ''}>${value === 'ALL' ? 'All decisions' : value}</option>`).join('')}</select>`
+    + `<label for="queue-search">Search</label><input id="queue-search" name="query" value="${escapeHtml(query)}">`
+    + '<button type="submit">Apply</button></form>';
+  const renderedRows = visible.map((item) =>
     `<tr data-story="${escapeHtml(item.storyId)}"><td>${escapeHtml(item.headline)}</td>`
     + `<td>${escapeHtml(item.source)}</td><td class="decision-${item.decision.toLowerCase()}">${item.decision}</td>`
-    + `<td>${controls(item)}</td></tr>`);
-  return '<table class="producer-queue">'
+    + `<td>${controls(item)}</td></tr>`).join('');
+  return filterControl + '<table class="producer-queue">'
     + `<caption>Review queue: ${pendingCount(items)} pending</caption>`
     + '<thead><tr><th scope="col">Story</th><th scope="col">Source</th><th scope="col">Decision</th>'
     + '<th scope="col">Actions</th></tr></thead>'
-    + `<tbody>${rows.join('')}</tbody></table>`;
+    + `<tbody>${renderedRows || '<tr><td colspan="4">No matching stories.</td></tr>'}</tbody></table>`;
 }

@@ -80,14 +80,19 @@ class DailySignalsTest {
                 HttpResponse.BodyHandlers.discarding()).statusCode());
             assertEquals(403, client.send(decide.apply(listener, "APPROVED"), HttpResponse.BodyHandlers.discarding()).statusCode());
             assertEquals(400, client.send(decide.apply(editor, "PENDING"), HttpResponse.BodyHandlers.discarding()).statusCode());
-            assertEquals(204, client.send(decide.apply(editor, "APPROVED"), HttpResponse.BodyHandlers.discarding()).statusCode());
+            HttpResponse<String> accepted = client.send(decide.apply(editor, "APPROVED"), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, accepted.statusCode());
+            assertEquals("{\"storyId\":\"demo-park-path\",\"decision\":\"APPROVED\"}", accepted.body());
+            String audit = client.send(HttpRequest.newBuilder(URI.create(base + "/audit")).GET().build(),
+                HttpResponse.BodyHandlers.ofString()).body();
+            assertEquals("{\"schemaVersion\":1,\"decisions\":[{\"sequence\":1,\"storyId\":\"demo-park-path\",\"decision\":\"APPROVED\"}]}", audit);
             assertEquals(404, client.send(HttpRequest.newBuilder(URI.create(base + "/missing"))
                 .header("Authorization", "Bearer " + producer).POST(HttpRequest.BodyPublishers.ofString("REJECTED")).build(),
                 HttpResponse.BodyHandlers.discarding()).statusCode());
             String queue = client.send(HttpRequest.newBuilder(URI.create(base)).GET().build(),
                 HttpResponse.BodyHandlers.ofString()).body();
             assertTrue(queue.contains("{\"storyId\":\"demo-park-path\",\"headline\":\"New walking path opens in Riverside Park\",\"source\":\"Demo Civic Desk\",\"decision\":\"APPROVED\"}"));
-            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\"") && queue.contains("\"decision\":\"PENDING\""));
+            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\",\"headline\":\"Community library extends Saturday hours\",\"source\":\"Demo Education Desk\",\"decision\":\"PENDING\""));
         } finally {
             server.stop(0);
         }

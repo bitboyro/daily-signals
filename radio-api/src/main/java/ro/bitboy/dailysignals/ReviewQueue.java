@@ -2,20 +2,36 @@ package ro.bitboy.dailysignals;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Producer-facing review decisions over the current candidate set; synthetic candidates until ingestion is wired in. */
 public final class ReviewQueue {
     private final CandidateReview review = new CandidateReview();
+    private final List<DecisionAudit> audit = new ArrayList<>();
+
+    public record DecisionReceipt(String storyId, CandidateReview.Decision decision) {
+        String toJson() {
+            return "{\"storyId\":" + quote(storyId) + ",\"decision\":\"" + decision + "\"}";
+        }
+    }
+
+    public record DecisionAudit(int sequence, String storyId, CandidateReview.Decision decision) {
+        String toJson() {
+            return "{\"sequence\":" + sequence + ",\"storyId\":" + quote(storyId)
+                    + ",\"decision\":\"" + decision + "\"}";
+        }
+    }
 
     public static ReviewQueue fixture() {
         var queue = new ReviewQueue();
-        var attribution = new StoryNormalizer.Attribution("demo-civic-desk", "Demo Civic Desk",
-                URI.create("https://example.invalid/daily-signals/demo-civic-desk"), "synthetic-2026-01-15-morning");
         String[][] stories = {
-                {"demo-library-hours", "Community library extends Saturday hours"},
-                {"demo-park-path", "New walking path opens in Riverside Park"},
-                {"demo-transit-night", "Night bus pilot adds two stops"}};
+                {"demo-library-hours", "Community library extends Saturday hours", "education", "Demo Education Desk"},
+                {"demo-park-path", "New walking path opens in Riverside Park", "civic", "Demo Civic Desk"},
+                {"demo-transit-night", "Night bus pilot adds two stops", "civic", "Demo Civic Desk"}};
         for (String[] story : stories) {
+            var attribution = new StoryNormalizer.Attribution("demo-" + story[2] + "-desk", story[3],
+                    URI.create("https://example.invalid/daily-signals/demo-" + story[2] + "-desk"), "synthetic-2026-01-15-morning");
             queue.review.submit(new CandidateReview.Candidate(new StoryNormalizer.Story(story[0], story[1], story[1],
                     Instant.parse("2026-01-15T06:30:00Z"), StoryNormalizer.canonical(story[1]), attribution),
                     1, CandidateReview.Decision.PENDING));
@@ -23,7 +39,7 @@ public final class ReviewQueue {
         return queue;
     }
 
-    public synchronized void decide(String storyId, String decision) {
+    public synchronized DecisionReceipt decide(String storyId, String decision) {
         CandidateReview.Decision parsed;
         try {
             parsed = CandidateReview.Decision.valueOf(decision == null ? "" : decision.strip());
@@ -31,6 +47,8 @@ public final class ReviewQueue {
             throw new IllegalArgumentException("decision must be APPROVED or REJECTED");
         }
         review.decide(storyId, parsed);
+        audit.add(new DecisionAudit(audit.size() + 1, storyId, parsed));
+        return new DecisionReceipt(storyId, parsed);
     }
 
     public synchronized boolean contains(String storyId) {
@@ -49,6 +67,11 @@ public final class ReviewQueue {
                     .append(",\"decision\":\"").append(candidate.decision()).append("\"}");
         }
         return json.append("]}").toString();
+    }
+
+    public synchronized String auditToJson() {
+        return "{\"schemaVersion\":1,\"decisions\":[" + audit.stream()
+                .map(DecisionAudit::toJson).reduce((left, right) -> left + "," + right).orElse("") + "]}";
     }
 
     private static String quote(String value) {

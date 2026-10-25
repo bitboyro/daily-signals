@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseQueue, pendingCount, renderQueue, submitDecision, type QueueItem } from '../src/producer-queue.ts';
+import { filterQueue, parseQueue, pendingCount, renderQueue, submitDecision, type QueueItem } from '../src/producer-queue.ts';
 
 const items: QueueItem[] = [
   { storyId: 'story-1', headline: 'Rail <maintenance>', source: 'transit-desk', decision: 'PENDING' },
@@ -33,6 +33,16 @@ test('only pending stories get labelled approval controls', () => {
   assert.doesNotMatch(html, /aria-label="Approve Library hours"/);
 });
 
+test('filters the queue by decision and escaped free-text fields', () => {
+  assert.deepEqual(filterQueue(items, 'PENDING').map((item) => item.storyId), ['story-1', 'story-3']);
+  assert.deepEqual(filterQueue(items, 'ALL', 'CITY').map((item) => item.storyId), ['story-2', 'story-3']);
+  const html = renderQueue(items, 'PENDING', 'bridge');
+  assert.match(html, /aria-label="Filter review queue"/);
+  assert.match(html, /option value="PENDING" selected/);
+  assert.match(html, /Bridge works/);
+  assert.doesNotMatch(html, /Library hours/);
+});
+
 test('decisions send the reviewer token and surface denials', async () => {
   const seen: RequestInit[] = [];
   const answer = (status: number) => async (_url: unknown, init?: RequestInit) => { seen.push(init!); return new Response(null, { status }); };
@@ -42,4 +52,11 @@ test('decisions send the reviewer token and surface denials', async () => {
   assert.equal(headers.Authorization, 'Bearer secret-token');
   assert.equal(headers['X-Daily-Signals-Role'], undefined);
   assert.equal(seen[0].body, 'APPROVED');
+});
+
+test('returns the server-issued decision receipt', async () => {
+  const accepted = async () => new Response(JSON.stringify({ storyId: 'story-1', decision: 'APPROVED' }), { status: 200 });
+  await assert.doesNotReject(submitDecision('http://api.invalid', 'story-1', 'APPROVED', 'secret-token', accepted as typeof fetch));
+  const malformed = async () => new Response(JSON.stringify({ storyId: 'another-story', decision: 'APPROVED' }), { status: 200 });
+  await assert.rejects(submitDecision('http://api.invalid', 'story-1', 'APPROVED', 'secret-token', malformed as typeof fetch), /unexpected decision response/);
 });
