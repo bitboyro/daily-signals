@@ -8,3 +8,6 @@ audio { width: 100%; }
 table { border-collapse: collapse; width: 100%; }
 th, td { border-bottom: 1px solid; padding: 0.25rem 0.5rem; text-align: left; }
 button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid; outline-offset: 2px; }
+[role="tablist"] { display: flex; gap: 0.5rem; margin-block: 1rem; }
+[role="tab"][aria-selected="true"] { font-weight: 700; text-decoration: underline; }
+[role="tabpanel"] { padding-block: 0.5rem; }

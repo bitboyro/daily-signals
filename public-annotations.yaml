@@ -2208,6 +2208,61 @@
    "provenance": "authored-review",
    "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
    "retiredIn": null
+  },
+  {
+   "paths": [
+    ".github/workflows/pr-qualification.yml",
+    "tools/prepare-pr-qualification.py",
+    "docs/pull-request-qualification.md"
+   ],
+   "features": [
+    {
+     "id": "PLT-06",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/producer-workspace.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-04",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/test/producer-workspace.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
