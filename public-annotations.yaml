@@ -47,6 +47,7 @@
   "PLT-03": "permissions",
   "PLT-04": "scheduled jobs",
   "PLT-05": "packaging and deploy",
+  "PLT-06": "pull-request qualification",
   "WEB-01": "edition browser",
   "WEB-02": "audio player",
   "WEB-03": "producer queue",

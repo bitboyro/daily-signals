@@ -1,0 +1,44 @@
+name: Pull request qualification
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-qualification-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record the qualification context
+        env:
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          event = json.loads(Path(os.environ["EVENT_PATH"]).read_text())
+          pull_request = event["pull_request"]
+          context = {
+              "number": pull_request["number"],
+              "headSha": pull_request["head"]["sha"],
+              "baseSha": pull_request["base"]["sha"],
+              "labels": sorted(label["name"] for label in pull_request["labels"]),
+              "eventAction": event["action"],
+          }
+          Path("pr-qualification-context.json").write_text(json.dumps(context, indent=2) + "\n")
+          PY
+      - name: Retain the qualification context
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-qualification-context-${{ github.run_attempt }}
+          path: pr-qualification-context.json
+          retention-days: 30
