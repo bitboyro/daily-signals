@@ -2211,7 +2211,21 @@
   },
   {
    "paths": [
-    ".github/workflows/pr-qualification.yml",
+    ".github/workflows/pr-qualification.yml"
+   ],
+   "features": [
+    {
+     "id": "PLT-06",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "c589ebc56b6995a8d28cc4e550fe79afaf960f77",
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/prepare-pr-qualification.py",
     "docs/pull-request-qualification.md"
    ],
@@ -2223,7 +2237,7 @@
    ],
    "confidence": "high",
    "provenance": "authored-review",
-   "introducedIn": null,
+   "introducedIn": "b5841f18b48cc2e184c49e3583ef6bc8640bb0ac",
    "retiredIn": null
   },
   {
@@ -2242,7 +2256,7 @@
    ],
    "confidence": "high",
    "provenance": "authored-review",
-   "introducedIn": null,
+   "introducedIn": "18b8ae138c5fedfc6017edb409115680feabe7c1",
    "retiredIn": null
   },
   {
@@ -2261,7 +2275,7 @@
    ],
    "confidence": "high",
    "provenance": "authored-review",
-   "introducedIn": null,
+   "introducedIn": "18b8ae138c5fedfc6017edb409115680feabe7c1",
    "retiredIn": null
   }
  ],
