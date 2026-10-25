@@ -3,7 +3,7 @@ import { fetchEditions, renderEditionList, type EditionSummary } from './edition
 import { renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision } from './producer-queue.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
-import { renderSourceEditor, type SourceConfig } from './source-editor.ts';
+import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -61,6 +61,21 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
     await showQueue(apiBase, target);
   } else {
     target.innerHTML = renderSourceEditor(DEFAULT_SOURCES);
+    const form = target.querySelector<HTMLFormElement>('form.source-editor');
+    const status = target.querySelector<HTMLElement>('.source-problems');
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const sources = Array.from(form.querySelectorAll<HTMLFieldSetElement>('fieldset[data-source-index]')).map((fieldset) => ({
+        id: fieldset.querySelector<HTMLInputElement>('input[name="id"]')!.value,
+        name: fieldset.querySelector<HTMLInputElement>('input[name="name"]')!.value,
+        url: fieldset.querySelector<HTMLInputElement>('input[name="url"]')!.value,
+        priority: Number(fieldset.querySelector<HTMLInputElement>('input[name="priority"]')!.value),
+      }));
+      const problems = validateSources(sources);
+      if (status) status.textContent = problems.length === 0
+        ? 'Source configuration preview is valid. Server-side saving arrives with scheduling.'
+        : problems.join('. ');
+    });
   }
   workspace.querySelectorAll<HTMLButtonElement>('button[data-producer-panel]').forEach((button) => {
     button.addEventListener('click', () => {
