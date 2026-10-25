@@ -16,3 +16,5 @@ The API serves `GET /health`, `GET /api/editions` (versioned edition list), `GET
 ## Checks
 
 `python3 tools/check-module-boundaries.py`, `check-fixtures.py`, `check-source-example.py`, `check-audio-fixture.py` and `check-docs.py` validate structure, fixtures and documentation. `check-annotations.py` audits `public-annotations.yaml`, which maps every tracked path to stable feature IDs or an explicit classification, and records when each rule's paths entered and left the history. After building Java, Rust and the web client, `dual-process-smoke.py`, `voice-playback-smoke.py` and `container-smoke.py` check the cross-process playback paths. PostgreSQL reference tests require the configured test database. Release qualification is described in [docs/release-qualification.md](docs/release-qualification.md).
+
+Pull requests retain a qualification-context artifact. The `run-all-checks` label is a visible human request for full qualification; see [the pull request policy](docs/pull-request-qualification.md).

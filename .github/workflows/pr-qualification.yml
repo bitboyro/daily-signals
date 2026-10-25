@@ -19,23 +19,7 @@ jobs:
       - name: Record the qualification context
         env:
           EVENT_PATH: ${{ github.event_path }}
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          event = json.loads(Path(os.environ["EVENT_PATH"]).read_text())
-          pull_request = event["pull_request"]
-          context = {
-              "number": pull_request["number"],
-              "headSha": pull_request["head"]["sha"],
-              "baseSha": pull_request["base"]["sha"],
-              "labels": sorted(label["name"] for label in pull_request["labels"]),
-              "eventAction": event["action"],
-          }
-          Path("pr-qualification-context.json").write_text(json.dumps(context, indent=2) + "\n")
-          PY
+        run: python3 tools/prepare-pr-qualification.py --event "$EVENT_PATH" --output pr-qualification-context.json
       - name: Retain the qualification context
         uses: actions/upload-artifact@v4
         with:
