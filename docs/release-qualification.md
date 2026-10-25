@@ -7,3 +7,7 @@ The release workflow accepts a `v*` tag or an explicit manual dispatch. It runs 
 A tag is considered qualified only after the corresponding GitHub Actions run succeeds and its retained manifest matches the tag target. Creating a local tag or a green local replay alone does not establish a hosted release outcome.
 
 The same workflow runs every Monday at 03:00 UTC on the default branch as the weekly full qualification. A scheduled run qualifies the exact `main` SHA it checked out; it never writes a release manifest. GitHub can delay or drop scheduled runs, and it disables them in inactive repositories. A week without a successful scheduled run is therefore recorded as missed full-qualification debt, which the next full run must clear; it is not inferred to have passed.
+
+## Station-local edition schedule
+
+Daily Signals schedules an edition in the station's IANA timezone, then stores the resulting instant. For example, 08:30 in `Europe/Bucharest` on 2026-01-15 is 06:30 UTC; 08:30 in `Asia/Tokyo` on that same local date is 23:30 UTC on the prior day. DST gaps move forward under Java's zone rules, while overlaps use the earlier offset. CI schedules remain UTC operational triggers; they do not redefine the station-local air time.
