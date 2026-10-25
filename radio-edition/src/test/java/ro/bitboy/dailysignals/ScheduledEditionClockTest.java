@@ -20,4 +20,9 @@ class ScheduledEditionClockTest {
         assertFalse(clock.isDue(day, Instant.parse("2026-01-15T06:29:59Z")));
         assertTrue(clock.isDue(day, Instant.parse("2026-01-15T06:30:00Z")));
     }
+    @Test void findsTheNextStationLocalEdition() {
+        var clock = new ScheduledEditionClock(ZoneId.of("Europe/Bucharest"), LocalTime.of(8, 30));
+        assertEquals(Instant.parse("2026-01-15T06:30:00Z"), clock.nextScheduledAt(Instant.parse("2026-01-15T06:29:59Z")));
+        assertEquals(Instant.parse("2026-01-16T06:30:00Z"), clock.nextScheduledAt(Instant.parse("2026-01-15T06:30:00Z")));
+    }
 }

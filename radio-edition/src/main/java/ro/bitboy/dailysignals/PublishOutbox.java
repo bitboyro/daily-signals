@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,6 +45,12 @@ public final class PublishOutbox {
     public synchronized PublicationManifest publish(String editionId, String role, ObjectWriter writer) throws IOException, InterruptedException {
         if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
         return publish(editionId, writer);
+    }
+    /** Publishes only after the station-local scheduled instant has arrived. */
+    public synchronized PublicationManifest publishScheduled(String editionId, LocalDate airDate, ScheduledEditionClock schedule,
+            Instant now, String role, ObjectWriter writer) throws IOException, InterruptedException {
+        if (schedule == null || !schedule.isDue(airDate, now)) throw new IllegalStateException("edition is not due");
+        return publish(editionId, role, writer);
     }
     public synchronized PublicationManifest publishReplacement(String editionId, String role, ObjectWriter writer)
             throws IOException, InterruptedException {

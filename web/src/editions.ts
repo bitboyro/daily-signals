@@ -8,6 +8,15 @@ export interface EditionSummary {
   audioPath: string;
 }
 
+export interface SchedulePreview { airDate: string; stationTime: string; zone: string; }
+
+export function renderSchedulePreview(preview: SchedulePreview): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(preview.airDate) || !/^\d{2}:\d{2}$/.test(preview.stationTime) || !preview.zone) {
+    throw new Error('invalid schedule preview');
+  }
+  return `<p class="schedule-preview">Next edition: <time datetime="${escapeHtml(preview.airDate)}">${escapeHtml(preview.airDate)}</time> at ${escapeHtml(preview.stationTime)} ${escapeHtml(preview.zone)}</p>`;
+}
+
 function isSummary(value: unknown): value is EditionSummary {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
