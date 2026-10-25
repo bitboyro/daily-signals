@@ -89,6 +89,17 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
       const next = button.dataset.producerPanel;
       if (isProducerPanel(next)) void showProducerPanel(apiBase, next);
     });
+    button.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const tabs = Array.from(workspace.querySelectorAll<HTMLButtonElement>('button[data-producer-panel]'));
+      const index = tabs.indexOf(button);
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1
+        : (index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+      tabs[next].focus();
+      const selected = tabs[next].dataset.producerPanel;
+      if (isProducerPanel(selected)) void showProducerPanel(apiBase, selected);
+    });
   });
 }
 
