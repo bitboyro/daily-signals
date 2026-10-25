@@ -41,6 +41,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # The audit binds annotations to authored commits. GitHub's default PR
+          # checkout is a synthetic merge commit, whose first-parent history is
+          # not the branch history the annotations describe.
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Feature annotation coverage and history
         run: python3 tools/check-annotations.py
   schedule-test:

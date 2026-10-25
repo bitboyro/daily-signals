@@ -47,6 +47,7 @@
   "PLT-03": "permissions",
   "PLT-04": "scheduled jobs",
   "PLT-05": "packaging and deploy",
+  "PLT-06": "pull-request qualification",
   "WEB-01": "edition browser",
   "WEB-02": "audio player",
   "WEB-03": "producer queue",
@@ -2206,6 +2207,75 @@
    "confidence": "high",
    "provenance": "authored-review",
    "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    ".github/workflows/pr-qualification.yml"
+   ],
+   "features": [
+    {
+     "id": "PLT-06",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "c589ebc56b6995a8d28cc4e550fe79afaf960f77",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/prepare-pr-qualification.py",
+    "docs/pull-request-qualification.md"
+   ],
+   "features": [
+    {
+     "id": "PLT-06",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "b5841f18b48cc2e184c49e3583ef6bc8640bb0ac",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/producer-workspace.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "WEB-04",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "18b8ae138c5fedfc6017edb409115680feabe7c1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/test/producer-workspace.test.ts"
+   ],
+   "features": [
+    {
+     "id": "WEB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "WEB-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "18b8ae138c5fedfc6017edb409115680feabe7c1",
    "retiredIn": null
   }
  ],

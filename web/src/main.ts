@@ -2,6 +2,8 @@ import { readConfig } from './config.ts';
 import { fetchEditions, renderEditionList, type EditionSummary } from './editions.ts';
 import { renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision } from './producer-queue.ts';
+import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
+import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -26,8 +28,11 @@ async function showEditions(apiBase: string, play: (edition: EditionSummary) => 
   }
 }
 
-async function showQueue(apiBase: string): Promise<void> {
-  const target = element('queue');
+const DEFAULT_SOURCES: SourceConfig[] = [
+  { id: 'public-desk', name: 'Public desk', url: 'https://news.example.invalid/public.xml', priority: 10 },
+];
+
+async function showQueue(apiBase: string, target: HTMLElement): Promise<void> {
   const status = element('queue-status');
   try {
     target.innerHTML = renderQueue(await fetchQueue(apiBase));
@@ -40,10 +45,42 @@ async function showQueue(apiBase: string): Promise<void> {
       try {
         await submitDecision(apiBase, button.dataset.story!, button.dataset.action as 'APPROVED' | 'REJECTED', token);
         status.textContent = 'Decision saved.';
-        await showQueue(apiBase);
+        await showQueue(apiBase, target);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : 'Decision failed.';
       }
+    });
+  });
+}
+
+async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise<void> {
+  const workspace = element('producer-workspace');
+  workspace.innerHTML = renderProducerWorkspace(panel);
+  const target = element(`producer-panel-${panel}`);
+  if (panel === 'queue') {
+    await showQueue(apiBase, target);
+  } else {
+    target.innerHTML = renderSourceEditor(DEFAULT_SOURCES);
+    const form = target.querySelector<HTMLFormElement>('form.source-editor');
+    const status = target.querySelector<HTMLElement>('.source-problems');
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const sources = Array.from(form.querySelectorAll<HTMLFieldSetElement>('fieldset[data-source-index]')).map((fieldset) => ({
+        id: fieldset.querySelector<HTMLInputElement>('input[name="id"]')!.value,
+        name: fieldset.querySelector<HTMLInputElement>('input[name="name"]')!.value,
+        url: fieldset.querySelector<HTMLInputElement>('input[name="url"]')!.value,
+        priority: Number(fieldset.querySelector<HTMLInputElement>('input[name="priority"]')!.value),
+      }));
+      const problems = validateSources(sources);
+      if (status) status.textContent = problems.length === 0
+        ? 'Source configuration preview is valid. Server-side saving arrives with scheduling.'
+        : problems.join('. ');
+    });
+  }
+  workspace.querySelectorAll<HTMLButtonElement>('button[data-producer-panel]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const next = button.dataset.producerPanel;
+      if (isProducerPanel(next)) void showProducerPanel(apiBase, next);
     });
   });
 }
@@ -52,5 +89,5 @@ if (typeof document !== 'undefined') {
   const config = readConfig(window.location.origin);
   const player = element('player');
   void showEditions(config.apiBase, (edition) => { player.innerHTML = renderPlayer(config, edition); });
-  void showQueue(config.apiBase);
+  void showProducerPanel(config.apiBase, 'queue');
 }
