@@ -16,6 +16,14 @@ class EditionCatalogContractTest {
         assertEquals(contract, mapper.readTree(EditionCatalog.fixture().toJson()));
     }
 
+    @Test void openApiContractRequiresTheFieldsTheCatalogPublishes() throws Exception {
+        var spec = mapper.readTree(Files.readString(Path.of("../contracts/openapi/editions-v1.json")));
+        assertEquals("#/components/schemas/EditionList", spec.at("/paths/~1api~1editions/get/responses/200/content/application~1json/schema/$ref").asText());
+        var required = spec.at("/components/schemas/EditionSummary/required");
+        var edition = mapper.readTree(EditionCatalog.fixture().toJson()).get("editions").get(0);
+        for (var field : required) assertTrue(edition.hasNonNull(field.asText()), field.asText());
+    }
+
     @Test void newestEditionFirstAndTitlesEscaped() throws Exception {
         var catalog = new EditionCatalog(List.of(
                 new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Plain", "/editions/older/audio"),
