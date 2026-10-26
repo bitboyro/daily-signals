@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fetchEditions, parseEditionList, renderDailyEdition, renderEditionList, renderSchedulePreview } from '../src/editions.ts';
+import { fetchEditions, formatAirDate, parseEditionList, renderDailyEdition, renderEditionList, renderSchedulePreview } from '../src/editions.ts';
 
 const read = (name: string) => JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), 'utf8'));
 const contract = read('edition-list-v2.json');
@@ -50,4 +50,10 @@ test('renders a station-local schedule preview', () => {
 test('renders the selected daily edition as live context', () => {
   assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /aria-live="polite"/);
   assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /&lt;Morning&gt;/);
+});
+
+test('formats air dates with an explicit locale and stable timezone', () => {
+  assert.equal(formatAirDate('2026-01-16', 'en-GB'), '16 January 2026');
+  assert.match(formatAirDate('2026-01-16', 'ro-RO'), /16 ianuarie 2026/);
+  assert.throws(() => formatAirDate('today'), /invalid air date/);
 });
