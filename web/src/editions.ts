@@ -10,6 +10,11 @@ export interface EditionSummary {
 
 export interface SchedulePreview { airDate: string; stationTime: string; zone: string; }
 
+export function formatAirDate(airDate: string, locale = 'en-GB'): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(airDate)) throw new Error('invalid air date');
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${airDate}T00:00:00Z`));
+}
+
 export function renderSchedulePreview(preview: SchedulePreview): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(preview.airDate) || !/^\d{2}:\d{2}$/.test(preview.stationTime) || !preview.zone) {
     throw new Error('invalid schedule preview');
