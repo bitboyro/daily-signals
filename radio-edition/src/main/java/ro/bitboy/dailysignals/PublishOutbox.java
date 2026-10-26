@@ -112,6 +112,7 @@ public final class PublishOutbox {
         return manifest;
     }
     public synchronized List<ProducerEvent> producerEvents() { return List.copyOf(events); }
+    public synchronized int publishedOperationCount() { return events.size(); }
     private void emit(String type, PublicationManifest manifest) {
         outbound.add(new PublicationEvent(1, manifest.editionId() + ":" + (++sequence), type, manifest.editionId(),
                 clock.instant().toString(), manifest));
