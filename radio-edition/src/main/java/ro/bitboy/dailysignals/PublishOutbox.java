@@ -72,6 +72,12 @@ public final class PublishOutbox {
         return manifest;
     }
     public synchronized int pendingCount() { return pending.size(); }
+    /** Stable, inspectable evidence for a staged item; callers never receive its audio bytes. */
+    public synchronized String pendingEvidence(String editionId) {
+        var item = pending.get(editionId);
+        if (item == null) throw new IllegalArgumentException("edition not staged");
+        return item.editionId() + ":" + item.key() + ":" + item.metadata().checksumSha256();
+    }
     /** Prepare a new recording revision without changing the published edition yet. */
     public synchronized void stageReplacement(String editionId, String key, byte[] audio) {
         if (!published.containsKey(editionId)) throw new IllegalArgumentException("edition not published");

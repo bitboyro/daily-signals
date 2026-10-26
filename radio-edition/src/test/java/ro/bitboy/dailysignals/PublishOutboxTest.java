@@ -8,6 +8,13 @@ import java.time.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublishOutboxTest {
+    @Test void stagedEvidenceIsDeterministicAcrossRetries() throws Exception {
+        var outbox = new PublishOutbox();
+        outbox.stage("edition-evidence", "editions/evidence.wav", new byte[]{'R','I','F','F',9});
+        String evidence = outbox.pendingEvidence("edition-evidence");
+        assertThrows(IOException.class, () -> outbox.publish("edition-evidence", "PRODUCER", (key, bytes) -> { throw new IOException("retry"); }));
+        assertEquals(evidence, outbox.pendingEvidence("edition-evidence"));
+    }
     @Test void publishesScheduledEditionOnlyWhenDue() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-2", "editions/two.wav", new byte[]{'R','I','F','F',2});
