@@ -42,9 +42,14 @@ export async function fetchEditions(apiBase: string, fetchImpl: typeof fetch = f
 }
 
 export function renderEditionList(editions: EditionSummary[]): string {
-  if (editions.length === 0) return '<p class="empty">No editions have been published yet.</p>';
+  if (editions.length === 0) return '<p class="empty">No editions have been published yet. Please check back after the next scheduled broadcast.</p>';
   const items = editions.map((e) =>
     `<li><a href="#edition-${escapeHtml(e.editionId)}" data-edition="${escapeHtml(e.editionId)}">`
     + `<time datetime="${escapeHtml(e.airDate)}">${escapeHtml(e.airDate)}</time> ${escapeHtml(e.title)}</a></li>`);
   return `<ul class="editions">${items.join('')}</ul>`;
+}
+
+/** Context shown above a selected edition without duplicating the player controls. */
+export function renderDailyEdition(edition: EditionSummary): string {
+  return `<p class="daily-edition" aria-live="polite">Selected daily edition: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time> — ${escapeHtml(edition.title)}</p>`;
 }

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fetchEditions, parseEditionList, renderEditionList, renderSchedulePreview } from '../src/editions.ts';
+import { fetchEditions, parseEditionList, renderDailyEdition, renderEditionList, renderSchedulePreview } from '../src/editions.ts';
 
 const read = (name: string) => JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), 'utf8'));
 const contract = read('edition-list-v2.json');
@@ -39,10 +39,15 @@ test('rejects malformed responses and reports unavailable APIs', async () => {
 });
 
 test('renders an empty archive message', () => {
-  assert.match(renderEditionList([]), /No editions/);
+  assert.match(renderEditionList([]), /next scheduled broadcast/);
 });
 
 test('renders a station-local schedule preview', () => {
   assert.match(renderSchedulePreview({ airDate: '2026-01-16', stationTime: '08:30', zone: 'Europe/Bucharest' }), /08:30 Europe\/Bucharest/);
   assert.throws(() => renderSchedulePreview({ airDate: 'today', stationTime: '8:30', zone: '' }), /invalid schedule/);
+});
+
+test('renders the selected daily edition as live context', () => {
+  assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /aria-live="polite"/);
+  assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /&lt;Morning&gt;/);
 });
