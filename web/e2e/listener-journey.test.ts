@@ -5,8 +5,8 @@ import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readConfig } from '../src/config.ts';
-import { fetchEditions, renderEditionList } from '../src/editions.ts';
-import { renderPlayer } from '../src/player.ts';
+import { fetchEditions, renderDailyEdition, renderEditionList } from '../src/editions.ts';
+import { renderNoEditionGuidance, renderPlayer } from '../src/player.ts';
 import { fetchQueue, filterQueue, renderQueue, submitDecision } from '../src/producer-queue.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -69,6 +69,15 @@ test('listener browses the archive and plays the newest edition', async () => {
   assert.equal(audio.headers.get('content-type'), 'audio/wav');
   const bytes = new Uint8Array(await audio.arrayBuffer());
   assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), 'RIFF');
+});
+
+test('listener visual baseline exposes daily, player and empty-state landmarks', async () => {
+  const [edition] = await fetchEditions(apiBase);
+  const baseline = renderDailyEdition(edition) + renderPlayer(readConfig(apiBase), edition) + renderNoEditionGuidance();
+  assert.match(baseline, /class="daily-edition"/);
+  assert.match(baseline, /class="player"/);
+  assert.match(baseline, /listener-empty/);
+  assert.doesNotMatch(baseline, /autoplay/);
 });
 
 test('links to the retired demo player still reach the edition audio', async () => {
