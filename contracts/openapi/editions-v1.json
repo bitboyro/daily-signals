@@ -1,0 +1,42 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Daily Signals Edition API", "version": "1.0.0" },
+  "paths": {
+    "/api/editions": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Newest-first archived editions",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/EditionList" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EditionList": {
+        "type": "object",
+        "required": ["schemaVersion", "editions"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "enum": [2] },
+          "editions": { "type": "array", "items": { "$ref": "#/components/schemas/EditionSummary" } }
+        }
+      },
+      "EditionSummary": {
+        "type": "object",
+        "required": ["editionId", "airDate", "title", "audioPath"],
+        "properties": {
+          "editionId": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "airDate": { "type": "string", "format": "date" },
+          "title": { "type": "string", "minLength": 1 },
+          "audioPath": { "type": "string", "pattern": "^/" }
+        }
+      }
+    }
+  }
+}

@@ -2277,6 +2277,31 @@
    "provenance": "authored-review",
    "introducedIn": "18b8ae138c5fedfc6017edb409115680feabe7c1",
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "contracts/openapi/editions-v1.json"
+   ],
+   "features": [
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "WEB-01", "relation": "configures" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "41d0e06df5caac4ef1b78e713df8c9bb98c6da40",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/check-openapi-contract.py"
+   ],
+   "features": [
+    { "id": "PLT-01", "relation": "guards" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "41d0e06df5caac4ef1b78e713df8c9bb98c6da40",
+   "retiredIn": null
   }
  ],
  "intersections": [
