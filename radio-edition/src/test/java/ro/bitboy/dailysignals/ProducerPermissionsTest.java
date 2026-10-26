@@ -26,6 +26,12 @@ class ProducerPermissionsTest {
         assertEquals(1, outbox.pendingCount());
         assertEquals("PUBLISHED", outbox.publish("edition-1", "PRODUCER", (key, bytes) -> {}).status());
     }
+    @Test void onlyProducerCanStagePublication() {
+        var outbox = new PublishOutbox();
+        assertThrows(SecurityException.class, () -> outbox.stageForPublication("edition-2", "editions/two.wav", new byte[]{'R','I','F','F',2}, "EDITOR"));
+        outbox.stageForPublication("edition-2", "editions/two.wav", new byte[]{'R','I','F','F',2}, "PRODUCER");
+        assertEquals(1, outbox.pendingCount());
+    }
     @Test void onlyProducerCanReplacePublishedRecording() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-1", "editions/one.wav", new byte[]{'R','I','F','F',1});

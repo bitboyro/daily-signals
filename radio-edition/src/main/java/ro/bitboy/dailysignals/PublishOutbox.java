@@ -42,6 +42,11 @@ public final class PublishOutbox {
         var copy = audio.clone();
         pending.put(editionId, new Pending(editionId, key, copy, ObjectMetadata.from(copy)));
     }
+    /** Producer-only convenience boundary for UI publish controls. */
+    public synchronized void stageForPublication(String editionId, String key, byte[] audio, String role) {
+        if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
+        stage(editionId, key, audio);
+    }
     public synchronized PublicationManifest publish(String editionId, String role, ObjectWriter writer) throws IOException, InterruptedException {
         if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
         return publish(editionId, writer);
