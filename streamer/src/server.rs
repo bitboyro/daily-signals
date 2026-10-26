@@ -58,6 +58,7 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     let mut response = Response::new(200, audio.to_vec(), &manifest.content_type);
     response.headers.push(("ETag".into(), etag.clone()));
     response.headers.push(("Accept-Ranges".into(), "bytes".into()));
+    response.headers.push(("Cache-Control".into(), "public, max-age=300, immutable".into()));
     if request.lines().any(|line| line.strip_prefix("If-None-Match: ") == Some(etag.as_str())) {
         response.status = 304; response.body.clear();
         return response;
@@ -109,6 +110,7 @@ mod tests {
         assert_eq!(route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nRange: bytes=99-100\r\n", &manifest, b"RIFF-demo").status, 416);
         let cached = route(&format!("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\nIf-None-Match: \"{}\"\r\n", manifest.checksum_sha256), &manifest, b"RIFF-demo");
         assert_eq!(cached.status, 304); assert!(cached.body.is_empty());
+        assert!(cached.headers.iter().any(|(k, v)| k == "Cache-Control" && v == "public, max-age=300, immutable"));
     }
     #[test]
     fn inclusive_range_end_and_single_byte_boundary() {
