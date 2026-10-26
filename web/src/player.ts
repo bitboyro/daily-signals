@@ -6,6 +6,12 @@ export function audioUrl(config: ListenerConfig, edition: EditionSummary): strin
   return `${config.streamBase}${edition.audioPath}`;
 }
 
+export interface NowPlayingState { editionId: string; title: string; airDate: string; }
+
+export function nowPlayingState(edition: EditionSummary): NowPlayingState {
+  return { editionId: edition.editionId, title: edition.title, airDate: edition.airDate };
+}
+
 /** Native controls keep keyboard and screen-reader support; nothing plays until the listener asks. */
 export function renderPlayer(config: ListenerConfig, edition: EditionSummary): string {
   const id = escapeHtml(edition.editionId);
