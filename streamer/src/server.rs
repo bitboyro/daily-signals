@@ -4,6 +4,14 @@ use std::net::{TcpListener, TcpStream};
 use std::path::Path;
 
 pub struct Response { pub status: u16, pub headers: Vec<(String, String)>, pub body: Vec<u8> }
+#[derive(Debug, PartialEq)]
+pub struct ThroughputProfile { pub requests: usize, pub bytes: usize }
+
+pub fn profile_routes(requests: usize, manifest: &PublicationManifest, audio: &[u8]) -> ThroughputProfile {
+    let request = format!("GET /editions/{}/audio HTTP/1.1\r\n", manifest.edition_id);
+    let bytes = (0..requests).map(|_| route(&request, manifest, audio).body.len()).sum();
+    ThroughputProfile { requests, bytes }
+}
 impl Response {
     fn new(status: u16, body: Vec<u8>, content_type: &str) -> Self {
         Self { status, headers: vec![("Content-Type".into(), content_type.into())], body }
@@ -135,5 +143,10 @@ mod tests {
         let response = route("GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n", &manifest, audio);
         assert_eq!(response.status, 200); assert_eq!(response.body, audio);
         assert_eq!(route("GET /editions/other/audio HTTP/1.1\r\n", &manifest, audio).status, 404);
+    }
+    #[test]
+    fn profiles_a_fixed_number_of_stream_routes() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        assert_eq!(profile_routes(100, &manifest, b"RIFF-demo"), ThroughputProfile { requests: 100, bytes: 900 });
     }
 }
