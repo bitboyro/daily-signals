@@ -15,6 +15,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DailySignalsTest {
     @Test
+    void servesABoundedEditionCatalogLoadProfile() throws Exception {
+        HttpServer server = DailySignals.createServer(0);
+        server.start();
+        try {
+            var client = HttpClient.newHttpClient();
+            var uri = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/api/editions");
+            int bytes = 0;
+            for (int request = 0; request < 25; request++) {
+                var response = client.send(HttpRequest.newBuilder(uri).GET().build(), HttpResponse.BodyHandlers.ofString());
+                assertEquals(200, response.statusCode());
+                bytes += response.body().length();
+            }
+            assertTrue(bytes > 25 * 100, "profile must exercise real catalog payloads");
+        } finally {
+            server.stop(0);
+        }
+    }
+    @Test
     void servesHealthAndFixtureAudio() throws Exception {
         HttpServer server = DailySignals.createServer(0);
         server.start();
