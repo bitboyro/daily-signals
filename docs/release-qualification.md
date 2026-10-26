@@ -11,3 +11,5 @@ The same workflow runs every Monday at 03:00 UTC on the default branch as the we
 ## Station-local edition schedule
 
 Daily Signals schedules an edition in the station's IANA timezone, then stores the resulting instant. For example, 08:30 in `Europe/Bucharest` on 2026-01-15 is 06:30 UTC; 08:30 in `Asia/Tokyo` on that same local date is 23:30 UTC on the prior day. DST gaps move forward under Java's zone rules, while overlaps use the earlier offset. CI schedules remain UTC operational triggers; they do not redefine the station-local air time.
+
+Listener visual baselines keep ISO dates in semantic `datetime` attributes and render labels with an explicitly selected locale. CI qualifies the reviewed listener markup on Node 22 and 24 so host locale and timezone defaults cannot silently alter the daily-edition view.
