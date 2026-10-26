@@ -4,6 +4,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProducerPermissionsTest {
+    @Test void declaresTheReviewAndPublicationRoleMatrix() {
+        assertEquals(java.util.List.of("PRODUCER", "EDITOR", "LISTENER"), ProducerPermissions.knownRoles());
+        for (String role : ProducerPermissions.knownRoles()) {
+            assertEquals("PRODUCER".equals(role), ProducerPermissions.mayPublish(role));
+            assertEquals(!"LISTENER".equals(role), ProducerPermissions.mayReview(role));
+        }
+    }
     @Test void noRolePublicationEntryPointsAreNotPublic() {
         assertThrows(NoSuchMethodException.class, () -> PublishOutbox.class.getMethod(
                 "publish", String.class, PublishOutbox.ObjectWriter.class));
