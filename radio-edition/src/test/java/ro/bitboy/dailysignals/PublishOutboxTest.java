@@ -8,6 +8,13 @@ import java.time.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublishOutboxTest {
+    @Test void stagedEvidenceIsDeterministicAcrossRetries() throws Exception {
+        var outbox = new PublishOutbox();
+        outbox.stage("edition-evidence", "editions/evidence.wav", new byte[]{'R','I','F','F',9});
+        String evidence = outbox.pendingEvidence("edition-evidence");
+        assertThrows(IOException.class, () -> outbox.publish("edition-evidence", "PRODUCER", (key, bytes) -> { throw new IOException("retry"); }));
+        assertEquals(evidence, outbox.pendingEvidence("edition-evidence"));
+    }
     @Test void publishesScheduledEditionOnlyWhenDue() throws Exception {
         var outbox = new PublishOutbox();
         outbox.stage("edition-2", "editions/two.wav", new byte[]{'R','I','F','F',2});
@@ -70,5 +77,6 @@ class PublishOutboxTest {
         assertEquals("published", outbox.producerEvents().get(0).action());
         assertEquals(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(new byte[]{'R','I','F','F',1,2,3})), manifest.checksumSha256());
         assertSame(manifest, outbox.publish("edition-1", "PRODUCER", (key, bytes) -> fail("must not write twice")));
+        assertEquals(1, outbox.publishedOperationCount());
     }
 }

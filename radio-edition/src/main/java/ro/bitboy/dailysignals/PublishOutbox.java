@@ -42,6 +42,11 @@ public final class PublishOutbox {
         var copy = audio.clone();
         pending.put(editionId, new Pending(editionId, key, copy, ObjectMetadata.from(copy)));
     }
+    /** Producer-only convenience boundary for UI publish controls. */
+    public synchronized void stageForPublication(String editionId, String key, byte[] audio, String role) {
+        if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
+        stage(editionId, key, audio);
+    }
     public synchronized PublicationManifest publish(String editionId, String role, ObjectWriter writer) throws IOException, InterruptedException {
         if (!ProducerPermissions.mayPublish(role)) throw new SecurityException("producer role required");
         return publish(editionId, writer);
@@ -72,6 +77,12 @@ public final class PublishOutbox {
         return manifest;
     }
     public synchronized int pendingCount() { return pending.size(); }
+    /** Stable, inspectable evidence for a staged item; callers never receive its audio bytes. */
+    public synchronized String pendingEvidence(String editionId) {
+        var item = pending.get(editionId);
+        if (item == null) throw new IllegalArgumentException("edition not staged");
+        return item.editionId() + ":" + item.key() + ":" + item.metadata().checksumSha256();
+    }
     /** Prepare a new recording revision without changing the published edition yet. */
     public synchronized void stageReplacement(String editionId, String key, byte[] audio) {
         if (!published.containsKey(editionId)) throw new IllegalArgumentException("edition not published");
@@ -101,6 +112,7 @@ public final class PublishOutbox {
         return manifest;
     }
     public synchronized List<ProducerEvent> producerEvents() { return List.copyOf(events); }
+    public synchronized int publishedOperationCount() { return events.size(); }
     private void emit(String type, PublicationManifest manifest) {
         outbound.add(new PublicationEvent(1, manifest.editionId() + ":" + (++sequence), type, manifest.editionId(),
                 clock.instant().toString(), manifest));
