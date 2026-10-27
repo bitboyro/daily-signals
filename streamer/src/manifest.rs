@@ -20,9 +20,7 @@ impl PublicationManifest {
         if !matches!(self.schema_version, 1 | 2) || self.status != "PUBLISHED" || self.edition_id.is_empty() {
             return Err("unpublished or unsupported manifest");
         }
-        let dated = self.air_date.as_deref().is_some_and(|d| {
-            d.len() == 10 && d.bytes().enumerate().all(|(i, b)| if i == 4 || i == 7 { b == b'-' } else { b.is_ascii_digit() })
-        });
+        let dated = self.air_date.as_deref().is_some_and(is_iso_date_shape);
         if (self.schema_version == 2) != dated || (self.schema_version == 1 && self.air_date.is_some()) {
             return Err("air date does not match schema version");
         }
@@ -35,6 +33,35 @@ impl PublicationManifest {
         }
         Ok(())
     }
+
+    /// Returns the explicit v2 air date or the conventional date suffix used
+    /// by legacy v1 edition identifiers.
+    pub fn effective_air_date(&self) -> Option<&str> {
+        if self.schema_version == 2 {
+            return self.air_date.as_deref();
+        }
+        if self.schema_version != 1 || self.edition_id.len() <= 10 {
+            return None;
+        }
+
+        let suffix_start = self.edition_id.len() - 10;
+        if self.edition_id.as_bytes().get(suffix_start - 1) != Some(&b'-') {
+            return None;
+        }
+        let suffix = self.edition_id.get(suffix_start..)?;
+        is_iso_date_shape(suffix).then_some(suffix)
+    }
+}
+
+fn is_iso_date_shape(value: &str) -> bool {
+    value.len() == 10
+        && value.bytes().enumerate().all(|(i, b)| {
+            if i == 4 || i == 7 {
+                b == b'-'
+            } else {
+                b.is_ascii_digit()
+            }
+        })
 }
 #[cfg(test)]
 mod tests {
@@ -47,16 +74,30 @@ mod tests {
     }
     #[test]
     fn still_accepts_v1_manifests_without_air_date() {
-        let v1 = r#"{"schemaVersion":1,"editionId":"demo-2026-01-15","status":"PUBLISHED","audioPath":"fixtures/demo-edition.wav","contentType":"audio/wav","sizeBytes":16044,"checksumSha256":"f9efab5003000788f6851091398494c71506d3319e03f2abea702aa8214bc8f0"}"#;
-        let manifest: PublicationManifest = serde_json::from_str(v1).unwrap();
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
         manifest.validate().unwrap();
         assert!(manifest.air_date.is_none());
+        assert_eq!(manifest.effective_air_date(), Some("2026-01-15"));
     }
     #[test]
     fn parses_shared_v2_fixture_with_air_date() {
         let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
         manifest.validate().unwrap();
         assert_eq!(manifest.air_date.as_deref(), Some("2026-01-15"));
+        assert_eq!(manifest.effective_air_date(), Some("2026-01-15"));
+    }
+    #[test]
+    fn legacy_ids_without_a_safe_date_suffix_have_no_effective_air_date() {
+        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        manifest.edition_id = "legacy-demo".into();
+        manifest.validate().unwrap();
+        assert_eq!(manifest.effective_air_date(), None);
+
+        manifest.edition_id = "legacy2026-01-15".into();
+        assert_eq!(manifest.effective_air_date(), None);
+
+        manifest.edition_id = "legacy-2026-1x-15".into();
+        assert_eq!(manifest.effective_air_date(), None);
     }
     #[test]
     fn air_date_must_match_schema_version() {
