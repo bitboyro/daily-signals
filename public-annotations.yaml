@@ -871,6 +871,134 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/KokoroProviderConfig.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroProviderConfigTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/KokoroCapabilityProbe.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroCapabilityProbeTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/KokoroVoiceProvider.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "VOC-03",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroVoiceProviderTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "VOC-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/KokoroVoiceInventory.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroVoiceSelectionTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/FixtureVoiceProviderTest.java"
    ],
    "features": [
@@ -910,6 +1038,26 @@
    "confidence": "high",
    "provenance": "authored-review",
    "introducedIn": "204f45f4f8461734f987365c92fd62e656798bf1",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-edition/src/test/resources/fixtures/kokoro-response.wav",
+    "radio-edition/src/test/resources/fixtures/kokoro-response.json"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "VOC-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
    "retiredIn": null
   },
   {
