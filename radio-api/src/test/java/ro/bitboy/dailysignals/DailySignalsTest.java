@@ -15,6 +15,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DailySignalsTest {
     @Test
+    void recordsAStartupTimeProbeWithoutUsingItAsAPassThreshold() throws Exception {
+        long started = System.nanoTime();
+        HttpServer server = DailySignals.createServer(0);
+        server.start();
+        try {
+            long elapsedMillis = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started);
+            assertTrue(server.getAddress().getPort() > 0);
+            System.out.println("daily-signals.startup.millis=" + elapsedMillis);
+        } finally {
+            server.stop(0);
+        }
+    }
+    @Test
     void servesABoundedEditionCatalogLoadProfile() throws Exception {
         HttpServer server = DailySignals.createServer(0);
         server.start();
