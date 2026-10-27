@@ -136,6 +136,36 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/ProviderRecoveryPolicy.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ProviderRecoveryPolicyTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/SnapshotParser.java"
    ],
    "features": [

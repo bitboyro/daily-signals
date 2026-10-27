@@ -84,6 +84,16 @@ jobs:
           java-version: '21'
       - name: Bounded source parser fuzz corpus
         run: mvn -B -ntp -pl radio-ingestion test -Dtest=SourceParserFuzzCorpusTest
+  provider-chaos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Provider outage recovery contract
+        run: mvn -B -ntp -pl radio-ingestion test -Dtest=ProviderRecoveryPolicyTest
   observability-contract:
     runs-on: ubuntu-latest
     steps:
