@@ -1829,7 +1829,7 @@
    ],
    "confidence": "high",
    "provenance": "authored-review",
-   "introducedIn": null,
+   "introducedIn": "dc2ba0edc9db6543217725a2ddc0acb235405cf7",
    "retiredIn": null
   },
   {
@@ -1850,6 +1850,21 @@
   {
    "paths": [
     "qualification/nightly-soak.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-07",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    ".github/workflows/nightly.yml"
    ],
    "features": [
     {
