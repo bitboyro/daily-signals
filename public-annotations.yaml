@@ -988,6 +988,44 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/GeneratedAudioProvenance.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/GeneratedAudioProvenanceTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/KokoroVoiceProviderTest.java"
    ],
    "features": [
