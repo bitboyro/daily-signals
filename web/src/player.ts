@@ -8,6 +8,12 @@ export function audioUrl(config: ListenerConfig, edition: EditionSummary): strin
 
 export interface NowPlayingState { editionId: string; title: string; airDate: string; }
 export interface PlaybackControls { preload: 'none'; nativeControls: true; downloadUrl: string; }
+export type RecoveryState = 'idle' | 'retryable' | 'exhausted';
+
+export function recoveryState(failures: number, maxRetries = 1): RecoveryState {
+  if (failures === 0) return 'idle';
+  return failures <= maxRetries ? 'retryable' : 'exhausted';
+}
 
 export function nowPlayingState(edition: EditionSummary): NowPlayingState {
   return { editionId: edition.editionId, title: edition.title, airDate: edition.airDate };
@@ -32,5 +38,32 @@ export function renderPlayer(config: ListenerConfig, edition: EditionSummary): s
     + `<audio controls preload="${controls.preload}" src="${src}" aria-labelledby="player-title-${id}" aria-describedby="player-help-${id}" aria-keyshortcuts="Space Enter ArrowLeft ArrowRight">`
     + `<a href="${src}">Download the ${title} recording</a></audio>`
     + `<p id="player-help-${id}" class="player-help">Space or Enter plays and pauses; arrow keys seek. Playback does not start automatically.</p>`
+    + `<p class="playback-status" role="status" aria-live="polite">Ready to play.</p>`
+    + `<button class="playback-retry" type="button" hidden>Retry playback</button>`
+    + `<p class="playback-download">If streaming remains unavailable, <a href="${src}">download the recording</a>.</p>`
     + '</figure></article>';
+}
+
+export function bindPlaybackRecovery(root: ParentNode, maxRetries = 1): void {
+  const audio = root.querySelector<HTMLAudioElement>('audio');
+  const retry = root.querySelector<HTMLButtonElement>('.playback-retry');
+  const status = root.querySelector<HTMLElement>('.playback-status');
+  if (!audio || !retry || !status) return;
+  let failures = 0;
+  audio.addEventListener('error', () => {
+    failures += 1;
+    const state = recoveryState(failures, maxRetries);
+    retry.hidden = state !== 'retryable';
+    status.textContent = state === 'retryable'
+      ? 'Playback failed. You can retry once or download the recording.'
+      : 'Playback is unavailable. Download the recording or try again later.';
+  });
+  retry.addEventListener('click', () => {
+    retry.hidden = true;
+    status.textContent = 'Retrying playback…';
+    audio.load();
+    void audio.play().catch(() => {
+      audio.dispatchEvent(new Event('error'));
+    });
+  });
 }

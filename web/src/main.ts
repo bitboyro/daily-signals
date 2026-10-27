@@ -1,6 +1,6 @@
 import { readConfig } from './config.ts';
 import { fetchEditions, renderEditionList, type EditionSummary } from './editions.ts';
-import { renderPlayer } from './player.ts';
+import { bindPlaybackRecovery, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
@@ -106,6 +106,9 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
 if (typeof document !== 'undefined') {
   const config = readConfig(window.location.origin);
   const player = element('player');
-  void showEditions(config.apiBase, (edition) => { player.innerHTML = renderPlayer(config, edition); });
+  void showEditions(config.apiBase, (edition) => {
+    player.innerHTML = renderPlayer(config, edition);
+    bindPlaybackRecovery(player);
+  });
   void showProducerPanel(config.apiBase, 'queue');
 }
