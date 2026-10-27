@@ -2382,6 +2382,19 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/CandidateOrderingPropertyTest.java"
+   ],
+   "features": [
+    { "id": "EDT-03", "relation": "tests" },
+    { "id": "EDT-04", "relation": "tests" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [

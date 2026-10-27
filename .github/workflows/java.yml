@@ -64,6 +64,16 @@ jobs:
           name: schedule-junit-${{ github.run_attempt }}
           path: '**/target/surefire-reports/TEST-*ScheduledEditionClockTest.xml'
           if-no-files-found: warn
+  edition-property:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Edition ordering properties
+        run: mvn -B -ntp -pl radio-editorial -am test -Dtest=CandidateOrderingPropertyTest -Dsurefire.failIfNoSpecifiedTests=false
       - name: Upload schedule-test coverage
         if: always()
         uses: actions/upload-artifact@v4
