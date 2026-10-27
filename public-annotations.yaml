@@ -2356,6 +2356,19 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/release-candidate-e6.md"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "documents" },
+    { "id": "PLT-06", "relation": "documents" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
