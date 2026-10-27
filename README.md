@@ -9,7 +9,7 @@ The repository history is intentionally authored as small, identifiable product 
 - Java: `mvn -B -ntp verify`. Run the API with `java -cp radio-api/target/classes:radio-edition/target/classes:radio-editorial/target/classes:radio-ingestion/target/classes ro.bitboy.dailysignals.DailySignals [PORT]` (default `8151`). Set `DAILY_SIGNALS_WEB_ROOT=web/dist` to serve the listener UI at `/`.
 - Rust: `cargo test --manifest-path streamer/Cargo.toml`; `streamer PORT MANIFEST_PATH AUDIO_ROOT` serves one published manifest.
 - Web: `npm --prefix web ci`, then `npm --prefix web run build`, `npm --prefix web test`, and `npm --prefix web run e2e` (needs the Java build).
-- Containers: `deploy/compose.yaml`; see [container runtime](docs/container-runtime.md).
+- Containers: `deploy/compose.yaml`; see [container runtime](docs/container-runtime.md) and [listener release operations](docs/operations/listener-release.md).
 
 The API serves `GET /health`, `GET /api/editions` (versioned edition list), `GET /editions/{editionId}/audio`, and the producer review queue at `/api/review-queue`. Review decisions require `Authorization: Bearer <token>` for a token configured in `DAILY_SIGNALS_REVIEW_TOKENS` (`token=ROLE` pairs, at least 24 characters); without that configuration the API refuses every review write. The retired `/editions/demo/audio` link redirects permanently to the demo edition. Shared contracts live in `contracts/`.
 

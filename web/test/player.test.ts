@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readConfig } from '../src/config.ts';
-import { audioUrl, nowPlayingState, playbackControls, renderNoEditionGuidance, renderPlayer } from '../src/player.ts';
+import { audioUrl, nowPlayingState, playbackControls, recoveryState, renderNoEditionGuidance, renderPlayer } from '../src/player.ts';
 
 const edition = { editionId: 'demo-2026-01-15', airDate: '2026-01-15', title: 'Morning & "late" news', audioPath: '/editions/demo/audio' };
 const config = readConfig('http://listener.test/', { streamBase: 'http://stream.test/' });
@@ -34,6 +34,15 @@ test('player never autoplays and offers a download fallback', () => {
   assert.match(html, /preload="none"/);
   assert.match(html, /<article class="daily-edition" data-edition="demo-2026-01-15"/);
   assert.match(html, /<a href="http:\/\/stream.test\/editions\/demo\/audio">Download the Morning &amp; &quot;late&quot; news recording<\/a>/);
+  assert.match(html, /role="status" aria-live="polite"/);
+  assert.match(html, />Retry playback<\/button>/);
+  assert.match(html, />download the recording<\/a>/);
+});
+
+test('playback recovery is bounded', () => {
+  assert.equal(recoveryState(0), 'idle');
+  assert.equal(recoveryState(1), 'retryable');
+  assert.equal(recoveryState(2), 'exhausted');
 });
 
 test('empty daily edition guidance gives listeners a useful next step', () => {

@@ -2315,6 +2315,47 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/package-listener.py"
+   ],
+   "features": [
+    { "id": "WEB-01", "relation": "implements" },
+    { "id": "PLT-05", "relation": "configures" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/post-deploy-health.py"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "tests" },
+    { "id": "WEB-01", "relation": "tests" },
+    { "id": "STR-01", "relation": "tests" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/operations/listener-release.md"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "documents" },
+    { "id": "WEB-01", "relation": "documents" },
+    { "id": "STR-01", "relation": "documents" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [

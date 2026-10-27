@@ -25,5 +25,23 @@ jobs:
           npm --prefix web run build
       - name: Descriptor and host-run startup check
         run: python3 tools/container-smoke.py
-      - name: Compose image startup and playback
-        run: python3 tools/container-smoke.py --docker
+  post-deploy-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start deployment candidate
+        run: docker compose -f deploy/compose.yaml up -d --build
+      - name: Probe deployed listener and playback
+        run: python3 tools/post-deploy-health.py --report post-deploy-health.json
+      - name: Capture deployment diagnostics
+        if: always()
+        run: docker compose -f deploy/compose.yaml logs > compose.log && docker compose -f deploy/compose.yaml down
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-health-${{ github.run_attempt }}
+          path: |
+            post-deploy-health.json
+            compose.log
+          if-no-files-found: warn
