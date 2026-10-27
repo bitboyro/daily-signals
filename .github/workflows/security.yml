@@ -19,3 +19,17 @@ jobs:
           java-version: '21'
       - name: Source parser authorization matrix
         run: mvn -B -ntp -pl radio-ingestion test -Dtest=AuthorizedSourceParserTest
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan tracked source without exposing matches
+        run: python3 tools/scan-secrets.py
+  container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan runtime container policy
+        run: python3 tools/scan-container-policy.py

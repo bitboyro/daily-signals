@@ -2422,6 +2422,20 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/scan-secrets.py",
+    "tools/scan-container-policy.py"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "guards" },
+    { "id": "PLT-06", "relation": "guards" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
