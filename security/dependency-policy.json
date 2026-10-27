@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "requiredLocks": ["streamer/Cargo.lock", "web/package-lock.json"],
+  "mavenProperties": ["jackson.version", "junit.version", "postgresql.version", "jacoco.version"],
+  "forbiddenVersionTokens": ["LATEST", "RELEASE", "+"],
+  "forbidLatestContainerTag": true
+}
