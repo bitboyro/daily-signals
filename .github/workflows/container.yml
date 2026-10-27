@@ -70,7 +70,9 @@ jobs:
       - name: Start deployment candidate
         run: docker compose -f deploy/compose.yaml up -d --build
       - name: Probe deployed listener and playback
-        run: python3 tools/post-deploy-health.py --report post-deploy-health.json
+        run: python3 tools/post-deploy-health.py --revision "${{ github.sha }}" --report post-deploy-health.json
+      - name: Validate deployment evidence
+        run: python3 -c 'import json; r=json.load(open("post-deploy-health.json")); assert r["schemaVersion"] == 2 and r["revision"] == "${{ github.sha }}" and r["result"] == "PASS"'
       - name: Capture deployment diagnostics
         if: always()
         run: docker compose -f deploy/compose.yaml logs > compose.log && docker compose -f deploy/compose.yaml down

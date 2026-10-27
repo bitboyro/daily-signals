@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Probe a deployed listener/API/streamer boundary and write machine-readable evidence."""
 import argparse
+import datetime
 import json
 import pathlib
 import time
@@ -24,8 +25,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--api-base", default="http://127.0.0.1:8151")
 parser.add_argument("--stream-base", default="http://127.0.0.1:8152")
 parser.add_argument("--report", type=pathlib.Path, default=pathlib.Path("post-deploy-health.json"))
+parser.add_argument("--revision", default="local", help="source revision under qualification")
 args = parser.parse_args()
 
+started = time.monotonic()
 checks: list[dict[str, object]] = []
 for name, url in (
     ("api-health", f"{args.api_base}/health"),
@@ -36,7 +39,7 @@ for name, url in (
 ):
     status, _, body = fetch(url)
     assert status == 200 and body
-    checks.append({"name": name, "status": status, "bytes": len(body)})
+    checks.append({"name": name, "url": url, "status": status, "bytes": len(body)})
 
 status, _, body = fetch(f"{args.api_base}/api/editions")
 catalog = json.loads(body)
@@ -46,11 +49,19 @@ audio_url = f"{args.stream_base}{edition['audioPath']}"
 status, headers, audio = fetch(audio_url)
 assert status == 200 and audio[:4] == b"RIFF" and headers.get("Content-Type") == "audio/wav"
 assert headers.get("ETag") and "immutable" in headers.get("Cache-Control", "")
-checks.append({"name": "full-audio", "status": status, "bytes": len(audio), "etag": headers["ETag"]})
+checks.append({"name": "full-audio", "url": audio_url, "status": status, "bytes": len(audio), "etag": headers["ETag"]})
 status, _, first = fetch(audio_url, {"Range": "bytes=0-3"})
 assert status == 206 and first == b"RIFF"
-checks.append({"name": "audio-range", "status": status, "bytes": len(first)})
+checks.append({"name": "audio-range", "url": audio_url, "status": status, "bytes": len(first)})
 
-report = {"schemaVersion": 1, "editionId": edition["editionId"], "checks": checks, "result": "PASS"}
+report = {
+    "schemaVersion": 2,
+    "revision": args.revision,
+    "generatedAt": datetime.datetime.now(datetime.UTC).isoformat(),
+    "durationMs": round((time.monotonic() - started) * 1000),
+    "editionId": edition["editionId"],
+    "checks": checks,
+    "result": "PASS",
+}
 args.report.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 print(f"post-deploy health passed: {len(checks)} checks")
