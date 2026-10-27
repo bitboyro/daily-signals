@@ -29,3 +29,5 @@ mvn -B -ntp -f radio-editorial/pom.xml -Pmutation org.pitest:pitest-maven:mutati
 ## Triage and reruns
 
 Download the failing job artifact before rerunning. Classify setup or runner exhaustion as infrastructure; classify a repeatable task, test, threshold or mutant failure as code evidence. Rerun only the failed job after the cause is understood. The weekly release qualification remains the authoritative full release gate; a green nightly run does not replace it.
+
+Environment-specific results and artifact naming are described in [compatibility matrix evidence](matrix-evidence.md).

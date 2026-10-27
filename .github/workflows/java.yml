@@ -3,6 +3,27 @@ on:
   push:
   pull_request:
 jobs:
+  java-unit-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['21', '25']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - name: Java unit compatibility (JDK ${{ matrix.java }})
+        run: mvn -B -ntp verify
+      - name: Upload compatibility reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-${{ matrix.java }}-junit-${{ github.run_attempt }}
+          path: '**/target/surefire-reports/TEST-*.xml'
+          if-no-files-found: warn
   java-unit:
     runs-on: ubuntu-latest
     steps:

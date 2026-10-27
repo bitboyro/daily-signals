@@ -3,6 +3,16 @@ on:
   push:
   pull_request:
 jobs:
+  install-smoke-matrix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Portable install contract (${{ matrix.os }})
+        run: python3 tools/install-smoke.py
   install-smoke:
     runs-on: ubuntu-latest
     steps:

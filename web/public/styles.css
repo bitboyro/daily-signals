@@ -11,3 +11,8 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 [role="tablist"] { display: flex; gap: 0.5rem; margin-block: 1rem; }
 [role="tab"][aria-selected="true"] { font-weight: 700; text-decoration: underline; }
 [role="tabpanel"] { padding-block: 0.5rem; }
+@media (max-width: 32rem) {
+  table, thead, tbody, tr, th, td { display: block; }
+  thead { position: absolute; left: -999px; }
+  td::before { content: attr(data-label); display: block; font-weight: 700; }
+}
