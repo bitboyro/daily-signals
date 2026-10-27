@@ -2382,6 +2382,20 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/resources/db/populated-editions.sql",
+    "*/src/test/java/*/PopulatedMigrationPostgresTest.java"
+   ],
+   "features": [
+    { "id": "PLT-02", "relation": "tests" },
+    { "id": "EDI-04", "relation": "tests" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
