@@ -2302,6 +2302,19 @@
    "provenance": "authored-review",
    "introducedIn": "41d0e06df5caac4ef1b78e713df8c9bb98c6da40",
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/tools/check-bundle-budget.mjs"
+   ],
+   "features": [
+    { "id": "WEB-01", "relation": "guards" },
+    { "id": "PLT-05", "relation": "guards" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
