@@ -950,6 +950,44 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/KokoroRetryingVoiceProvider.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroRetryPolicyTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/KokoroVoiceProviderTest.java"
    ],
    "features": [
