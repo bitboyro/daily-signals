@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Validate fixed synthetic source and playable audio without external services."""
 import json
+import hashlib
 import pathlib
 import wave
 
@@ -21,4 +22,19 @@ with wave.open(str(FIXTURES / "demo-edition.wav"), "rb") as recording:
     assert recording.getframerate() == 8000
     assert recording.getsampwidth() == 2
     assert recording.getnframes() == 8000
-print("3 fixture checks passed")
+
+contracts = ROOT / "contracts"
+manifests = {
+    version: json.loads((contracts / f"publication-manifest-v{version}.json").read_text())
+    for version in (1, 2)
+}
+assert {manifest["schemaVersion"] for manifest in manifests.values()} == {1, 2}
+assert "airDate" not in manifests[1]
+assert manifests[2]["airDate"] == "2026-01-15"
+common_fields = ("editionId", "status", "audioPath", "contentType", "sizeBytes", "checksumSha256")
+assert all(manifests[1][field] == manifests[2][field] for field in common_fields)
+audio = FIXTURES / pathlib.PurePosixPath(manifests[2]["audioPath"]).name
+assert audio.stat().st_size == manifests[2]["sizeBytes"]
+assert hashlib.sha256(audio.read_bytes()).hexdigest() == manifests[2]["checksumSha256"]
+assert manifests[2]["audioPath"] == f"fixtures/{audio.name}"
+print("4 fixture groups passed")
