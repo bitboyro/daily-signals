@@ -2396,6 +2396,18 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/MigrationRollbackPostgresTest.java"
+   ],
+   "features": [
+    { "id": "PLT-02", "relation": "tests" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
