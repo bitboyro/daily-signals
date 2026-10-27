@@ -1,6 +1,13 @@
 name: Optional Kokoro integration
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      operator_approved:
+        description: I verified the pinned model and approve local synthesis
+        required: true
+        type: boolean
+        default: false
 jobs:
   kokoro-profile-contract:
     runs-on: ubuntu-latest
@@ -9,8 +16,17 @@ jobs:
       - name: Validate pinned optional profile
         run: python3 tools/kokoro-integration-smoke.py
   kokoro-live-smoke:
-    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && inputs.operator_approved
+    runs-on: [self-hosted, kokoro]
+    env:
+      KOKORO_MODEL_DIR: ${{ vars.KOKORO_MODEL_DIR }}
+      KOKORO_VOICES_DIR: ${{ vars.KOKORO_VOICES_DIR }}
     steps:
       - uses: actions/checkout@v4
+      - name: Start operator-provisioned Kokoro runtime
+        run: docker compose -f deploy/compose.yaml --profile kokoro up -d kokoro
       - name: Generate local recording
         run: python3 tools/kokoro-integration-smoke.py --live
+      - name: Stop optional runtime
+        if: always()
+        run: docker compose -f deploy/compose.yaml --profile kokoro down

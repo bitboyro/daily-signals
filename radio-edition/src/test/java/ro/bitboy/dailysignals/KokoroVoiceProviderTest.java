@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class KokoroVoiceProviderTest {
-    private static final String SHA = "8f4f1bc14a2a28cc04f27f9fcd17dc5d3a18955881b168b067e036b6ebc2e6f7";
+    private static final String SHA = "496dba118d1a58f5f3db2efc88dbdc216e0483fc89fe6e47ee1f2c53f18ad1e4";
 
     @Test void postsSpeechRequestAndReturnsWav() throws Exception {
         var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -37,7 +37,7 @@ class KokoroVoiceProviderTest {
         server.start();
         try {
             var config = new KokoroProviderConfig(URI.create("http://127.0.0.1:" + server.getAddress().getPort()),
-                    "kokoro-82m-v1.0-20250915", SHA, "af_heart");
+                    "9e1746465742d780a70ac81d01a334c9f8e0bbb3", SHA, "af_heart");
             var audio = new KokoroVoiceProvider(config, Duration.ofSeconds(1))
                     .render(new ScriptAssembler.Script("Local bulletin.\n", List.of("s1")));
             assertEquals("RIFF", new String(audio.bytes(), 0, 4, StandardCharsets.US_ASCII));
