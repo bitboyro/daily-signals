@@ -1395,6 +1395,25 @@
   },
   {
    "paths": [
+    "docs/operations/installation.md"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "documents"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "docs/operations/provider-storage-incidents.md"
    ],
    "features": [
@@ -1846,6 +1865,75 @@
    "confidence": "high",
    "provenance": "authored-review",
    "introducedIn": "96e392bb96202b6b9cc9bc67d8781ee13230d2eb",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "deploy/install-manifest.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/install-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "examples/upgrade/*/runtime.env",
+    "examples/upgrade/*/release.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/upgrade-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
    "retiredIn": null
   },
   {

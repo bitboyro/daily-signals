@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "services": [
+    {"name": "api", "port": 8151, "healthPath": "/health"},
+    {"name": "streamer", "port": 8152, "healthPath": "/health"}
+  ],
+  "runtimeVariables": [
+    "DAILY_SIGNALS_BIND_ADDRESS",
+    "DAILY_SIGNALS_WEB_ROOT",
+    "STREAMER_BIND_ADDRESS",
+    "STREAMER_PUBLIC_PREFIXES"
+  ],
+  "immutableMountInputs": [
+    "contracts/publication-manifest-v2.json",
+    "radio-api/src/main/resources/fixtures"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "release": "0.1.0",
+  "publicationManifestSchema": 1,
+  "runtimeVariables": [
+    "DAILY_SIGNALS_BIND_ADDRESS",
+    "DAILY_SIGNALS_WEB_ROOT",
+    "STREAMER_BIND_ADDRESS",
+    "STREAMER_PUBLIC_PREFIXES"
+  ]
+}
