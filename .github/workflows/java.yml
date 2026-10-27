@@ -74,6 +74,16 @@ jobs:
           java-version: '21'
       - name: Edition ordering properties
         run: mvn -B -ntp -pl radio-editorial -am test -Dtest=CandidateOrderingPropertyTest -Dsurefire.failIfNoSpecifiedTests=false
+  parser-fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Bounded source parser fuzz corpus
+        run: mvn -B -ntp -pl radio-ingestion test -Dtest=SourceParserFuzzCorpusTest
       - name: Upload schedule-test coverage
         if: always()
         uses: actions/upload-artifact@v4

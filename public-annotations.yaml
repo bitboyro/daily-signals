@@ -2395,6 +2395,20 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/SourceParserFuzzCorpusTest.java",
+    "*/src/test/resources/fuzz/source-parser/*.json"
+   ],
+   "features": [
+    { "id": "SRC-04", "relation": "tests" },
+    { "id": "SRC-03", "relation": "tests" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
