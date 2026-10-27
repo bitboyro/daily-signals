@@ -48,6 +48,7 @@
   "PLT-04": "scheduled jobs",
   "PLT-05": "packaging and deploy",
   "PLT-06": "pull-request qualification",
+  "PLT-07": "nightly qualification",
   "WEB-01": "edition browser",
   "WEB-02": "audio player",
   "WEB-03": "producer queue",
@@ -1825,6 +1826,48 @@
    "confidence": "high",
    "provenance": "authored-review",
    "introducedIn": "690fdb2085613bbd1ddf966e137c593a88692f23",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "qualification/nightly-soak.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-07",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/nightly-soak.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-07",
+     "relation": "guards"
+    },
+    {
+     "id": "EDI-02",
+     "relation": "calls"
+    },
+    {
+     "id": "STR-01",
+     "relation": "calls"
+    },
+    {
+     "id": "WEB-01",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
    "retiredIn": null
   },
   {

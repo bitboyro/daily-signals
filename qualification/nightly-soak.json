@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "iterations": 5,
+  "maximumDurationSeconds": 1800,
+  "tasks": [
+    {
+      "name": "editorial-schedule",
+      "command": ["mvn", "-B", "-ntp", "-pl", "radio-edition", "-am", "-Dtest=CandidateOrderingPropertyTest,ScheduledEditionClockTest", "-Dsurefire.failIfNoSpecifiedTests=false", "test"]
+    },
+    {
+      "name": "streamer-manifest",
+      "command": ["cargo", "test", "--manifest-path", "streamer/Cargo.toml", "manifest"]
+    },
+    {
+      "name": "listener-unit",
+      "command": ["npm", "--prefix", "web", "test"]
+    }
+  ]
+}
