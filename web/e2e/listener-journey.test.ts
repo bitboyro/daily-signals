@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { readConfig } from '../src/config.ts';
 import { fetchEditions, renderDailyEdition, renderEditionList } from '../src/editions.ts';
@@ -78,6 +78,16 @@ test('listener visual baseline exposes daily, player and empty-state landmarks',
   assert.match(baseline, /class="player"/);
   assert.match(baseline, /listener-empty/);
   assert.doesNotMatch(baseline, /autoplay/);
+});
+
+test('producer queue has a reviewed viewport contract', () => {
+  const profile = process.env.VIEWPORT_PROFILE ?? 'desktop';
+  const width = Number(process.env.VIEWPORT_WIDTH ?? '1440');
+  assert.ok(profile === 'mobile' || profile === 'desktop');
+  assert.equal(profile === 'mobile', width < 640);
+  const styles = readFileSync(`${root}web/public/styles.css`, 'utf8');
+  assert.match(styles, /@media \(max-width: 32rem\)/);
+  assert.match(styles, /data-label/);
 });
 
 test('links to the retired demo player still reach the edition audio', async () => {
