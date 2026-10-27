@@ -13,3 +13,7 @@ The same workflow runs every Monday at 03:00 UTC on the default branch as the we
 Daily Signals schedules an edition in the station's IANA timezone, then stores the resulting instant. For example, 08:30 in `Europe/Bucharest` on 2026-01-15 is 06:30 UTC; 08:30 in `Asia/Tokyo` on that same local date is 23:30 UTC on the prior day. DST gaps move forward under Java's zone rules, while overlaps use the earlier offset. CI schedules remain UTC operational triggers; they do not redefine the station-local air time.
 
 Listener visual baselines keep ISO dates in semantic `datetime` attributes and render labels with an explicitly selected locale. CI qualifies the reviewed listener markup on Node 22 and 24 so host locale and timezone defaults cannot silently alter the daily-edition view.
+
+## Performance profiles
+
+Performance checks separate deterministic work budgets from observed timing. Edition assembly records fixed candidate and selected-segment counts, the web build enforces total and per-file byte ceilings, and API startup records elapsed time as evidence without making host speed a pass condition. Provider job duration remains observational evidence and is never substituted for these deterministic budgets.

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.IntStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 class EditionAssemblerTest {
@@ -21,5 +22,16 @@ class EditionAssemblerTest {
         var edition=new EditionAssembler().assemble(LocalDate.of(2026,1,15),ZoneId.of("Europe/Bucharest"),List.of(approved,pending));
         assertEquals(1,edition.segments().size());
         assertEquals("a",edition.segments().get(0).story().id());
+    }
+    @Test void profilesAFixedEditionAssemblyWorkload() {
+        var candidates = IntStream.range(0, 100)
+                .mapToObj(index -> index % 4 == 0
+                        ? candidate("story-" + index, "Approved " + index, 1)
+                            .withDecision(CandidateReview.Decision.APPROVED)
+                        : candidate("story-" + index, "Pending " + index, 1))
+                .toList();
+        var profile = new EditionAssembler().profile(LocalDate.of(2026, 1, 15),
+                ZoneId.of("Europe/Bucharest"), candidates);
+        assertEquals(new EditionAssembler.AssemblyProfile(100, 25), profile);
     }
 }

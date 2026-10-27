@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && cp -R public/. dist/",
+    "bundle:budget": "npm run build && node tools/check-bundle-budget.mjs",
     "test": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-unit.xml --test-reporter=lcov --test-reporter-destination=reports/web-unit.lcov test/*.test.ts",
     "e2e": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-e2e.xml --test-reporter=lcov --test-reporter-destination=reports/web-e2e.lcov e2e/*.test.ts"
   },
