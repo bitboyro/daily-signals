@@ -32,3 +32,5 @@ Before upgrading, run `python3 tools/upgrade-smoke.py`. It proves that the v0.1.
 Keep the previous images and runtime configuration until post-deploy health evidence passes. Roll back both services together if health or playback fails. Database rollback follows the separate [database migration runbook](database-migration.md); never reverse a populated migration by editing schema state manually.
 
 For detailed container behavior see [container runtime](../container-runtime.md). For production probe interpretation see [listener release operations](listener-release.md).
+
+The optional self-hosted speech runtime has a separate approval and pinning procedure in [local Kokoro speech](kokoro.md).

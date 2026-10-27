@@ -950,6 +950,82 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/KokoroRetryingVoiceProvider.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroRetryPolicyTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/GeneratedAudioProvenance.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/GeneratedAudioProvenanceTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/KokoroVoiceProviderTest.java"
    ],
    "features": [
@@ -2136,6 +2212,46 @@
   },
   {
    "paths": [
+    "deploy/kokoro/model.lock.json",
+    "deploy/kokoro/runtime.env"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "configures"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "deploy/kokoro/THIRD_PARTY_NOTICES.md",
+    "docs/operations/kokoro.md"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "documents"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "deploy/install-manifest.json"
    ],
    "features": [
@@ -2195,6 +2311,29 @@
     },
     {
      "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/kokoro-integration-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-01",
      "relation": "tests"
     }
    ],

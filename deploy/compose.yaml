@@ -1,5 +1,14 @@
 name: daily-signals
 services:
+  kokoro:
+    profiles: ["kokoro"]
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.8.0@sha256:d32322c61254a871e0bc9c38d4e60cd18539cf9b1a2fc8f3ae04409061d0793b
+    env_file: kokoro/runtime.env
+    ports:
+      - "127.0.0.1:8880:8880"
+    volumes:
+      - ${KOKORO_MODEL_DIR:-./kokoro/models}:/models:ro
+      - ${KOKORO_VOICES_DIR:-./kokoro/voices}:/voices:ro
   api:
     build:
       context: ..

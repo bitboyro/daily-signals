@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 class KokoroVoiceSelectionTest {
-    private static final String SHA = "8f4f1bc14a2a28cc04f27f9fcd17dc5d3a18955881b168b067e036b6ebc2e6f7";
+    private static final String SHA = "496dba118d1a58f5f3db2efc88dbdc216e0483fc89fe6e47ee1f2c53f18ad1e4";
 
     @Test void rejectsUnsupportedVoiceBeforeDispatch() throws Exception {
         var calls = new AtomicInteger();
