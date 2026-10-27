@@ -901,6 +901,36 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/KokoroCapabilityProbe.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroCapabilityProbeTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/FixtureVoiceProviderTest.java"
    ],
    "features": [
