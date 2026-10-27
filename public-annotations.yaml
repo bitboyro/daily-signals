@@ -2136,6 +2136,26 @@
   },
   {
    "paths": [
+    "deploy/kokoro/model.lock.json",
+    "deploy/kokoro/runtime.env"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "configures"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "deploy/install-manifest.json"
    ],
    "features": [
