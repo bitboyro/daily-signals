@@ -84,6 +84,16 @@ jobs:
           java-version: '21'
       - name: Bounded source parser fuzz corpus
         run: mvn -B -ntp -pl radio-ingestion test -Dtest=SourceParserFuzzCorpusTest
+  observability-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Structured API log contract
+        run: mvn -B -ntp -pl radio-api -am test -Dtest=StructuredLogContractTest -Dsurefire.failIfNoSpecifiedTests=false
       - name: Upload schedule-test coverage
         if: always()
         uses: actions/upload-artifact@v4
