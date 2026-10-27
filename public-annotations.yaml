@@ -1815,6 +1815,25 @@
   },
   {
    "paths": [
+    "radio-editorial/pom.xml"
+   ],
+   "features": [
+    {
+     "id": "EDT-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-07",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     ".github/workflows/*.yml"
    ],
    "features": [
