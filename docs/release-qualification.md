@@ -1,5 +1,7 @@
 # Release qualification
 
+The current producer/listener candidate scope and required evidence are listed in [E6 release candidate notes](release-candidate-e6.md).
+
 The `release/first` branch is an independent maintenance line. Its first backport is the inclusive Rust range boundary fix from DS-11.c02, applied to the older DS-11.c01 source. Main and release SHAs must be tracked separately; a release-branch commit is not an ancestor of main.
 
 The release workflow accepts a `v*` tag or an explicit manual dispatch. It runs Java unit and PostgreSQL reference tests, Rust tests, deterministic fixture/audio and documentation checks, the web unit and listener journey tests, Java-to-Rust playback checks, and container startup both host-run and through compose. It retains Java and web JUnit XML and the Rust log for 30 days. A tag run also writes a release manifest containing the exact source SHA, the tag, digests of every shared contract, the published fixture audio checksum (verified against its manifest) and Java, web and Rust report digests. Manual branch dispatch qualifies without claiming a release tag.

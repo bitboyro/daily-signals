@@ -4,6 +4,15 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      candidate:
+        description: Release candidate profile
+        required: true
+        default: producer-listener
+        type: choice
+        options:
+          - producer-listener
+          - full-platform
   # Weekly full qualification of the default branch, Mondays 03:00 UTC.
   schedule:
     - cron: '0 3 * * 1'
@@ -60,16 +69,44 @@ jobs:
         working-directory: web
         run: |
           npm ci
-          npm run build
+          npm run release:package
           npm test
           npm run e2e
+      - name: Retain listener release candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: listener-release-candidate-${{ github.run_attempt }}
+          path: web/artifacts/daily-signals-listener-*.zip
+          retention-days: 30
+          if-no-files-found: error
       - name: Cross-process and container qualification
         run: |
           cargo build --manifest-path streamer/Cargo.toml
           python3 tools/dual-process-smoke.py
           python3 tools/voice-playback-smoke.py
           python3 tools/container-smoke.py
-          python3 tools/container-smoke.py --docker
+      - name: Start E6 deployment candidate
+        run: docker compose -f deploy/compose.yaml up -d --build
+      - name: Qualify E6 cross-stack deployment
+        run: python3 tools/post-deploy-health.py --report e6-cross-stack.json
+      - name: Record E6 qualification evidence
+        env:
+          RELEASE_CANDIDATE: ${{ inputs.candidate || 'producer-listener' }}
+        run: python3 tools/record-qualification-evidence.py --candidate "$RELEASE_CANDIDATE"
+      - name: Capture E6 deployment diagnostics
+        if: always()
+        run: docker compose -f deploy/compose.yaml logs > e6-compose.log && docker compose -f deploy/compose.yaml down
+      - name: Retain E6 cross-stack evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e6-cross-stack-${{ github.run_attempt }}
+          path: |
+            e6-cross-stack.json
+            e6-qualification-evidence.json
+            e6-compose.log
+          retention-days: 30
+          if-no-files-found: warn
       - name: Record tag-bound release manifest
         if: startsWith(github.ref, 'refs/tags/')
         env:
