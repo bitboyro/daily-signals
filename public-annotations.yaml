@@ -1880,6 +1880,45 @@
   },
   {
    "paths": [
+    "examples/upgrade/*/runtime.env",
+    "examples/upgrade/*/release.json"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/upgrade-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/container-smoke.py"
    ],
    "features": [
