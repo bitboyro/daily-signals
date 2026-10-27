@@ -3,6 +3,14 @@ on:
   push:
   pull_request:
 jobs:
+  install-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate portable installation contract
+        run: python3 tools/install-smoke.py
+      - name: Validate Compose model
+        run: docker compose -f deploy/compose.yaml config --quiet
   container-smoke:
     runs-on: ubuntu-latest
     steps:
