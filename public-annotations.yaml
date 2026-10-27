@@ -967,6 +967,44 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/RecoveringObjectWriter.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ObjectStoreTimeoutRecoveryTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/PublishOutbox.java"
    ],
    "features": [

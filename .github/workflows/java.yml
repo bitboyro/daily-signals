@@ -159,6 +159,16 @@ jobs:
           name: object-integration-jacoco-${{ github.run_attempt }}
           path: '**/target/site/jacoco/jacoco.xml'
           if-no-files-found: warn
+  storage-chaos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Object-store timeout recovery contract
+        run: mvn -B -ntp -pl radio-edition -am -Dtest=ObjectStoreTimeoutRecoveryTest -Dsurefire.failIfNoSpecifiedTests=false test
   publish-integration:
     runs-on: ubuntu-latest
     steps:
