@@ -9,4 +9,5 @@ release-manifest.json
 web/node_modules/
 web/dist/
 web/reports/
+web/artifacts/
 rust.lcov
