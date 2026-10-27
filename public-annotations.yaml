@@ -1415,6 +1415,25 @@
   },
   {
    "paths": [
+    "docs/operations/nightly-qualification.md"
+   ],
+   "features": [
+    {
+     "id": "PLT-07",
+     "relation": "documents"
+    },
+    {
+     "id": "EDT-04",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "docs/operations/provider-storage-incidents.md"
    ],
    "features": [
