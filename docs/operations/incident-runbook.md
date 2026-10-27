@@ -32,3 +32,5 @@ The manifest changes only after the replacement object transfers successfully. I
 ## After the incident
 
 Keep the incident note with the edition ID, both checksums, the revisions involved and the commands run. Recording copies kept for investigation follow the [recording retention](recording-retention.md) rules.
+
+Listener artifact rollback, post-deployment evidence and playback recovery are documented in [listener release operations](listener-release.md).

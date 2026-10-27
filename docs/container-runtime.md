@@ -4,4 +4,6 @@
 
 Run `python3 tools/container-smoke.py` after building Java, Rust and the web client. It validates pinned base images, non-root runtime users and port declarations, then starts both entrypoints on the host with container paths mapped to local build outputs and loopback bind addresses. `python3 tools/container-smoke.py --docker` builds and starts the compose project and runs the same startup and playback probes.
 
+Hosted deployment qualification uses the separate `post-deploy-health` check and retains its JSON evidence. See [listener release operations](operations/listener-release.md) for packaging, promotion, probing and rollback.
+
 Producer review writes stay closed unless `DAILY_SIGNALS_REVIEW_TOKENS` (`token=ROLE` pairs) is supplied to the `api` container from a secret store. `runtime.env` deliberately omits it, and tokens are never committed.
