@@ -249,4 +249,17 @@ jobs:
           cargo build --manifest-path streamer/Cargo.toml
       - name: Dual-process playback smoke
         run: python3 tools/dual-process-smoke.py
+  performance-thresholds:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Fixed stream request and byte profile
+        run: cargo test --manifest-path streamer/Cargo.toml profiles_a_fixed_number_of_stream_routes
+      - name: Fixed API request profile
+        run: mvn -B -ntp -pl radio-api -am test -Dtest=DailySignalsTest#servesABoundedEditionCatalogLoadProfile -Dsurefire.failIfNoSpecifiedTests=false
 
