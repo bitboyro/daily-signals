@@ -2301,6 +2301,29 @@
   },
   {
    "paths": [
+    "tools/kokoro-integration-smoke.py"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-01",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/container-smoke.py"
    ],
    "features": [

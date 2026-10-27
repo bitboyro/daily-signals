@@ -11,7 +11,7 @@ public record GeneratedAudioProvenance(
         String audioSha256) {
     public GeneratedAudioProvenance {
         if (schemaVersion != 1 || !"kokoro-local".equals(provider)
-                || modelRevision == null || modelRevision.isBlank()
+                || modelRevision == null || !modelRevision.matches("[0-9a-f]{40}")
                 || modelSha256 == null || !modelSha256.matches("[0-9a-f]{64}")
                 || voiceId == null || voiceId.isBlank()
                 || scriptSha256 == null || !scriptSha256.matches("[0-9a-f]{64}")

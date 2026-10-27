@@ -1,0 +1,16 @@
+name: Optional Kokoro integration
+on:
+  pull_request:
+jobs:
+  kokoro-profile-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate pinned optional profile
+        run: python3 tools/kokoro-integration-smoke.py
+  kokoro-live-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate local recording
+        run: python3 tools/kokoro-integration-smoke.py --live

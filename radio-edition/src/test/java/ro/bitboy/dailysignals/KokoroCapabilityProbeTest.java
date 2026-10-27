@@ -15,7 +15,7 @@ class KokoroCapabilityProbeTest {
     @Test void readsPinnedRuntimeCapabilitiesWithoutSynthesis() throws Exception {
         var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/health", exchange -> {
-            byte[] body = "{\"modelRevision\":\"kokoro-82m-v1.0-20250915\",\"voices\":[\"en_af_heart\"]}"
+            byte[] body = "{\"modelRevision\":\"kokoro-82m-v1.0-20250915\",\"voices\":[\"af_heart\"]}"
                     .getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, body.length);
             exchange.getResponseBody().write(body);
@@ -24,7 +24,7 @@ class KokoroCapabilityProbeTest {
         server.start();
         try {
             var config = new KokoroProviderConfig(URI.create("http://127.0.0.1:" + server.getAddress().getPort()),
-                    "kokoro-82m-v1.0-20250915", SHA, "en_af_heart");
+                    "kokoro-82m-v1.0-20250915", SHA, "af_heart");
             var capability = new KokoroCapabilityProbe(Duration.ofSeconds(1)).probe(config);
             assertEquals(config.modelRevision(), capability.modelRevision());
             assertEquals(config.voiceId(), capability.voices().getFirst());

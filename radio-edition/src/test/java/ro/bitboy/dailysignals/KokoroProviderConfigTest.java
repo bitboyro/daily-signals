@@ -11,14 +11,14 @@ class KokoroProviderConfigTest {
 
     @Test void acceptsPinnedLocalRuntimeConfiguration() {
         var config = new KokoroProviderConfig(URI.create("http://127.0.0.1:8880"),
-                "kokoro-82m-v1.0-20250915", SHA, "en_af_heart");
-        assertEquals("en_af_heart", config.voiceId());
+                "kokoro-82m-v1.0-20250915", SHA, "af_heart");
+        assertEquals("af_heart", config.voiceId());
     }
 
     @Test void rejectsRemoteEndpointsAndMutableModels() {
         assertThrows(IllegalArgumentException.class, () -> new KokoroProviderConfig(
-                URI.create("https://tts.example.test"), "kokoro-82m-v1.0-20250915", SHA, "en_af_heart"));
+                URI.create("https://tts.example.test"), "kokoro-82m-v1.0-20250915", SHA, "af_heart"));
         assertThrows(IllegalArgumentException.class, () -> new KokoroProviderConfig(
-                URI.create("http://localhost:8880"), "latest", SHA, "en_af_heart"));
+                URI.create("http://localhost:8880"), "latest", SHA, "af_heart"));
     }
 }

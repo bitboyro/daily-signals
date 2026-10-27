@@ -16,15 +16,15 @@ class KokoroVoiceProviderTest {
 
     @Test void postsSpeechRequestAndReturnsWav() throws Exception {
         var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
-        server.createContext("/v1/audio", exchange -> {
-            if (!"/v1/audio".equals(exchange.getRequestURI().getPath())) {
+        server.createContext("/v1/audio/speech", exchange -> {
+            if (!"/v1/audio/speech".equals(exchange.getRequestURI().getPath())) {
                 exchange.sendResponseHeaders(404, -1);
                 exchange.close();
                 return;
             }
             assertEquals("POST", exchange.getRequestMethod());
             String request = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
-            assertTrue(request.contains("en_af_heart"));
+            assertTrue(request.contains("af_heart"));
             byte[] wav;
             try (var fixture = getClass().getResourceAsStream("/fixtures/kokoro-response.wav")) {
                 wav = fixture.readAllBytes();
@@ -37,7 +37,7 @@ class KokoroVoiceProviderTest {
         server.start();
         try {
             var config = new KokoroProviderConfig(URI.create("http://127.0.0.1:" + server.getAddress().getPort()),
-                    "kokoro-82m-v1.0-20250915", SHA, "en_af_heart");
+                    "kokoro-82m-v1.0-20250915", SHA, "af_heart");
             var audio = new KokoroVoiceProvider(config, Duration.ofSeconds(1))
                     .render(new ScriptAssembler.Script("Local bulletin.\n", List.of("s1")));
             assertEquals("RIFF", new String(audio.bytes(), 0, 4, StandardCharsets.US_ASCII));

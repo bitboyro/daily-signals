@@ -29,7 +29,7 @@ public final class KokoroVoiceProvider implements VoiceProvider {
         KokoroVoiceInventory.requireSupported(config.voiceId());
         String json = "{\"model\":\"" + escape(config.modelRevision()) + "\",\"voice\":\""
                 + escape(config.voiceId()) + "\",\"input\":\"" + escape(script.text()) + "\"}";
-        var request = HttpRequest.newBuilder(config.endpoint().resolve("/v1/audio")).timeout(timeout)
+        var request = HttpRequest.newBuilder(config.endpoint().resolve("/v1/audio/speech")).timeout(timeout)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json)).build();
         try {

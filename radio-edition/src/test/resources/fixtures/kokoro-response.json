@@ -1,7 +1,7 @@
 {
   "provider": "kokoro-local",
   "modelRevision": "kokoro-82m-v1.0-20250915",
-  "voiceId": "en_af_heart",
+  "voiceId": "af_heart",
   "contentType": "audio/wav",
   "fixture": "kokoro-response.wav"
 }

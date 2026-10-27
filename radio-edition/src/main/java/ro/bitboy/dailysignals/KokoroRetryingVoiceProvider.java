@@ -36,6 +36,6 @@ public final class KokoroRetryingVoiceProvider implements VoiceProvider {
                 }
             }
         }
-        return new RenderedAudio(new byte[0], "audio/wav", "timeout");
+        throw last;
     }
 }
