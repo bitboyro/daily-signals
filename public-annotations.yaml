@@ -1005,6 +1005,44 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/RetryBudget.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-04",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/RetryStormProtectionTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/PublishOutbox.java"
    ],
    "features": [
