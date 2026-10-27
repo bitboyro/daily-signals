@@ -2408,6 +2408,19 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/operations/database-migration.md"
+   ],
+   "features": [
+    { "id": "PLT-02", "relation": "documents" },
+    { "id": "EDI-04", "relation": "documents" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
