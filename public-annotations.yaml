@@ -2399,28 +2399,67 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/test/java/*/CandidateOrderingPropertyTest.java"],
+   "features": [
+    { "id": "EDT-03", "relation": "tests" },
+    { "id": "EDT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["security/dependency-policy.json", "tools/check-dependency-policy.py"],
-   "features": [{ "id": "PLT-05", "relation": "guards" }, { "id": "PLT-06", "relation": "guards" }],
+   "features": [
+    { "id": "PLT-05", "relation": "guards" },
+    { "id": "PLT-06", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/SourceParserFuzzCorpusTest.java", "*/src/test/resources/fuzz/source-parser/*.json"],
+   "features": [
+    { "id": "SRC-04", "relation": "tests" },
+    { "id": "SRC-03", "relation": "tests" }
+   ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": ["*/src/main/java/*/AuthorizedSourceParser.java"],
-   "features": [{ "id": "SRC-04", "relation": "implements" }, { "id": "PLT-03", "relation": "guards" }],
+   "features": [
+    { "id": "SRC-04", "relation": "implements" },
+    { "id": "PLT-03", "relation": "guards" }
+   ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": ["*/src/test/java/*/AuthorizedSourceParserTest.java"],
-   "features": [{ "id": "SRC-04", "relation": "tests" }, { "id": "PLT-03", "relation": "tests" }],
+   "features": [
+    { "id": "SRC-04", "relation": "tests" },
+    { "id": "PLT-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/main/java/*/StructuredLog.java", "*/src/test/java/*/StructuredLogContractTest.java"],
+   "features": [
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "PLT-05", "relation": "tests" }
+   ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": ["tools/scan-secrets.py", "tools/scan-container-policy.py"],
-   "features": [{ "id": "PLT-05", "relation": "guards" }, { "id": "PLT-06", "relation": "guards" }],
+   "features": [
+    { "id": "PLT-05", "relation": "guards" },
+    { "id": "PLT-06", "relation": "guards" }
+   ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": ["docs/dependency-security-policy.md"],
-   "features": [{ "id": "PLT-05", "relation": "documents" }, { "id": "PLT-06", "relation": "documents" }],
+   "features": [
+    { "id": "PLT-05", "relation": "documents" },
+    { "id": "PLT-06", "relation": "documents" }
+   ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],

@@ -33,7 +33,7 @@ before(async () => {
   apiBase = await new Promise<string>((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Java API did not start')), 15000);
     api.stdout!.on('data', (chunk: Buffer) => {
-      const match = /listening on (http:\/\/\S+)/.exec(chunk.toString());
+      const match = /"address":"([^"]+)"/.exec(chunk.toString());
       if (match) { clearTimeout(timer); resolve(match[1]); }
     });
     api.on('exit', (code) => reject(new Error(`Java API exited with ${code}`)));

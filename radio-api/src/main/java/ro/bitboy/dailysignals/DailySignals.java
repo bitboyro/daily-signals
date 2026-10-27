@@ -151,6 +151,9 @@ public final class DailySignals {
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ReviewerTokens.parse(System.getenv("DAILY_SIGNALS_REVIEW_TOKENS")));
         server.start();
-        System.out.println("Daily Signals listening on http://" + bind + ":" + server.getAddress().getPort());
+        int actualPort = server.getAddress().getPort();
+        String address = "http://" + bind + ":" + actualPort;
+        System.out.println(StructuredLog.event("INFO", "api.started", "Daily Signals listening on " + address,
+                java.util.Map.of("address", address, "port", actualPort)));
     }
 }
