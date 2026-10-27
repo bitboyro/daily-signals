@@ -2,6 +2,8 @@
 
 This runbook covers listener-facing failures of a published edition. Each section names the symptom, the first check and the safe recovery. Record the edition ID, the manifest checksum and the exact source revision in the incident note before changing anything.
 
+Provider outages, bounded retries and object-store timeouts have worked examples in [provider and object-store incidents](provider-storage-incidents.md).
+
 ## Listeners cannot play an edition
 
 1. Check both services: `GET /health` on the API (port 8151) and the streamer (port 8152). A failing streamer health check means the process did not start; read its log for manifest validation errors.

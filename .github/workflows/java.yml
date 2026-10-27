@@ -56,7 +56,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Cross-zone schedule tests
-        run: mvn -B -ntp -pl radio-edition -am -Dtest=ScheduledEditionClockTest -Dsurefire.failIfNoSpecifiedTests=false test
+        run: mvn -B -ntp -pl radio-edition -am -Dtest='ScheduledEditionClockTest,RetryStormProtectionTest' -Dsurefire.failIfNoSpecifiedTests=false test
       - name: Upload schedule reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -84,6 +84,18 @@ jobs:
           java-version: '21'
       - name: Bounded source parser fuzz corpus
         run: mvn -B -ntp -pl radio-ingestion test -Dtest=SourceParserFuzzCorpusTest
+  provider-chaos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Provider outage recovery contract
+        run: mvn -B -ntp -pl radio-ingestion test -Dtest=ProviderRecoveryPolicyTest
+      - name: Shared retry-storm budget
+        run: mvn -B -ntp -pl radio-edition -am -Dtest=RetryStormProtectionTest -Dsurefire.failIfNoSpecifiedTests=false test
   observability-contract:
     runs-on: ubuntu-latest
     steps:
@@ -149,6 +161,16 @@ jobs:
           name: object-integration-jacoco-${{ github.run_attempt }}
           path: '**/target/site/jacoco/jacoco.xml'
           if-no-files-found: warn
+  storage-chaos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Object-store timeout recovery contract
+        run: mvn -B -ntp -pl radio-edition -am -Dtest=ObjectStoreTimeoutRecoveryTest -Dsurefire.failIfNoSpecifiedTests=false test
   publish-integration:
     runs-on: ubuntu-latest
     steps:

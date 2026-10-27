@@ -136,6 +136,36 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/ProviderRecoveryPolicy.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ProviderRecoveryPolicyTest.java"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/SnapshotParser.java"
    ],
    "features": [
@@ -937,6 +967,82 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/RecoveringObjectWriter.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "calls"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/ObjectStoreTimeoutRecoveryTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/RetryBudget.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "implements"
+    },
+    {
+     "id": "PLT-04",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/RetryStormProtectionTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "PLT-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/PublishOutbox.java"
    ],
    "features": [
@@ -1285,6 +1391,29 @@
    "confidence": "high",
    "provenance": "authored-review",
    "introducedIn": "f2f17dfe265da1baf6834d0905c2903f05b2341d",
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "docs/operations/provider-storage-incidents.md"
+   ],
+   "features": [
+    {
+     "id": "SRC-02",
+     "relation": "documents"
+    },
+    {
+     "id": "PUB-03",
+     "relation": "documents"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "documents"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
    "retiredIn": null
   },
   {
