@@ -14,7 +14,10 @@ public record PublicationManifest(int schemaVersion, String editionId, String st
             throw new IllegalArgumentException("invalid audio metadata");
     }
 
-    public PublicationManifest withAirDate(String date) {
+    public PublicationManifest upgradeToV2(String date) {
+        if (schemaVersion != 1) {
+            throw new IllegalStateException("only schema version 1 manifests can be upgraded");
+        }
         return new PublicationManifest(2, editionId, status, audioPath, contentType, sizeBytes, checksumSha256, date);
     }
 

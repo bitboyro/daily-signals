@@ -38,8 +38,18 @@ class PublicationManifestContractTest {
         );
     }
 
+    @Test void upgradesV1ToTheCanonicalV2Fixture() throws Exception {
+        var upgraded = readVersion(1).upgradeToV2("2026-01-15");
+        var expected = mapper.readTree(Files.readString(manifestPath(2)));
+        assertEquals(expected, mapper.readTree(upgraded.toJson()));
+        assertThrows(IllegalStateException.class, () -> upgraded.upgradeToV2("2026-01-16"));
+    }
+
     private PublicationManifest readVersion(int version) throws Exception {
-        var path = Path.of("../contracts/publication-manifest-v" + version + ".json");
-        return mapper.readValue(Files.readString(path), PublicationManifest.class);
+        return mapper.readValue(Files.readString(manifestPath(version)), PublicationManifest.class);
+    }
+
+    private Path manifestPath(int version) {
+        return Path.of("../contracts/publication-manifest-v" + version + ".json");
     }
 }

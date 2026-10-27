@@ -24,7 +24,7 @@ public final class FixturePublication {
         });
         // Listeners see the edition only once the consumer has applied its publication event.
         var consumer = new PublicationConsumer(manifest ->
-                Files.writeString(root.resolve("manifest.json"), manifest.withAirDate(AIR_DATE).toJson()));
+                Files.writeString(root.resolve("manifest.json"), manifest.upgradeToV2(AIR_DATE).toJson()));
         for (var event : outbox.drainEvents()) {
             if (consumer.apply(event)) {
                 Files.writeString(root.resolve("events.jsonl"), event.toJson() + "\n",
