@@ -1,0 +1,7 @@
+{
+  "license": "synthetic-test-content",
+  "snapshotId": "fuzz-valid-unicode",
+  "capturedAt": "2026-01-15T06:00:00Z",
+  "source": {"id": "radio-romania", "name": "Radio România", "url": "https://example.invalid/radio"},
+  "stories": [{"id": "știre-1", "title": "Știință și cultură", "summary": "Diacriticele rămân UTF-8.", "publishedAt": "2026-01-15T05:45:00Z", "category": "cultură"}]
+}

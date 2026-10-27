@@ -9,7 +9,7 @@ class SourceParserFuzzCorpusTest {
     @Test void malformedCorpusIsRejectedWithoutHangingOrReturningPartialSnapshots() throws Exception {
         var corpus = Path.of("src/test/resources/fuzz/source-parser");
         try (var paths = Files.list(corpus)) {
-            var fixtures = paths.sorted().toList();
+            var fixtures = paths.filter(path -> path.getFileName().toString().startsWith("invalid-")).sorted().toList();
             assertEquals(4, fixtures.size());
             for (var fixture : fixtures) {
                 assertTimeoutPreemptively(java.time.Duration.ofSeconds(1), () -> {
@@ -18,6 +18,15 @@ class SourceParserFuzzCorpusTest {
                     }
                 });
             }
+        }
+    }
+
+    @Test void validUnicodeFixtureRemainsLossless() throws Exception {
+        try (var input = Files.newInputStream(Path.of("src/test/resources/fuzz/source-parser/valid-unicode.json"))) {
+            var snapshot = new SourceSnapshotParser().parse(input);
+            assertEquals("Radio România", snapshot.sourceName());
+            assertEquals("Știință și cultură", snapshot.stories().get(0).title());
+            assertEquals("cultură", snapshot.stories().get(0).category());
         }
     }
 }
