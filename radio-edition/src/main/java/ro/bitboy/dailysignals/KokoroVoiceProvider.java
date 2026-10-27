@@ -26,9 +26,10 @@ public final class KokoroVoiceProvider implements VoiceProvider {
 
     @Override public RenderedAudio render(ScriptAssembler.Script script) throws IOException {
         if (script == null || script.text().isBlank()) throw new IllegalArgumentException("script required");
+        KokoroVoiceInventory.requireSupported(config.voiceId());
         String json = "{\"model\":\"" + escape(config.modelRevision()) + "\",\"voice\":\""
                 + escape(config.voiceId()) + "\",\"input\":\"" + escape(script.text()) + "\"}";
-        var request = HttpRequest.newBuilder(config.endpoint().resolve("/v1/audio/speech")).timeout(timeout)
+        var request = HttpRequest.newBuilder(config.endpoint().resolve("/v1/audio")).timeout(timeout)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(json)).build();
         try {

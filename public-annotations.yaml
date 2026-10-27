@@ -1042,6 +1042,26 @@
   },
   {
    "paths": [
+    "radio-edition/src/test/resources/fixtures/kokoro-response.wav",
+    "radio-edition/src/test/resources/fixtures/kokoro-response.json"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    },
+    {
+     "id": "VOC-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/check-audio-fixture.py",
     "tools/check-fixtures.py"
    ],

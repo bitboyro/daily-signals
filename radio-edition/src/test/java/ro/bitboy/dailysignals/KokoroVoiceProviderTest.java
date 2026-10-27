@@ -25,7 +25,10 @@ class KokoroVoiceProviderTest {
             assertEquals("POST", exchange.getRequestMethod());
             String request = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
             assertTrue(request.contains("en_af_heart"));
-            byte[] wav = {'R', 'I', 'F', 'F', 1};
+            byte[] wav;
+            try (var fixture = getClass().getResourceAsStream("/fixtures/kokoro-response.wav")) {
+                wav = fixture.readAllBytes();
+            }
             exchange.getResponseHeaders().add("Content-Type", "audio/wav");
             exchange.sendResponseHeaders(200, wav.length);
             exchange.getResponseBody().write(wav);
