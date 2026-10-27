@@ -969,6 +969,36 @@
   },
   {
    "paths": [
+    "*/src/main/java/*/KokoroVoiceInventory.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "guards"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/KokoroVoiceSelectionTest.java"
+   ],
+   "features": [
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/FixtureVoiceProviderTest.java"
    ],
    "features": [
