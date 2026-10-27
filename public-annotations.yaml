@@ -2396,6 +2396,32 @@
    "provenance": "authored-review",
    "introducedIn": null,
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/AuthorizedSourceParser.java"
+   ],
+   "features": [
+    { "id": "SRC-04", "relation": "implements" },
+    { "id": "PLT-03", "relation": "guards" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/test/java/*/AuthorizedSourceParserTest.java"
+   ],
+   "features": [
+    { "id": "SRC-04", "relation": "tests" },
+    { "id": "PLT-03", "relation": "tests" }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
   }
  ],
  "intersections": [
