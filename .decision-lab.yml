@@ -62,6 +62,9 @@ checks:
   # Plan §5: the plan and audit jobs (D1.1 adds their exact names if they are not
   # the tool's own job), the release workflow and the nightly pipeline.
   exclude:
+    - "*:decision-lab*"
+    - "decision-lab-audit.yml"
+    - "decision-lab-nightly.yml"
     - "release.yml:*"
     - "nightly.yml:*"
   overrides:

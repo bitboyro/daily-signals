@@ -10,6 +10,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  decision-lab:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/decision-lab.yml
+    with:
+      comment: false
+    secrets: inherit
+
   java-unit-matrix:
     runs-on: ubuntu-latest
     strategy:
