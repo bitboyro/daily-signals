@@ -1,7 +1,14 @@
 name: Java verification
 on:
   push:
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: java-verification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   java-unit-matrix:
     runs-on: ubuntu-latest

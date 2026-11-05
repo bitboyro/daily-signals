@@ -1,6 +1,9 @@
 name: Optional Kokoro integration
 on:
+  push:
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   workflow_dispatch:
     inputs:
       operator_approved:
@@ -8,6 +11,11 @@ on:
         required: true
         type: boolean
         default: false
+
+concurrency:
+  group: kokoro-integration-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   kokoro-profile-contract:
     runs-on: ubuntu-latest

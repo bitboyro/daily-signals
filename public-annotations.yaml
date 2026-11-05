@@ -2115,6 +2115,21 @@
   },
   {
    "paths": [
+    ".decision-lab.yml"
+   ],
+   "features": [
+    {
+     "id": "PLT-06",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "288dbe6e3985bbe4edb56fda5ad394d6149aa280",
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "qualification/nightly-soak.json"
    ],
    "features": [

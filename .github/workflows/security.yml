@@ -1,7 +1,14 @@
 name: Security verification
 on:
   push:
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: security-verification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   dependency-policy:
     runs-on: ubuntu-latest

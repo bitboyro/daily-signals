@@ -1,7 +1,14 @@
 name: Container verification
 on:
   push:
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: container-verification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
   install-smoke-matrix:
     strategy:
