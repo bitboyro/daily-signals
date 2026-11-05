@@ -1,0 +1,68 @@
+# Plans which checks a pull request needs. Each verification workflow calls this
+# workflow because GitHub only lets a plan control jobs in the workflow it runs in.
+#
+# Decision Lab is downloaded rather than committed to this public repository. The
+# private release and its checksum are pinned so a missing or altered runtime fails
+# closed before any selective execution is enabled.
+name: decision-lab
+on:
+  workflow_call:
+    inputs:
+      comment:
+        description: post the plan as the pull request comment (one calling workflow only)
+        type: boolean
+        default: false
+      version:
+        type: string
+        default: v0.3.0
+      sha256:
+        type: string
+        default: c1c0da7549c6bd9c7c3a43ae13154e65989954b3fc3f2a2c3684c79dcaf16c83
+      release-repository:
+        type: string
+        default: bitboyro/discriminative-lab
+    secrets:
+      DECISION_LAB_RELEASE_TOKEN:
+        description: read access to the private release repository's contents
+        required: false
+    outputs:
+      full-run:
+        value: ${{ jobs.plan.outputs.full-run }}
+      selected:
+        value: ${{ jobs.plan.outputs.selected }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      full-run: ${{ steps.dl.outputs.full-run }}
+      selected: ${{ steps.dl.outputs.selected }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Decision Lab
+        env:
+          GH_TOKEN: ${{ secrets.DECISION_LAB_RELEASE_TOKEN || github.token }}
+          VERSION: ${{ inputs.version }}
+          SHA256: ${{ inputs.sha256 }}
+          RELEASE_REPOSITORY: ${{ inputs.release-repository }}
+        run: |
+          gh release download "$VERSION" -R "$RELEASE_REPOSITORY" -p decision-lab.pyz -D "$RUNNER_TEMP/dl"
+          echo "$SHA256  $RUNNER_TEMP/dl/decision-lab.pyz" | sha256sum -c -
+
+      - id: dl
+        name: Plan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DECISION_LAB_REPORTING__COMMENT: ${{ inputs.comment }}
+        run: python3 "$RUNNER_TEMP/dl/decision-lab.pyz" run
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: decision-lab-plan
+          path: decision-lab-plan.*
+          retention-days: 30
