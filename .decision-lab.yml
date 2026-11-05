@@ -1,0 +1,71 @@
+# Daily Signals v3: the frozen Decision Lab setting (workboard P0.4, 2026-11-02).
+#
+# D1.1 commits this file to bitboyro/daily-signals as `.decision-lab.yml`, unchanged
+# except where a line below says D1.1 fills it in. Plan §7 condition 3 replays
+# v2 and v3 history with this file.
+#
+# Setting: lean-safe with the pilot's links.
+# - `graph.edges` is copied verbatim from the links the v2 replays used:
+#   optimizer/replays/daily-signals/full-corpus-current/reviewed-graph.yml
+#   (commit 7e1ac3e, sha256 26374558611e6b935d0051c02b2ac5ef07802f7ff15d7d92aeefdff952cde949).
+# - `presets.lean-safe`, `safety.sharedFixtures`, `safety.mandatoryKinds` and
+#   `checks.overrides` are the replays' `lean-safe-configured` profile and base settings:
+#   optimizer/replays/daily-signals/configured-variants/profiles.json
+#   (sha256 e53e50956fb0fc7bd72309a0e1379bebddeaa66d97f7c469b0974dd17b4cbc62),
+#   named `lean-safe` as the studio writes it.
+apiVersion: decision-lab/v1
+
+rollout:
+  # Shadow on days 1 and 2. Day 3 switches to enforce only if the §7 gate holds,
+  # and then sets holdback to 0.2 in the same commit.
+  mode: shadow
+  holdback: null
+  overrideLabel: run-all-checks
+
+selection:
+  preset: lean-safe
+
+presets:
+  lean-safe:
+    extends: aggressive-safe
+    graphRadius: 2
+    coverage: "off"
+    historyTop: 0
+    mandatoryFamilies: false
+    escalateSharedFixtures: true
+
+graph:
+  edges:
+    - {from: "contracts/**", to: "container.yml:container-smoke"}
+    - {from: "contracts/**", to: "java.yml:stream-integration"}
+    - {from: "contracts/**", to: radio-api}
+    - {from: "contracts/**", to: "release.yml:release-qualification"}
+    - {from: "contracts/**", to: streamer}
+    - {from: "contracts/**", to: web}
+    - {from: "contracts/openapi/**", to: radio-api}
+    - {from: "deploy/**", to: "container.yml:container-smoke"}
+    - {from: "examples/**", to: "java.yml:java-unit"}
+    - {from: "examples/**", to: web}
+    - {from: "examples/operations/**", to: "java.yml:java-unit"}
+    - {from: "public-annotations.yaml", to: "java.yml:annotation-audit"}
+
+safety:
+  sharedFixtures:
+    - "**/src/main/resources/fixtures/**"
+    - "**/src/test/resources/fixtures/**"
+    - "contracts/**"
+  mandatoryKinds:
+    - unit
+    - contract
+
+checks:
+  # Plan §5: the plan and audit jobs (D1.1 adds their exact names if they are not
+  # the tool's own job), the release workflow and the nightly pipeline.
+  exclude:
+    - "release.yml:*"
+    - "nightly.yml:*"
+  overrides:
+    - {match: "*unit*", kind: unit}
+    - {match: "*contract*", kind: contract}
+    - {match: "*integration*", kind: integration}
+    - {match: "*e2e*", kind: e2e}
