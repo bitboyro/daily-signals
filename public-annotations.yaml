@@ -3100,6 +3100,13 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/test/java/*/FeedFixtureServer.java", "*/src/test/java/*/HttpFeedFetcherIntegrationTest.java", "*/src/test/resources/feeds/*"],
+   "features": [
+    { "id": "SRC-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["*/src/test/java/*/AuthorizedSourceParserTest.java"],
    "features": [
     { "id": "SRC-04", "relation": "tests" },

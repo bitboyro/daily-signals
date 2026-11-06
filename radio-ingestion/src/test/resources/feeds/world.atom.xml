@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <id>https://feeds.example.test/world</id><title>Daily Signals World Desk</title>
+  <updated>2026-11-06T09:00:00Z</updated>
+  <entry><id>world-001</id><title>Research team publishes an open dataset</title>
+    <summary>A synthetic international story used only in tests.</summary>
+    <updated>2026-11-06T08:30:00Z</updated></entry>
+</feed>
