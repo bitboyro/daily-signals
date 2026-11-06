@@ -3084,6 +3084,22 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/main/java/*/HttpFeedFetcher.java"],
+   "features": [
+    { "id": "SRC-03", "relation": "implements" },
+    { "id": "SRC-01", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/HttpFeedFetcherTest.java"],
+   "features": [
+    { "id": "SRC-03", "relation": "tests" },
+    { "id": "SRC-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["*/src/test/java/*/AuthorizedSourceParserTest.java"],
    "features": [
     { "id": "SRC-04", "relation": "tests" },
