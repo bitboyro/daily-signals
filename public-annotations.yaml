@@ -3084,6 +3084,45 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/main/java/*/HttpFeedFetcher.java"],
+   "features": [
+    { "id": "SRC-03", "relation": "implements" },
+    { "id": "SRC-01", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/main/java/*/FeedCandidateParser.java"],
+   "features": [
+    { "id": "SRC-04", "relation": "implements" },
+    { "id": "STO-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/FeedCandidateParserTest.java"],
+   "features": [
+    { "id": "SRC-04", "relation": "tests" },
+    { "id": "STO-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/HttpFeedFetcherTest.java"],
+   "features": [
+    { "id": "SRC-03", "relation": "tests" },
+    { "id": "SRC-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/FeedFixtureServer.java", "*/src/test/java/*/HttpFeedFetcherIntegrationTest.java", "*/src/test/resources/feeds/*"],
+   "features": [
+    { "id": "SRC-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["*/src/test/java/*/AuthorizedSourceParserTest.java"],
    "features": [
     { "id": "SRC-04", "relation": "tests" },
@@ -3112,6 +3151,14 @@
    "features": [
     { "id": "PLT-05", "relation": "documents" },
     { "id": "PLT-06", "relation": "documents" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["docs/feed-sources.md"],
+   "features": [
+    { "id": "SRC-01", "relation": "documents" },
+    { "id": "SRC-05", "relation": "documents" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },

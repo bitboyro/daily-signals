@@ -67,6 +67,7 @@ checks:
     - "decision-lab-nightly.yml"
     - "release.yml:*"
     - "nightly.yml:*"
+    - "nightly-observer.yml:*"
   overrides:
     - {match: "*unit*", kind: unit}
     - {match: "*contract*", kind: contract}
