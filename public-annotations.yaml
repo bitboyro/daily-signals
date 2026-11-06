@@ -3099,6 +3099,25 @@
     { "id": "PLT-06", "relation": "documents" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["qualification/nightly-load.json", "tools/nightly-load.py"],
+   "features": [
+    { "id": "PLT-07", "relation": "tests" },
+    { "id": "PLT-01", "relation": "tests" },
+    { "id": "STR-05", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["web/playwright.config.ts", "web/browser/listener.spec.ts"],
+   "features": [
+    { "id": "PLT-07", "relation": "configures" },
+    { "id": "WEB-01", "relation": "tests" },
+    { "id": "WEB-02", "relation": "tests" },
+    { "id": "WEB-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [
