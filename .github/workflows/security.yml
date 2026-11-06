@@ -1,8 +1,22 @@
 name: Security verification
 on:
   push:
+    branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+concurrency:
+  group: security-verification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  decision-lab:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/decision-lab.yml
+    with:
+      comment: false
+    secrets: inherit
+
   dependency-policy:
     runs-on: ubuntu-latest
     steps:

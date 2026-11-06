@@ -19,4 +19,10 @@ The API serves `GET /health`, `GET /api/editions` (versioned edition list), `GET
 
 Pull requests retain a qualification-context artifact. The `run-all-checks` label is a visible human request for full qualification; see [the pull request policy](docs/pull-request-qualification.md).
 
+### Decision Lab
+
+Every pull request is planned by Decision Lab. During the initial shadow period the plan is advisory: all existing verification jobs still run, and the resulting evidence is used to audit what would have been selected. The `run-all-checks` label is an explicit human override that requests every check regardless of the calculated plan.
+
+The repository's `.decision-lab.yml`, pull-request plan comment, workflow summaries and plan/audit artifacts are public. They contain selected check names and explanations, not credentials. The Decision Lab executable remains in its private release repository and is downloaded by a pinned version and SHA-256 using a read-only Actions secret; its token value is never written to comments, logs or artifacts.
+
 Dependency, secret and container declarations follow the [supply-chain policy](docs/dependency-security-policy.md).

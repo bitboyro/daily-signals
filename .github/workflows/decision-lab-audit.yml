@@ -1,0 +1,55 @@
+# Scores a pull request's plan after every verification workflow for its commit
+# has completed. GitHub runs workflow_run definitions from the default branch,
+# so this starts auditing the pull request after DS-59 is merged.
+name: decision-lab-audit
+on:
+  workflow_run:
+    workflows:
+      - Java verification
+      - Web verification
+      - Container verification
+      - Security verification
+      - Optional Kokoro integration
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+jobs:
+  audit:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Download Decision Lab
+        env:
+          GH_TOKEN: ${{ secrets.DECISION_LAB_RELEASE_TOKEN || github.token }}
+          VERSION: v0.3.0
+          SHA256: c1c0da7549c6bd9c7c3a43ae13154e65989954b3fc3f2a2c3684c79dcaf16c83
+        run: |
+          gh release download "$VERSION" -R bitboyro/discriminative-lab -p decision-lab.pyz -D "$RUNNER_TEMP/dl"
+          echo "$SHA256  $RUNNER_TEMP/dl/decision-lab.pyz" | sha256sum -c -
+
+      - name: Fetch the plan of the run that finished
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh run download ${{ github.event.workflow_run.id }} -R ${{ github.repository }} -n decision-lab-plan
+
+      - name: Score it
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 "$RUNNER_TEMP/dl/decision-lab.pyz" audit --when-complete
+
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('decision-lab-audit.json') != ''
+        with:
+          name: decision-lab-audit
+          path: decision-lab-audit.json
+          retention-days: 90
