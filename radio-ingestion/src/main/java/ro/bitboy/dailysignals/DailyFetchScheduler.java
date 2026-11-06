@@ -60,6 +60,11 @@ public final class DailyFetchScheduler implements AutoCloseable {
     }
 
     public Instant nextRunAfter(Instant now) {
+        return nextRunAfter(properties, now);
+    }
+
+    public static Instant nextRunAfter(FetchScheduleProperties properties, Instant now) {
+        Objects.requireNonNull(properties, "properties");
         Objects.requireNonNull(now, "now");
         ZonedDateTime localNow = now.atZone(properties.zone());
         Instant today = localNow.toLocalDate().atTime(properties.window()).atZone(properties.zone()).toInstant();

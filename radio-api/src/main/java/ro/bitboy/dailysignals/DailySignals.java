@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 import java.util.Map;
 
 public final class DailySignals {
@@ -38,11 +39,18 @@ public final class DailySignals {
     /** Loopback by default; container images bind every interface through DAILY_SIGNALS_BIND_ADDRESS. */
     public static HttpServer createServer(String bindAddress, int port, Path webRoot, ReviewerTokens reviewers)
             throws IOException {
+        return createServer(bindAddress, port, webRoot, reviewers, FetchScheduleView.defaults(Clock.systemUTC().instant()));
+    }
+
+    public static HttpServer createServer(String bindAddress, int port, Path webRoot, ReviewerTokens reviewers,
+                                          FetchScheduleView fetchSchedule) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
+        server.createContext("/api/schedule", exchange -> respond(exchange, 200, "application/json",
+                fetchSchedule.toJson().getBytes(StandardCharsets.UTF_8)));
         server.createContext("/editions/", exchange -> {
             var legacy = LegacyRoutes.redirectFor(exchange.getRequestURI().getPath());
             if (legacy.isPresent()) {

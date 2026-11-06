@@ -3195,6 +3195,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/main/java/*/FetchScheduleView.java", "*/src/test/java/*/FetchScheduleContractTest.java", "contracts/openapi/schedule-v1.json"],
+   "features": [
+    { "id": "PLT-04", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "SRC-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/nightly-load.json", "tools/nightly-load.py"],
    "features": [
     { "id": "PLT-07", "relation": "tests" },
@@ -3347,6 +3356,14 @@
     {
      "path": "web/test/source-editor.test.ts"
     }
+   ]
+  },
+  {
+   "features": ["PLT-04", "PLT-01", "SRC-02"],
+   "check": "java.yml:api-contract",
+   "tests": [
+    { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/FetchScheduleContractTest.java" },
+    { "path": "tools/check-openapi-contract.py" }
    ]
   }
  ]

@@ -16,3 +16,10 @@ for edition in fixture["editions"]:
     if missing:
         raise SystemExit(f"edition fixture misses required fields: {sorted(missing)}")
 print("edition OpenAPI contract matches fixture")
+
+schedule = json.loads((ROOT / "contracts/openapi/schedule-v1.json").read_text())
+assert schedule["openapi"].startswith("3.")
+assert "/api/schedule" in schedule["paths"]
+required_schedule = set(schedule["components"]["schemas"]["FetchSchedule"]["required"])
+assert required_schedule == {"schemaVersion", "nextRun", "zone", "window", "sources"}
+print("fetch schedule OpenAPI contract is complete")
