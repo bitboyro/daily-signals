@@ -9,6 +9,72 @@ concurrency:
   group: nightly-qualification-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  reference-java:
+    uses: ./.github/workflows/java.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-web:
+    uses: ./.github/workflows/web.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-container:
+    uses: ./.github/workflows/container.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-security:
+    uses: ./.github/workflows/security.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-kokoro:
+    uses: ./.github/workflows/kokoro.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference:
+    if: always()
+    needs:
+      - reference-java
+      - reference-web
+      - reference-container
+      - reference-security
+      - reference-kokoro
+    runs-on: ubuntu-latest
+    env:
+      JAVA_RESULT: ${{ needs.reference-java.result }}
+      WEB_RESULT: ${{ needs.reference-web.result }}
+      CONTAINER_RESULT: ${{ needs.reference-container.result }}
+      SECURITY_RESULT: ${{ needs.reference-security.result }}
+      KOKORO_RESULT: ${{ needs.reference-kokoro.result }}
+    steps:
+      - name: Record the full shadow reference
+        shell: bash
+        run: |
+          {
+            echo '## Nightly full reference'
+            echo
+            echo '| Verification workflow | Result |'
+            echo '| --- | --- |'
+            echo "| Java | ${JAVA_RESULT} |"
+            echo "| Web | ${WEB_RESULT} |"
+            echo "| Container | ${CONTAINER_RESULT} |"
+            echo "| Security | ${SECURITY_RESULT} |"
+            echo "| Kokoro | ${KOKORO_RESULT} |"
+            echo
+            echo 'Decision Lab rollout mode: `shadow` (all checks executed).'
+          } >> "$GITHUB_STEP_SUMMARY"
+          for result in \
+            "$JAVA_RESULT" \
+            "$WEB_RESULT" \
+            "$CONTAINER_RESULT" \
+            "$SECURITY_RESULT" \
+            "$KOKORO_RESULT"
+          do
+            test "$result" = success
+          done
   nightly-soak:
     runs-on: ubuntu-latest
     steps:
