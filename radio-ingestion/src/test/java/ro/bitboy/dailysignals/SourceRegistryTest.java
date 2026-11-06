@@ -2,6 +2,7 @@ package ro.bitboy.dailysignals;
 
 import org.junit.jupiter.api.Test;
 import java.net.URI;
+import java.time.Duration;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SourceRegistryTest {
@@ -15,5 +16,11 @@ class SourceRegistryTest {
     }
     @Test void refusesInsecureSource() {
         assertThrows(IllegalArgumentException.class, () -> new SourceRegistry.Source("bad", "Bad", URI.create("http://example.invalid/feed"), 1));
+    }
+    @Test void validatesPerSourceTerms() {
+        var source = new SourceRegistry.Source("civic-desk", "Civic Desk", URI.create("https://example.invalid/feed"), 4,
+                new SourceRegistry.Terms("Civic Desk / CC BY 4.0", Duration.ofMinutes(10)));
+        assertEquals(Duration.ofMinutes(10), source.terms().minimumFetchInterval());
+        assertThrows(IllegalArgumentException.class, () -> new SourceRegistry.Terms("", Duration.ofMinutes(1)));
     }
 }
