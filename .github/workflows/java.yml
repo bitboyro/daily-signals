@@ -97,7 +97,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: Cross-zone schedule tests
-        run: mvn -B -ntp -pl radio-edition -am -Dtest='ScheduledEditionClockTest,RetryStormProtectionTest' -Dsurefire.failIfNoSpecifiedTests=false test
+        run: mvn -B -ntp -pl radio-edition,radio-ingestion -am -Dtest='ScheduledEditionClockTest,RetryStormProtectionTest,FetchSchedulePropertiesTest' -Dsurefire.failIfNoSpecifiedTests=false test
       - name: Upload schedule reports
         if: always()
         uses: actions/upload-artifact@v4
