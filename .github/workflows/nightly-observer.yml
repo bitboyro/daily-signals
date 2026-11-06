@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   actions: write
+  issues: write
   pull-requests: read
 
 concurrency:
@@ -80,6 +81,7 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+      REPORT_ISSUE: '24'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -102,10 +104,10 @@ jobs:
       - name: Pool the ledger and find escape suspects
         run: |
           python3 "$RUNNER_TEMP/dl/decision-lab.pyz" nightly --audits audits --sha "$SOURCE_SHA" \
-            --since "$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
+            --since "$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)" --issue "$REPORT_ISSUE"
       - uses: actions/upload-artifact@v4
         with:
-          name: nightly-analysis-${{ github.event.workflow_run.id }}
+          name: nightly-report-${{ github.event.workflow_run.id }}
           path: nightly-report.*
           retention-days: 90
 
@@ -116,7 +118,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: nightly-analysis-${{ github.event.workflow_run.id }}
+          name: nightly-report-${{ github.event.workflow_run.id }}
       - name: Extract escape evidence
         run: |
           python3 - <<'PY'

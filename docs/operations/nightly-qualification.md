@@ -1,6 +1,30 @@
 # Nightly qualification
 
-The nightly tier finds failures that are too expensive or repetitive for every ordinary change. GitHub Actions runs it at 02:00 UTC, on manual dispatch, and in a bounded two-iteration form while this workflow itself is reviewed.
+The nightly tier finds failures that are too expensive or repetitive for every ordinary change. GitHub Actions runs it at 02:00 UTC and on manual dispatch. It does not run on pull requests.
+
+The run has two parts. `Nightly qualification` executes the full reference and slow tier. After that workflow completes, `Nightly qualification observer` reruns failed jobs once, pools Decision Lab audits and publishes the morning report. The observer is separate because GitHub cannot rerun a failed job until its original workflow has completed.
+
+## Morning read
+
+The pinned [Nightly qualification issue](https://github.com/bitboyro/daily-signals/issues/24) receives one report per first attempt. The same `nightly-report.md` and machine-readable `nightly-report.json` are retained as the `nightly-report-*` artifact and the report is written to the observer's job summary.
+
+Read it in this order:
+
+1. **Failing tonight** is a repeatable failure after the one automatic failed-job rerun.
+2. **Flaky tonight** failed on attempt one and passed on attempt two. It is evidence, not a green check to ignore.
+3. **Escapes** names a merged pull request that actually skipped a check which now fails on `main`.
+4. **Shadow escapes** names a check that still ran, but that Decision Lab's shadow plan would have skipped. Any shadow escape blocks moving to enforcement.
+5. **Plan misses** and its 95% upper bound are the cumulative safety ledger over observable failing changes.
+
+One real or shadow escape keeps `rollout.mode` in `shadow` until the cause is linked from the report and the corrected selector replays the full v2 and v3 history without a miss.
+
+## Full reference
+
+The `reference-*` jobs call the five normal verification workflows as reusable workflows with the Decision Lab mode fixed to `shadow`. This produces the day's ground truth without maintaining a second copy of the build and test commands. The final `reference` job fails if any verification family fails.
+
+## Slow tier
+
+`nightly-load` starts the Java API and Rust streamer, applies the fixed profile in `qualification/nightly-load.json`, and records request errors and p95 latency for both boundaries. `nightly-browser-matrix` runs a real listener journey in Chromium, Firefox and WebKit at mobile and desktop viewports. Their JSON, JUnit and trace evidence is uploaded even on failure.
 
 ## Nightly soak
 
@@ -28,6 +52,6 @@ mvn -B -ntp -f radio-editorial/pom.xml -Pmutation org.pitest:pitest-maven:mutati
 
 ## Triage and reruns
 
-Download the failing job artifact before rerunning. Classify setup or runner exhaustion as infrastructure; classify a repeatable task, test, threshold or mutant failure as code evidence. Rerun only the failed job after the cause is understood. The weekly release qualification remains the authoritative full release gate; a green nightly run does not replace it.
+Download the failing job artifact and both `nightly-attempts-*` records. Classify setup or runner exhaustion as infrastructure; classify a repeatable task, test, threshold or mutant failure as code evidence. The observer has already rerun only failed jobs once—do not erase evidence with repeated reruns. The weekly release qualification remains the authoritative full release gate; a green nightly run does not replace it.
 
 Environment-specific results and artifact naming are described in [compatibility matrix evidence](matrix-evidence.md).
