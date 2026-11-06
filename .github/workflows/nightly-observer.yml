@@ -1,0 +1,135 @@
+name: Nightly qualification observer
+on:
+  workflow_run:
+    workflows: [Nightly qualification]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: write
+  pull-requests: read
+
+concurrency:
+  group: nightly-observer-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+  cancel-in-progress: false
+
+jobs:
+  flake-check:
+    if: github.event.workflow_run.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
+      SOURCE_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+    steps:
+      - name: Record the first attempt and rerun failures once
+        shell: bash
+        run: |
+          mkdir -p nightly-attempts
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/attempts/1/jobs?per_page=100" \
+            > nightly-attempts/attempt-1-jobs.json
+          if test "$SOURCE_CONCLUSION" = failure; then
+            gh run rerun "$SOURCE_RUN_ID" --failed
+            for ignored in $(seq 1 120); do
+              read -r attempt status < <(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" \
+                --jq '[.run_attempt,.status] | @tsv')
+              if test "$attempt" -ge 2 && test "$status" = completed; then
+                break
+              fi
+              sleep 5
+            done
+            test "${attempt:-1}" -ge 2
+            test "${status:-unknown}" = completed
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/attempts/2/jobs?per_page=100" \
+              > nightly-attempts/attempt-2-jobs.json
+          fi
+      - name: Classify first-fail-then-pass jobs
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          folder = Path('nightly-attempts')
+          attempts = []
+          for path in sorted(folder.glob('attempt-*-jobs.json')):
+              payload = json.loads(path.read_text())
+              attempts.append({
+                  'attempt': int(path.stem.split('-')[1]),
+                  'jobs': {job['name']: job.get('conclusion') for job in payload['jobs']},
+              })
+          first = attempts[0]['jobs']
+          last = attempts[-1]['jobs']
+          flaky = sorted(name for name, result in first.items() if result == 'failure' and last.get(name) == 'success')
+          failing = sorted(name for name, result in last.items() if result == 'failure')
+          report = {'schemaVersion': 1, 'runId': '${{ github.event.workflow_run.id }}',
+                    'attempts': len(attempts), 'flaky': flaky, 'failing': failing}
+          (folder / 'flake-check.json').write_text(json.dumps(report, indent=2) + '\n')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-attempts-${{ github.event.workflow_run.id }}
+          path: nightly-attempts/**
+          retention-days: 90
+
+  ledger:
+    if: github.event.workflow_run.run_attempt == 1
+    needs: flake-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Download pinned Decision Lab
+        env:
+          GH_TOKEN: ${{ secrets.DECISION_LAB_RELEASE_TOKEN || github.token }}
+          VERSION: v0.3.0
+          SHA256: c1c0da7549c6bd9c7c3a43ae13154e65989954b3fc3f2a2c3684c79dcaf16c83
+        run: |
+          gh release download "$VERSION" -R bitboyro/discriminative-lab -p decision-lab.pyz -D "$RUNNER_TEMP/dl"
+          echo "$SHA256  $RUNNER_TEMP/dl/decision-lab.pyz" | sha256sum -c -
+      - name: Collect Decision Lab audits
+        run: |
+          mkdir -p audits
+          for id in $(gh run list --workflow decision-lab-audit.yml --limit 1000 --json databaseId --jq '.[].databaseId'); do
+            gh run download "$id" -n decision-lab-audit -D "audits/$id" 2>/dev/null || true
+          done
+      - name: Pool the ledger and find escape suspects
+        run: |
+          python3 "$RUNNER_TEMP/dl/decision-lab.pyz" nightly --audits audits --sha "$SOURCE_SHA" \
+            --since "$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-analysis-${{ github.event.workflow_run.id }}
+          path: nightly-report.*
+          retention-days: 90
+
+  escapes:
+    if: github.event.workflow_run.run_attempt == 1
+    needs: ledger
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: nightly-analysis-${{ github.event.workflow_run.id }}
+      - name: Extract escape evidence
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path('nightly-report.json').read_text())
+          evidence = {key: report[key] for key in ('since', 'failing', 'flaky', 'escapes', 'shadowEscapes')}
+          Path('nightly-escapes.json').write_text(json.dumps(evidence, indent=2) + '\n')
+          print(f"escapes={len(evidence['escapes'])} shadowEscapes={len(evidence['shadowEscapes'])}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-escapes-${{ github.event.workflow_run.id }}
+          path: nightly-escapes.json
+          retention-days: 90

@@ -2160,6 +2160,21 @@
   },
   {
    "paths": [
+    ".github/workflows/nightly-observer.yml"
+   ],
+   "features": [
+    {
+     "id": "PLT-07",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/nightly-soak.py"
    ],
    "features": [
