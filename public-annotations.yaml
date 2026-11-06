@@ -3155,6 +3155,14 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["docs/feed-sources.md"],
+   "features": [
+    { "id": "SRC-01", "relation": "documents" },
+    { "id": "SRC-05", "relation": "documents" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/nightly-load.json", "tools/nightly-load.py"],
    "features": [
     { "id": "PLT-07", "relation": "tests" },

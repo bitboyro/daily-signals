@@ -26,3 +26,4 @@ Every pull request is planned by Decision Lab. During the initial shadow period 
 The repository's `.decision-lab.yml`, pull-request plan comment, workflow summaries and plan/audit artifacts are public. They contain selected check names and explanations, not credentials. The Decision Lab executable remains in its private release repository and is downloaded by a pinned version and SHA-256 using a read-only Actions secret; its token value is never written to comments, logs or artifacts.
 
 Dependency, secret and container declarations follow the [supply-chain policy](docs/dependency-security-policy.md).
+RSS and Atom source registration, attribution and retrieval limits are described in the [feed source policy](docs/feed-sources.md).
