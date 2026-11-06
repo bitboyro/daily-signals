@@ -17,6 +17,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  decision-lab:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/decision-lab.yml
+    with:
+      comment: false
+    secrets: inherit
+
   kokoro-profile-contract:
     runs-on: ubuntu-latest
     steps:
