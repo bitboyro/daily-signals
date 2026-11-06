@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,8 @@ class HttpFeedFetcherIntegrationTest {
             assertTrue(atom.contains("<feed xmlns=\"http://www.w3.org/2005/Atom\">"));
             assertEquals(1, fixture.requests("/rss.xml"));
             assertEquals(1, fixture.requests("/atom.xml"));
+            assertEquals("public-001", new FeedCandidateParser().parse(fetcher.fetch("public-desk"),
+                    Instant.parse("2026-11-06T10:00:00Z")).getFirst().id());
         }
     }
 }

@@ -5,5 +5,5 @@
   <description>Recorded synthetic RSS fixture.</description>
   <item><guid>public-001</guid><title>Library opens a new reading room</title>
     <description>A synthetic local story used only in tests.</description>
-    <pubDate>Thu, 06 Nov 2026 08:00:00 GMT</pubDate></item>
+    <pubDate>Fri, 06 Nov 2026 08:00:00 GMT</pubDate></item>
 </channel></rss>

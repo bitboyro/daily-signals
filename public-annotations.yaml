@@ -3092,6 +3092,22 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/main/java/*/FeedCandidateParser.java"],
+   "features": [
+    { "id": "SRC-04", "relation": "implements" },
+    { "id": "STO-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/FeedCandidateParserTest.java"],
+   "features": [
+    { "id": "SRC-04", "relation": "tests" },
+    { "id": "STO-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["*/src/test/java/*/HttpFeedFetcherTest.java"],
    "features": [
     { "id": "SRC-03", "relation": "tests" },
