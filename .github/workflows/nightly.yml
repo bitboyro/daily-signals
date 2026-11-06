@@ -3,7 +3,6 @@ on:
   schedule:
     - cron: '0 2 * * *'
   workflow_dispatch:
-  pull_request:
 permissions:
   contents: read
 concurrency:
@@ -26,7 +25,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci
       - name: Run bounded nightly soak
-        run: python3 tools/nightly-soak.py --iterations ${{ github.event_name == 'pull_request' && 2 || 5 }}
+        run: python3 tools/nightly-soak.py --iterations 5
       - name: Upload soak evidence
         if: always()
         uses: actions/upload-artifact@v4
