@@ -6,13 +6,20 @@ on:
 
 permissions:
   contents: read
-  pull-requests: read
+  pull-requests: write
 
 concurrency:
   group: pr-qualification-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
+  decision-lab:
+    if: github.event_name == 'pull_request'
+    uses: ./.github/workflows/decision-lab.yml
+    with:
+      comment: true
+    secrets: inherit
+
   pr-metadata:
     runs-on: ubuntu-latest
     steps:
