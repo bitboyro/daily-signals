@@ -1,5 +1,11 @@
 name: Web verification
 on:
+  workflow_call:
+    inputs:
+      decision-lab-rollout-mode:
+        description: Decision Lab mode recorded for a full reference run
+        required: true
+        type: string
   push:
     branches: [main]
   pull_request:

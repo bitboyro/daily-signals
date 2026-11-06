@@ -3,13 +3,138 @@ on:
   schedule:
     - cron: '0 2 * * *'
   workflow_dispatch:
-  pull_request:
 permissions:
   contents: read
 concurrency:
   group: nightly-qualification-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  reference-java:
+    uses: ./.github/workflows/java.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-web:
+    uses: ./.github/workflows/web.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-container:
+    uses: ./.github/workflows/container.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-security:
+    uses: ./.github/workflows/security.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference-kokoro:
+    uses: ./.github/workflows/kokoro.yml
+    with:
+      decision-lab-rollout-mode: shadow
+    secrets: inherit
+  reference:
+    if: always()
+    needs:
+      - reference-java
+      - reference-web
+      - reference-container
+      - reference-security
+      - reference-kokoro
+    runs-on: ubuntu-latest
+    env:
+      JAVA_RESULT: ${{ needs.reference-java.result }}
+      WEB_RESULT: ${{ needs.reference-web.result }}
+      CONTAINER_RESULT: ${{ needs.reference-container.result }}
+      SECURITY_RESULT: ${{ needs.reference-security.result }}
+      KOKORO_RESULT: ${{ needs.reference-kokoro.result }}
+    steps:
+      - name: Record the full shadow reference
+        shell: bash
+        run: |
+          {
+            echo '## Nightly full reference'
+            echo
+            echo '| Verification workflow | Result |'
+            echo '| --- | --- |'
+            echo "| Java | ${JAVA_RESULT} |"
+            echo "| Web | ${WEB_RESULT} |"
+            echo "| Container | ${CONTAINER_RESULT} |"
+            echo "| Security | ${SECURITY_RESULT} |"
+            echo "| Kokoro | ${KOKORO_RESULT} |"
+            echo
+            echo 'Decision Lab rollout mode: `shadow` (all checks executed).'
+          } >> "$GITHUB_STEP_SUMMARY"
+          for result in \
+            "$JAVA_RESULT" \
+            "$WEB_RESULT" \
+            "$CONTAINER_RESULT" \
+            "$SECURITY_RESULT" \
+            "$KOKORO_RESULT"
+          do
+            test "$result" = success
+          done
+  nightly-load:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build API and stream services
+        run: |
+          mvn -B -ntp -DskipTests package
+          cargo build --manifest-path streamer/Cargo.toml
+      - name: Run fixed API and stream load profile
+        run: python3 tools/nightly-load.py
+      - name: Upload load evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-load-${{ github.run_attempt }}
+          path: nightly-load-report.json
+          if-no-files-found: warn
+  nightly-browser-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        viewport: [mobile, desktop]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build the API and listener
+        run: |
+          mvn -B -ntp -DskipTests package
+          npm --prefix web ci
+          npm --prefix web run build
+      - name: Install ${{ matrix.browser }}
+        working-directory: web
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run ${{ matrix.browser }} ${{ matrix.viewport }} journey
+        working-directory: web
+        run: npm run browser:e2e -- --project=${{ matrix.browser }}-${{ matrix.viewport }}
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-browser-${{ matrix.browser }}-${{ matrix.viewport }}-${{ github.run_attempt }}
+          path: |
+            web/reports/playwright.xml
+            web/reports/playwright-results/**
+          if-no-files-found: warn
   nightly-soak:
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +151,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm --prefix web ci
       - name: Run bounded nightly soak
-        run: python3 tools/nightly-soak.py --iterations ${{ github.event_name == 'pull_request' && 2 || 5 }}
+        run: python3 tools/nightly-soak.py --iterations 5
       - name: Upload soak evidence
         if: always()
         uses: actions/upload-artifact@v4
