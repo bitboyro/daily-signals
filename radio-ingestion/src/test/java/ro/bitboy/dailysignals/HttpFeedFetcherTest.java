@@ -22,7 +22,7 @@ class HttpFeedFetcherTest {
 
     @Test void fetchesARegisteredSourceThroughAnInjectedOfflineTransport() throws Exception {
         var requested = new AtomicReference<URI>();
-        var fetcher = new HttpFeedFetcher(registry(), Set.of("FEEDS.EXAMPLE.TEST"), uri -> {
+        var fetcher = new HttpFeedFetcher(registry(), Set.of("FEEDS.EXAMPLE.TEST"), (uri, headers) -> {
             requested.set(uri);
             return new HttpFeedFetcher.Response(200, Map.of("content-type", List.of("application/rss+xml")),
                     "<rss/>".getBytes(StandardCharsets.UTF_8));
@@ -37,7 +37,7 @@ class HttpFeedFetcherTest {
 
     @Test void rejectsUnknownSourcesAndHostsBeforeCallingTheNetwork() {
         var fetcher = new HttpFeedFetcher(registry(), Set.of("other.example.test"),
-                uri -> { throw new AssertionError("transport must not be called"); });
+                (uri, headers) -> { throw new AssertionError("transport must not be called"); });
 
         assertThrows(IllegalArgumentException.class, () -> fetcher.fetch("missing"));
         assertThrows(SecurityException.class, () -> fetcher.fetch("public-desk"));
@@ -45,8 +45,30 @@ class HttpFeedFetcherTest {
 
     @Test void rejectsNonSuccessfulResponses() {
         var fetcher = new HttpFeedFetcher(registry(), Set.of("feeds.example.test"),
-                uri -> new HttpFeedFetcher.Response(503, Map.of(), new byte[0]));
+                (uri, headers) -> new HttpFeedFetcher.Response(503, Map.of(), new byte[0]));
 
         assertThrows(java.io.IOException.class, () -> fetcher.fetch("public-desk"));
+    }
+
+    @Test void reusesTheCachedDocumentForAConditionalNotModifiedResponse() throws Exception {
+        var attempts = new java.util.concurrent.atomic.AtomicInteger();
+        var seen = new AtomicReference<Map<String, String>>();
+        var fetcher = new HttpFeedFetcher(registry(), Set.of("feeds.example.test"), (uri, headers) -> {
+            seen.set(headers);
+            if (attempts.getAndIncrement() == 0) {
+                return new HttpFeedFetcher.Response(200, Map.of(
+                        "ETag", List.of("\"feed-v1\""),
+                        "Last-Modified", List.of("Fri, 06 Nov 2026 08:00:00 GMT")),
+                        "<rss/>".getBytes(StandardCharsets.UTF_8));
+            }
+            return new HttpFeedFetcher.Response(304, Map.of(), new byte[0]);
+        });
+
+        var first = fetcher.fetch("public-desk");
+        var second = fetcher.fetch("public-desk");
+
+        assertArrayEquals(first.body(), second.body());
+        assertEquals("\"feed-v1\"", seen.get().get("If-None-Match"));
+        assertEquals("Fri, 06 Nov 2026 08:00:00 GMT", seen.get().get("If-Modified-Since"));
     }
 }

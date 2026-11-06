@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 final class FeedFixtureServer implements AutoCloseable {
     private final HttpServer server;
     private final Map<String, AtomicInteger> requests = new ConcurrentHashMap<>();
+    private final Map<String, String> lastRequestHeaders = new ConcurrentHashMap<>();
 
     FeedFixtureServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
@@ -32,11 +33,15 @@ final class FeedFixtureServer implements AutoCloseable {
         return requests.getOrDefault(path, new AtomicInteger()).get();
     }
 
+    String lastRequestHeader(String name) { return lastRequestHeaders.get(name.toLowerCase()); }
+
     HttpFeedFetcher.Transport transport() {
         HttpClient client = HttpClient.newHttpClient();
-        return source -> {
+        return (source, headers) -> {
             try {
-                var response = client.send(HttpRequest.newBuilder(uri(source.getPath())).GET().build(), BodyHandlers.ofByteArray());
+                var builder = HttpRequest.newBuilder(uri(source.getPath()));
+                headers.forEach(builder::header);
+                var response = client.send(builder.GET().build(), BodyHandlers.ofByteArray());
                 return new HttpFeedFetcher.Response(response.statusCode(), response.headers().map(), response.body());
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
@@ -51,6 +56,14 @@ final class FeedFixtureServer implements AutoCloseable {
 
     private void respond(HttpExchange exchange, String contentType, String resource) throws IOException {
         requests.computeIfAbsent(exchange.getRequestURI().getPath(), ignored -> new AtomicInteger()).incrementAndGet();
+        exchange.getRequestHeaders().forEach((name, values) -> lastRequestHeaders.put(name.toLowerCase(), values.getFirst()));
+        exchange.getResponseHeaders().set("ETag", "\"recorded-v1\"");
+        exchange.getResponseHeaders().set("Last-Modified", "Fri, 06 Nov 2026 08:00:00 GMT");
+        if ("\"recorded-v1\"".equals(exchange.getRequestHeaders().getFirst("If-None-Match"))) {
+            exchange.sendResponseHeaders(304, -1);
+            exchange.close();
+            return;
+        }
         byte[] body;
         try (var input = FeedFixtureServer.class.getResourceAsStream(resource)) {
             if (input == null) throw new IOException("missing fixture " + resource);

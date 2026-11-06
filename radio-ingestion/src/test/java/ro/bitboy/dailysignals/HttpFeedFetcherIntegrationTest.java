@@ -28,6 +28,8 @@ class HttpFeedFetcherIntegrationTest {
             assertEquals(1, fixture.requests("/atom.xml"));
             assertEquals("public-001", new FeedCandidateParser().parse(fetcher.fetch("public-desk"),
                     Instant.parse("2026-11-06T10:00:00Z")).getFirst().id());
+            assertEquals("\"recorded-v1\"", fixture.lastRequestHeader("if-none-match"));
+            assertEquals("Fri, 06 Nov 2026 08:00:00 GMT", fixture.lastRequestHeader("if-modified-since"));
         }
     }
 }
