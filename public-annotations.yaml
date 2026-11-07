@@ -793,6 +793,27 @@
   },
   {
    "paths": [
+    "radio-persistence/src/main/java/*/ReviewRepository.java",
+    "radio-persistence/src/main/java/*/EditionCandidateRepository.java"
+   ],
+   "features": [
+    { "id": "EDT-04", "relation": "implements" },
+    { "id": "EDI-01", "relation": "implements" },
+    { "id": "PLT-02", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["radio-persistence/src/test/java/*/EditorialRepositoriesPostgresTest.java"],
+   "features": [
+    { "id": "EDT-04", "relation": "tests" },
+    { "id": "EDI-01", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/ScriptAssembler.java"
    ],
    "features": [

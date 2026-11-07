@@ -11,7 +11,8 @@ public final class MigrationRunner {
         for (var resource : new String[]{
                 "V1__edition_lifecycle.sql",
                 "V2__source_category_backfill.sql",
-                "V3__editorial_state.sql"
+                "V3__editorial_state.sql",
+                "V4__candidate_source_history.sql"
         }) {
             try (var input = MigrationRunner.class.getResourceAsStream("/db/migration/" + resource)) {
                 if (input == null) throw new IOException("edition migration resource missing: " + resource);
