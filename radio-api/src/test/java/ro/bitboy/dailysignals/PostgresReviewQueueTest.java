@@ -56,7 +56,11 @@ class PostgresReviewQueueTest {
         } finally {
             server.stop(0);
         }
-        assertTrue(queue.toJson().contains("\"decision\":\"APPROVED\""));
+        String persisted = queue.toJson();
+        assertTrue(persisted.startsWith("{\"schemaVersion\":3,\"items\":["));
+        assertTrue(persisted.contains("\"decision\":\"APPROVED\""));
+        assertTrue(persisted.contains("\"review\":{\"reviewer\":\"EDITOR\",\"reviewedAt\":\""));
+        assertTrue(persisted.contains("\"revision\":1}"));
         assertTrue(queue.auditToJson().contains("\"storyId\":\"" + id + "\""));
         assertFalse(queue.contains("missing-" + id));
     }

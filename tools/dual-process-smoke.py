@@ -10,7 +10,9 @@ def port():
         sock.bind(('127.0.0.1', 0)); return sock.getsockname()[1]
 
 java_port, rust_port = port(), port()
-java = subprocess.Popen(['java', '-cp', str(ROOT / 'radio-api/target/classes'), 'ro.bitboy.dailysignals.DailySignals', str(java_port)], stdout=subprocess.DEVNULL)
+java_classpath = ':'.join(str(ROOT / module / 'target/classes') for module in (
+    'radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion', 'radio-persistence'))
+java = subprocess.Popen(['java', '-cp', java_classpath, 'ro.bitboy.dailysignals.DailySignals', str(java_port)], stdout=subprocess.DEVNULL)
 rust = subprocess.Popen([str(ROOT / 'streamer/target/debug/daily-signals-streamer'), str(rust_port), str(ROOT / 'contracts/publication-manifest-v2.json'), str(ROOT / 'radio-api/src/main/resources')], stdout=subprocess.DEVNULL)
 try:
     for _ in range(50):

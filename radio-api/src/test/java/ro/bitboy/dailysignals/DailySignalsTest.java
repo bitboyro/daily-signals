@@ -122,8 +122,10 @@ class DailySignalsTest {
                 HttpResponse.BodyHandlers.discarding()).statusCode());
             String queue = client.send(HttpRequest.newBuilder(URI.create(base)).GET().build(),
                 HttpResponse.BodyHandlers.ofString()).body();
-            assertTrue(queue.contains("{\"storyId\":\"demo-park-path\",\"headline\":\"New walking path opens in Riverside Park\",\"source\":\"Demo Civic Desk\",\"decision\":\"APPROVED\"}"));
-            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\",\"headline\":\"Community library extends Saturday hours\",\"source\":\"Demo Education Desk\",\"decision\":\"PENDING\""));
+            assertTrue(queue.startsWith("{\"schemaVersion\":3,\"items\":["));
+            assertTrue(queue.contains("{\"storyId\":\"demo-park-path\",\"headline\":\"New walking path opens in Riverside Park\",\"source\":\"Demo Civic Desk\",\"decision\":\"APPROVED\",\"review\":{\"reviewer\":\"EDITOR\",\"reviewedAt\":\""));
+            assertTrue(queue.contains("\"revision\":1}"));
+            assertTrue(queue.contains("\"storyId\":\"demo-library-hours\",\"headline\":\"Community library extends Saturday hours\",\"source\":\"Demo Education Desk\",\"decision\":\"PENDING\",\"review\":{\"reviewer\":null,\"reviewedAt\":null,\"revision\":0}"));
         } finally {
             server.stop(0);
         }

@@ -47,13 +47,16 @@ final class PostgresReviewQueue implements ReviewQueueBackend {
     @Override
     public String toJson() {
         try (var connection = database.open()) {
-            var json = new StringBuilder("{\"schemaVersion\":2,\"items\":[");
+            var json = new StringBuilder("{\"schemaVersion\":3,\"items\":[");
             for (var item : reviews.queue(connection)) {
                 if (json.charAt(json.length() - 1) != '[') json.append(',');
                 json.append("{\"storyId\":").append(quote(item.candidateId()))
                         .append(",\"headline\":").append(quote(item.headline()))
                         .append(",\"source\":").append(quote(item.sourceId()))
-                        .append(",\"decision\":\"").append(item.decision()).append("\"}");
+                        .append(",\"decision\":\"").append(item.decision()).append("\",\"review\":{")
+                        .append("\"reviewer\":").append(item.reviewer() == null ? "null" : quote(item.reviewer()))
+                        .append(",\"reviewedAt\":").append(item.reviewedAt() == null ? "null" : quote(item.reviewedAt().toString()))
+                        .append(",\"revision\":").append(item.revision()).append("}}");
             }
             return json.append("]}").toString();
         } catch (SQLException failure) {

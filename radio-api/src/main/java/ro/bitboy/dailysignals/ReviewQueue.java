@@ -3,12 +3,17 @@ package ro.bitboy.dailysignals;
 import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /** Producer-facing review decisions over the current candidate set; synthetic candidates until ingestion is wired in. */
 public final class ReviewQueue implements ReviewQueueBackend {
     private final CandidateReview review = new CandidateReview();
     private final List<DecisionAudit> audit = new ArrayList<>();
+    private final Map<String, ReviewMetadata> metadata = new LinkedHashMap<>();
+
+    private record ReviewMetadata(String reviewer, Instant reviewedAt, int revision) {}
 
     public record DecisionReceipt(String storyId, CandidateReview.Decision decision) {
         String toJson() {
@@ -40,6 +45,10 @@ public final class ReviewQueue implements ReviewQueueBackend {
     }
 
     public synchronized DecisionReceipt decide(String storyId, String decision) {
+        return decide(storyId, decision, "fixture");
+    }
+
+    private synchronized DecisionReceipt decide(String storyId, String decision, String reviewer) {
         CandidateReview.Decision parsed;
         try {
             parsed = CandidateReview.Decision.valueOf(decision == null ? "" : decision.strip());
@@ -48,12 +57,13 @@ public final class ReviewQueue implements ReviewQueueBackend {
         }
         review.decide(storyId, parsed);
         audit.add(new DecisionAudit(audit.size() + 1, storyId, parsed));
+        metadata.put(storyId, new ReviewMetadata(reviewer, Instant.now(), 1));
         return new DecisionReceipt(storyId, parsed);
     }
 
     @Override
     public synchronized String decideJson(String storyId, String decision, String reviewer) {
-        return decide(storyId, decision).toJson();
+        return decide(storyId, decision, reviewer).toJson();
     }
 
     public synchronized boolean contains(String storyId) {
@@ -61,15 +71,19 @@ public final class ReviewQueue implements ReviewQueueBackend {
     }
 
     public synchronized String toJson() {
-        var json = new StringBuilder("{\"schemaVersion\":2,\"items\":[");
+        var json = new StringBuilder("{\"schemaVersion\":3,\"items\":[");
         boolean first = true;
         for (var candidate : review.all()) {
             if (!first) json.append(',');
             first = false;
+            var state = metadata.get(candidate.story().id());
             json.append("{\"storyId\":").append(quote(candidate.story().id()))
                     .append(",\"headline\":").append(quote(candidate.story().title()))
                     .append(",\"source\":").append(quote(candidate.story().attribution().sourceName()))
-                    .append(",\"decision\":\"").append(candidate.decision()).append("\"}");
+                    .append(",\"decision\":\"").append(candidate.decision()).append("\",\"review\":{")
+                    .append("\"reviewer\":").append(state == null ? "null" : quote(state.reviewer()))
+                    .append(",\"reviewedAt\":").append(state == null ? "null" : quote(state.reviewedAt().toString()))
+                    .append(",\"revision\":").append(state == null ? 0 : state.revision()).append("}}");
         }
         return json.append("]}").toString();
     }

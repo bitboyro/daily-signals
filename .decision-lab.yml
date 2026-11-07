@@ -39,7 +39,6 @@ graph:
     - {from: "contracts/**", to: "container.yml:container-smoke"}
     - {from: "contracts/**", to: "java.yml:stream-integration"}
     - {from: "contracts/**", to: radio-api}
-    - {from: "contracts/**", to: "release.yml:release-qualification"}
     - {from: "contracts/**", to: streamer}
     - {from: "contracts/**", to: web}
     - {from: "contracts/openapi/**", to: radio-api}
