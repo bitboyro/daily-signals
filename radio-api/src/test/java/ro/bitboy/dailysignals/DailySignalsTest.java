@@ -2,6 +2,7 @@ package ro.bitboy.dailysignals;
 
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.net.URI;
 import java.nio.file.Files;
@@ -9,11 +10,40 @@ import java.nio.file.Path;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Clock;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DailySignalsTest {
+    @Test
+    void acceptsAValidatedOidcProducerIdentity() throws Exception {
+        String issuer = "https://identity.example/realms/bitboy-internal";
+        var jwt = Jwt.withTokenValue("signed-token").header("alg", "RS256").issuer(issuer)
+                .subject("producer-42").issuedAt(Instant.now()).expiresAt(Instant.now().plusSeconds(60))
+                .claim("realm_access", Map.of("roles", List.of("EDITOR"))).build();
+        var authenticator = OidcProducerAuthenticator.create(issuer, ReviewerTokens.none(), () -> token -> jwt);
+        HttpServer server = DailySignals.createServer("127.0.0.1", 0, null, authenticator,
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), ReviewQueue.fixture());
+        server.start();
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort() + "/api/review-queue";
+            var client = HttpClient.newHttpClient();
+            var decision = HttpRequest.newBuilder(URI.create(base + "/demo-park-path"))
+                    .header("Authorization", "Bearer signed-token")
+                    .POST(HttpRequest.BodyPublishers.ofString("APPROVED")).build();
+            assertEquals(200, client.send(decision, HttpResponse.BodyHandlers.discarding()).statusCode());
+            String queue = client.send(HttpRequest.newBuilder(URI.create(base)).GET().build(),
+                    HttpResponse.BodyHandlers.ofString()).body();
+            assertTrue(queue.contains("\"reviewer\":\"producer-42\""));
+        } finally {
+            server.stop(0);
+        }
+    }
+
     @Test
     void recordsAStartupTimeProbeWithoutUsingItAsAPassThreshold() throws Exception {
         long started = System.nanoTime();

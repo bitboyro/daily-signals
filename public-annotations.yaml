@@ -3313,6 +3313,18 @@
     { "id": "PLT-07", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ProducerAuthenticator.java",
+    "*/src/main/java/*/OidcProducerAuthenticator.java",
+    "*/src/test/java/*/ProducerAuthenticatorTest.java"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "implements" },
+    { "id": "EDT-04", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [

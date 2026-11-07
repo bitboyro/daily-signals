@@ -31,6 +31,7 @@ services:
       DAILY_SIGNALS_DATABASE_URL: jdbc:postgresql://postgres:5432/daily_signals
       DAILY_SIGNALS_DATABASE_USER: daily_signals
       DAILY_SIGNALS_DATABASE_PASSWORD: ${DAILY_SIGNALS_DATABASE_PASSWORD:-daily-signals-local}
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
     depends_on:
       postgres:
         condition: service_healthy

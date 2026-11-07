@@ -49,6 +49,11 @@ public final class DailySignals {
 
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ReviewerTokens reviewers,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
+        return createServer(bindAddress, port, webRoot, ProducerAuthenticator.local(reviewers), fetchSchedule, reviewQueue);
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
@@ -96,13 +101,13 @@ public final class DailySignals {
                 return;
             }
             String storyId = path.substring("/api/review-queue".length()).replaceFirst("^/", "");
-            var role = reviewers.roleFor(exchange.getRequestHeaders().getFirst("Authorization"));
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
             if (!"POST".equals(exchange.getRequestMethod()) || storyId.isEmpty() || storyId.contains("/")) {
                 reply(exchange, 405);
-            } else if (role.isEmpty()) {
+            } else if (identity.isEmpty()) {
                 exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
                 reply(exchange, 401);
-            } else if (!ProducerPermissions.mayReview(role.get())) {
+            } else if (!ProducerPermissions.mayReview(identity.get().role())) {
                 reply(exchange, 403);
             } else {
                 try {
@@ -112,7 +117,7 @@ public final class DailySignals {
                     }
                     try (var body = exchange.getRequestBody()) {
                         String receipt = reviewQueue.decideJson(storyId,
-                                new String(body.readNBytes(64), StandardCharsets.UTF_8), role.orElseThrow());
+                                new String(body.readNBytes(64), StandardCharsets.UTF_8), identity.orElseThrow().subject());
                         respondWrite(exchange, 200, "application/json", receipt.getBytes(StandardCharsets.UTF_8));
                     }
                 } catch (IllegalArgumentException invalid) {
@@ -177,8 +182,10 @@ public final class DailySignals {
         } else {
             reviews = ReviewQueue.fixture();
         }
+        var environment = System.getenv();
+        var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
-                ReviewerTokens.parse(System.getenv("DAILY_SIGNALS_REVIEW_TOKENS")),
+                ProducerAuthenticator.fromEnvironment(environment, fallback),
                 FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews);
         server.start();
         int actualPort = server.getAddress().getPort();

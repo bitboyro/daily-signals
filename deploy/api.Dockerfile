@@ -16,9 +16,7 @@ COPY radio-edition/ radio-edition/
 COPY radio-persistence/ radio-persistence/
 COPY radio-api/ radio-api/
 COPY contracts/ contracts/
-RUN mvn -B -ntp -DskipTests package \
-    && mkdir -p /src/runtime-libs \
-    && cp /root/.m2/repository/org/postgresql/postgresql/*/postgresql-*.jar /src/runtime-libs/
+RUN mvn -B -ntp -DskipTests package
 
 FROM eclipse-temurin:21.0.10_7-jre
 WORKDIR /app
@@ -27,7 +25,7 @@ COPY --from=java /src/radio-edition/target/classes classes/radio-edition
 COPY --from=java /src/radio-editorial/target/classes classes/radio-editorial
 COPY --from=java /src/radio-ingestion/target/classes classes/radio-ingestion
 COPY --from=java /src/radio-persistence/target/classes classes/radio-persistence
-COPY --from=java /src/runtime-libs/ lib/
+COPY --from=java /src/radio-api/target/runtime-libs/ lib/
 COPY --from=web /src/web/dist web
 USER 10001
 EXPOSE 8151
