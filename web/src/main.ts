@@ -2,6 +2,7 @@ import { readConfig } from './config.ts';
 import { fetchEditions, renderEditionList, type EditionSummary } from './editions.ts';
 import { bindPlaybackRecovery, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
+import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 
@@ -35,7 +36,8 @@ const DEFAULT_SOURCES: SourceConfig[] = [
 async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilter = 'ALL', query = ''): Promise<void> {
   const status = element('queue-status');
   try {
-    target.innerHTML = renderQueue(await fetchQueue(apiBase), filter, query);
+    const [items, schedule] = await Promise.all([fetchQueue(apiBase), fetchSchedule(apiBase)]);
+    target.innerHTML = renderFetchSchedule(schedule) + renderQueue(items, filter, query);
   } catch {
     target.textContent = 'The review queue is unavailable.';
   }

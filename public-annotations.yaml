@@ -3163,6 +3163,66 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["*/src/main/java/*/FetchScheduleProperties.java"],
+   "features": [
+    { "id": "SRC-02", "relation": "implements" },
+    { "id": "PLT-04", "relation": "configures" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/FetchSchedulePropertiesTest.java"],
+   "features": [
+    { "id": "SRC-02", "relation": "tests" },
+    { "id": "PLT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/main/java/*/DailyFetchScheduler.java"],
+   "features": [
+    { "id": "SRC-02", "relation": "implements" },
+    { "id": "PLT-04", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/test/java/*/DailyFetchSchedulerTest.java"],
+   "features": [
+    { "id": "SRC-02", "relation": "tests" },
+    { "id": "PLT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["*/src/main/java/*/FetchScheduleView.java", "*/src/test/java/*/FetchScheduleContractTest.java", "contracts/openapi/schedule-v1.json"],
+   "features": [
+    { "id": "PLT-04", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "SRC-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["web/src/fetch-schedule.ts", "web/test/fetch-schedule.test.ts"],
+   "features": [
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "PLT-04", "relation": "implements" },
+    { "id": "PLT-01", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["radio-ingestion/src/test/java/ro/bitboy/dailysignals/DailyFetchSchedulerSoakTest.java"],
+   "features": [
+    { "id": "PLT-04", "relation": "tests" },
+    { "id": "PLT-07", "relation": "tests" },
+    { "id": "SRC-02", "relation": "tests" },
+    { "id": "SRC-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/nightly-load.json", "tools/nightly-load.py"],
    "features": [
     { "id": "PLT-07", "relation": "tests" },
@@ -3212,6 +3272,12 @@
     },
     {
      "path": "radio-ingestion/src/test/java/ro/bitboy/dailysignals/FetchWindowPolicyTest.java"
+    },
+    {
+     "path": "radio-ingestion/src/test/java/ro/bitboy/dailysignals/FetchSchedulePropertiesTest.java"
+    },
+    {
+     "path": "radio-ingestion/src/test/java/ro/bitboy/dailysignals/DailyFetchSchedulerTest.java"
     }
    ]
   },
@@ -3309,6 +3375,14 @@
     {
      "path": "web/test/source-editor.test.ts"
     }
+   ]
+  },
+  {
+   "features": ["PLT-04", "PLT-01", "SRC-02"],
+   "check": "java.yml:api-contract",
+   "tests": [
+    { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/FetchScheduleContractTest.java" },
+    { "path": "tools/check-openapi-contract.py" }
    ]
   }
  ]

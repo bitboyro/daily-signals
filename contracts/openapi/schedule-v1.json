@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Daily Signals Fetch Schedule API", "version": "1.0.0" },
+  "paths": {
+    "/api/schedule": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Next station-local source fetch window",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/FetchSchedule" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FetchSchedule": {
+        "type": "object",
+        "required": ["schemaVersion", "nextRun", "zone", "window", "sources"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "enum": [1] },
+          "nextRun": { "type": "string", "format": "date-time" },
+          "zone": { "type": "string", "minLength": 1 },
+          "window": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" }
+          }
+        }
+      }
+    }
+  }
+}
