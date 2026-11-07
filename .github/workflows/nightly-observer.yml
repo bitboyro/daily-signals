@@ -104,7 +104,12 @@ jobs:
       - name: Pool the ledger and find escape suspects
         run: |
           python3 "$RUNNER_TEMP/dl/decision-lab.pyz" nightly --audits audits --sha "$SOURCE_SHA" \
-            --since "$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)" --issue "$REPORT_ISSUE"
+            --since "$(date -u -d '24 hours ago' +%Y-%m-%dT%H:%M:%SZ)"
+      - name: State the rollout evidence gate and publish once
+        run: |
+          PYTHONPATH=tools python3 -m unittest tools/test_enrich_nightly_report.py
+          python3 tools/enrich_nightly_report.py | tee -a "$GITHUB_STEP_SUMMARY"
+          gh issue comment "$REPORT_ISSUE" --body-file nightly-report.md
       - uses: actions/upload-artifact@v4
         with:
           name: nightly-report-${{ github.event.workflow_run.id }}

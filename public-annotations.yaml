@@ -3306,6 +3306,13 @@
     { "id": "WEB-03", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["tools/enrich_nightly_report.py", "tools/test_enrich_nightly_report.py"],
+   "features": [
+    { "id": "PLT-07", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [
