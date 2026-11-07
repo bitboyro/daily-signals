@@ -93,6 +93,16 @@ public final class DailySignals {
                 return;
             }
             if ("GET".equals(exchange.getRequestMethod()) && "/api/review-queue/audit".equals(path)) {
+                var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+                if (identity.isEmpty()) {
+                    exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                    reply(exchange, 401);
+                    return;
+                }
+                if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.READ_AUDIT, identity.get().role())) {
+                    reply(exchange, 403);
+                    return;
+                }
                 try {
                     respond(exchange, 200, "application/json", reviewQueue.auditToJson().getBytes(StandardCharsets.UTF_8));
                 } catch (IllegalStateException unavailable) {
@@ -107,7 +117,8 @@ public final class DailySignals {
             } else if (identity.isEmpty()) {
                 exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
                 reply(exchange, 401);
-            } else if (!ProducerPermissions.mayReview(identity.get().role())) {
+            } else if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.REVIEW_STORY,
+                    identity.get().role())) {
                 reply(exchange, 403);
             } else {
                 try {

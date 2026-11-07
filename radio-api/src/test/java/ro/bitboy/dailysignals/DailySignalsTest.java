@@ -144,7 +144,8 @@ class DailySignalsTest {
             HttpResponse<String> accepted = client.send(decide.apply(editor, "APPROVED"), HttpResponse.BodyHandlers.ofString());
             assertEquals(200, accepted.statusCode());
             assertEquals("{\"storyId\":\"demo-park-path\",\"decision\":\"APPROVED\"}", accepted.body());
-            String audit = client.send(HttpRequest.newBuilder(URI.create(base + "/audit")).GET().build(),
+            String audit = client.send(HttpRequest.newBuilder(URI.create(base + "/audit"))
+                .header("Authorization", "Bearer " + editor).GET().build(),
                 HttpResponse.BodyHandlers.ofString()).body();
             assertEquals("{\"schemaVersion\":1,\"decisions\":[{\"sequence\":1,\"storyId\":\"demo-park-path\",\"decision\":\"APPROVED\"}]}", audit);
             assertEquals(404, client.send(HttpRequest.newBuilder(URI.create(base + "/missing"))

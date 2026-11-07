@@ -28,6 +28,16 @@ class ProducerAuthenticatorTest {
         assertEquals(ProducerAuthenticator.Identity.Mechanism.OIDC, identity.mechanism());
     }
 
+    @Test void selectsTheMostCapableKnownRealmRole() {
+        var jwt = Jwt.withTokenValue("signed-token").header("alg", "RS256")
+                .issuer(ISSUER).subject("producer-42").issuedAt(Instant.now())
+                .expiresAt(Instant.now().plusSeconds(60))
+                .claim("realm_access", Map.of("roles", List.of("LISTENER", "EDITOR", "PRODUCER"))).build();
+        var identity = OidcProducerAuthenticator.create(ISSUER, ReviewerTokens.none(), () -> token -> jwt)
+                .authenticate("Bearer signed-token").orElseThrow();
+        assertEquals("PRODUCER", identity.role());
+    }
+
     @Test void rejectsWrongIssuerMissingRoleAndDecoderFailures() {
         var wrongIssuer = jwt("https://identity.example/realms/elsewhere", Map.of("roles", List.of("EDITOR")));
         var noRole = jwt(ISSUER, Map.of("roles", List.of("offline_access")));

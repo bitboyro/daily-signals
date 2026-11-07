@@ -3350,6 +3350,17 @@
     { "id": "EDT-04", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/ProducerEndpointPolicy.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/ProducerEndpointAuthorizationTest.java"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "guards" },
+    { "id": "EDT-04", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [

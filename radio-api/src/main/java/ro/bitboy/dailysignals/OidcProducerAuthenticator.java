@@ -55,7 +55,7 @@ final class OidcProducerAuthenticator implements ProducerAuthenticator {
         if (!(access instanceof Map<?, ?> map) || !(map.get("roles") instanceof Collection<?> roles)) {
             return Optional.empty();
         }
-        for (String accepted : new String[]{"EDITOR", "PRODUCER", "LISTENER"}) {
+        for (String accepted : new String[]{"PRODUCER", "EDITOR", "LISTENER"}) {
             if (roles.stream().anyMatch(accepted::equals)) return Optional.of(accepted);
         }
         return Optional.empty();
