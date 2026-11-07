@@ -4,6 +4,10 @@
   "maximumDurationSeconds": 1800,
   "tasks": [
     {
+      "name": "daily-fetch-schedule",
+      "command": ["mvn", "-B", "-ntp", "-pl", "radio-ingestion", "-am", "-Dtest=DailyFetchSchedulerSoakTest", "-Dsurefire.failIfNoSpecifiedTests=false", "test"]
+    },
+    {
       "name": "editorial-schedule",
       "command": ["mvn", "-B", "-ntp", "-pl", "radio-edition", "-am", "-Dtest=CandidateOrderingPropertyTest,ScheduledEditionClockTest", "-Dsurefire.failIfNoSpecifiedTests=false", "test"]
     },

@@ -3213,6 +3213,16 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["radio-ingestion/src/test/java/ro/bitboy/dailysignals/DailyFetchSchedulerSoakTest.java"],
+   "features": [
+    { "id": "PLT-04", "relation": "tests" },
+    { "id": "PLT-07", "relation": "tests" },
+    { "id": "SRC-02", "relation": "tests" },
+    { "id": "SRC-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/nightly-load.json", "tools/nightly-load.py"],
    "features": [
     { "id": "PLT-07", "relation": "tests" },
