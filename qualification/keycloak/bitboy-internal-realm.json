@@ -1,0 +1,22 @@
+{
+  "realm": "bitboy-internal",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "roles": { "realm": [
+    { "name": "LISTENER" },
+    { "name": "PRODUCER" },
+    { "name": "EDITOR" }
+  ] },
+  "clients": [
+    {
+      "clientId": "daily-signals-integration",
+      "name": "Daily Signals integration fixture",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect"
+    }
+  ]
+}

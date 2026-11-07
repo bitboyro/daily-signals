@@ -3325,6 +3325,19 @@
     { "id": "EDT-04", "relation": "guards" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "qualification/keycloak/bitboy-internal-realm.json",
+    "tools/keycloak-fixture.py",
+    "tools/test_keycloak_fixture.py",
+    "*/src/test/java/*/KeycloakOidcIntegrationTest.java"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "tests" },
+    { "id": "EDT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [
