@@ -14,4 +14,17 @@ class MigrationResourceTest {
             assertTrue(ddl.contains("source_category VARCHAR(80) NOT NULL DEFAULT 'general'"));
         }
     }
+
+    @Test void editorialMigrationDefinesCandidatesReviewsAndEditionOrdering() throws Exception {
+        try (var input = MigrationRunner.class.getResourceAsStream("/db/migration/V3__editorial_state.sql")) {
+            assertNotNull(input);
+            String ddl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(ddl.contains("CREATE TABLE IF NOT EXISTS candidate_story"));
+            assertTrue(ddl.contains("CREATE TABLE IF NOT EXISTS candidate_review"));
+            assertTrue(ddl.contains("CREATE TABLE IF NOT EXISTS edition_candidate"));
+            assertTrue(ddl.contains("CHECK (decision IN ('PENDING', 'APPROVED', 'REJECTED'))"));
+            assertTrue(ddl.contains("UNIQUE (edition_id, position)"));
+            assertTrue(ddl.contains("REFERENCES candidate_story(candidate_id) ON DELETE CASCADE"));
+        }
+    }
 }

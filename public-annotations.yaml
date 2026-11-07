@@ -773,6 +773,72 @@
   },
   {
    "paths": [
+    "radio-persistence/src/main/java/*/CandidateRepository.java",
+    "radio-persistence/src/main/java/*/IngestedCandidateWriter.java"
+   ],
+   "features": [
+    { "id": "EDT-01", "relation": "implements" },
+    { "id": "PLT-02", "relation": "calls" },
+    { "id": "SRC-03", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["radio-persistence/src/test/java/*/CandidateRepositoryPostgresTest.java"],
+   "features": [
+    { "id": "EDT-01", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/main/java/*/ReviewRepository.java",
+    "radio-persistence/src/main/java/*/EditionCandidateRepository.java"
+   ],
+   "features": [
+    { "id": "EDT-04", "relation": "implements" },
+    { "id": "EDI-01", "relation": "implements" },
+    { "id": "PLT-02", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["radio-persistence/src/test/java/*/EditorialRepositoriesPostgresTest.java"],
+   "features": [
+    { "id": "EDT-04", "relation": "tests" },
+    { "id": "EDI-01", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/*/DatabaseRuntime.java",
+    "radio-api/src/main/java/*/PostgresReviewQueue.java",
+    "radio-api/src/main/java/*/ReviewQueueBackend.java"
+   ],
+   "features": [
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "PLT-02", "relation": "calls" },
+    { "id": "EDT-04", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/test/java/*/DatabaseRuntimeTest.java",
+    "radio-api/src/test/java/*/PostgresReviewQueueTest.java"
+   ],
+   "features": [
+    { "id": "PLT-01", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" },
+    { "id": "EDT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/ScriptAssembler.java"
    ],
    "features": [

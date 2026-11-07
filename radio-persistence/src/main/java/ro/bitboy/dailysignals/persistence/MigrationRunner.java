@@ -8,7 +8,12 @@ import java.sql.SQLException;
 public final class MigrationRunner {
     private MigrationRunner() {}
     public static void migrate(Connection connection) throws SQLException, IOException {
-        for (var resource : new String[]{"V1__edition_lifecycle.sql", "V2__source_category_backfill.sql"}) {
+        for (var resource : new String[]{
+                "V1__edition_lifecycle.sql",
+                "V2__source_category_backfill.sql",
+                "V3__editorial_state.sql",
+                "V4__candidate_source_history.sql"
+        }) {
             try (var input = MigrationRunner.class.getResourceAsStream("/db/migration/" + resource)) {
                 if (input == null) throw new IOException("edition migration resource missing: " + resource);
                 String sql = new String(input.readAllBytes(), StandardCharsets.UTF_8);

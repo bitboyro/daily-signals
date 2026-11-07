@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / 'deploy'
-MODULES = ('radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion')
+MODULES = ('radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion', 'radio-persistence')
 # Compose volume sources and image build outputs, most specific first.
 HOST_PATHS = [
     ('/srv/published/manifest.json', ROOT / 'contracts/publication-manifest-v2.json'),

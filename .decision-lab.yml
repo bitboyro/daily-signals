@@ -39,11 +39,12 @@ graph:
     - {from: "contracts/**", to: "container.yml:container-smoke"}
     - {from: "contracts/**", to: "java.yml:stream-integration"}
     - {from: "contracts/**", to: radio-api}
-    - {from: "contracts/**", to: "release.yml:release-qualification"}
     - {from: "contracts/**", to: streamer}
     - {from: "contracts/**", to: web}
     - {from: "contracts/openapi/**", to: radio-api}
     - {from: "deploy/**", to: "container.yml:container-smoke"}
+    - {from: "deploy/**", to: "container.yml:install-smoke"}
+    - {from: "deploy/**", to: "container.yml:install-smoke-matrix"}
     - {from: "examples/**", to: "java.yml:java-unit"}
     - {from: "examples/**", to: web}
     - {from: "examples/operations/**", to: "java.yml:java-unit"}

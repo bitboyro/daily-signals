@@ -8,6 +8,11 @@ export interface QueueItem {
   headline: string;
   source: string;
   decision: Decision;
+  review: {
+    reviewer: string | null;
+    reviewedAt: string | null;
+    revision: number;
+  };
 }
 
 export interface DecisionReceipt {
@@ -22,12 +27,17 @@ const DECISIONS: readonly string[] = ['PENDING', 'APPROVED', 'REJECTED'];
 function isQueueItem(value: unknown): value is QueueItem {
   if (typeof value !== 'object' || value === null) return false;
   const v = value as Record<string, unknown>;
+  const review = v.review as Record<string, unknown> | null;
   return typeof v.storyId === 'string' && typeof v.headline === 'string'
-    && typeof v.source === 'string' && typeof v.decision === 'string' && DECISIONS.includes(v.decision);
+    && typeof v.source === 'string' && typeof v.decision === 'string' && DECISIONS.includes(v.decision)
+    && typeof review === 'object' && review !== null
+    && (review.reviewer === null || typeof review.reviewer === 'string')
+    && (review.reviewedAt === null || (typeof review.reviewedAt === 'string' && !Number.isNaN(Date.parse(review.reviewedAt))))
+    && Number.isInteger(review.revision) && (review.revision as number) >= 0;
 }
 
 export function parseQueue(payload: unknown): QueueItem[] {
-  const items = readEnvelope(payload, 'items');
+  const items = readEnvelope(payload, 'items', 3);
   if (!items.every(isQueueItem)) throw new Error('unexpected review queue response');
   return items;
 }
@@ -71,6 +81,12 @@ function controls(item: QueueItem): string {
     + `<button type="button" data-action="REJECTED" data-story="${id}" aria-label="Reject ${headline}">Reject</button>`;
 }
 
+function reviewDetails(item: QueueItem): string {
+  if (item.review.reviewer === null || item.review.reviewedAt === null) return 'Not reviewed';
+  const reviewedAt = escapeHtml(item.review.reviewedAt);
+  return `${escapeHtml(item.review.reviewer)} · <time datetime="${reviewedAt}">${reviewedAt}</time> · r${item.review.revision}`;
+}
+
 export function renderQueue(items: QueueItem[], filter: QueueFilter = 'ALL', query = ''): string {
   const visible = filterQueue(items, filter, query);
   const filterControl = '<form class="queue-filter" aria-label="Filter review queue">'
@@ -82,10 +98,10 @@ export function renderQueue(items: QueueItem[], filter: QueueFilter = 'ALL', que
   const renderedRows = visible.map((item) =>
     `<tr data-story="${escapeHtml(item.storyId)}"><td>${escapeHtml(item.headline)}</td>`
     + `<td>${escapeHtml(item.source)}</td><td class="decision-${item.decision.toLowerCase()}">${item.decision}</td>`
-    + `<td>${controls(item)}</td></tr>`).join('');
+    + `<td>${reviewDetails(item)}</td><td>${controls(item)}</td></tr>`).join('');
   return filterControl + '<table class="producer-queue">'
     + `<caption>Review queue: ${pendingCount(items)} pending</caption>`
-    + '<thead><tr><th scope="col">Story</th><th scope="col">Source</th><th scope="col">Decision</th>'
+    + '<thead><tr><th scope="col">Story</th><th scope="col">Source</th><th scope="col">Decision</th><th scope="col">Review</th>'
     + '<th scope="col">Actions</th></tr></thead>'
-    + `<tbody>${renderedRows || '<tr><td colspan="4">No matching stories.</td></tr>'}</tbody></table>`;
+    + `<tbody>${renderedRows || '<tr><td colspan="5">No matching stories.</td></tr>'}</tbody></table>`;
 }

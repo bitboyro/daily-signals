@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { filterQueue, parseQueue, pendingCount, renderQueue, submitDecision, type QueueItem } from '../src/producer-queue.ts';
 
 const items: QueueItem[] = [
-  { storyId: 'story-1', headline: 'Rail <maintenance>', source: 'transit-desk', decision: 'PENDING' },
-  { storyId: 'story-2', headline: 'Library hours', source: 'city-desk', decision: 'APPROVED' },
-  { storyId: 'story-3', headline: 'Bridge works', source: 'city-desk', decision: 'PENDING' },
+  { storyId: 'story-1', headline: 'Rail <maintenance>', source: 'transit-desk', decision: 'PENDING', review: { reviewer: null, reviewedAt: null, revision: 0 } },
+  { storyId: 'story-2', headline: 'Library hours', source: 'city-desk', decision: 'APPROVED', review: { reviewer: 'EDITOR', reviewedAt: '2026-11-07T10:30:00Z', revision: 1 } },
+  { storyId: 'story-3', headline: 'Bridge works', source: 'city-desk', decision: 'PENDING', review: { reviewer: null, reviewedAt: null, revision: 0 } },
 ];
 
 test('counts only pending decisions', () => {
@@ -15,15 +15,22 @@ test('counts only pending decisions', () => {
 test('queue table has a caption, column headers and escaped headlines', () => {
   const html = renderQueue(items);
   assert.match(html, /<caption>Review queue: 2 pending<\/caption>/);
-  assert.equal(html.match(/<th scope="col">/g)?.length, 4);
+  assert.equal(html.match(/<th scope="col">/g)?.length, 5);
   assert.match(html, /Rail &lt;maintenance&gt;/);
   assert.match(html, /data-story="story-2".*decision-approved/);
 });
 
 test('parses the versioned review queue envelope', () => {
-  assert.deepEqual(parseQueue({ schemaVersion: 2, items }), items);
+  assert.deepEqual(parseQueue({ schemaVersion: 3, items }), items);
   assert.throws(() => parseQueue(items), /versioned response/);
-  assert.throws(() => parseQueue({ schemaVersion: 2, items: [{ ...items[0], decision: 'MAYBE' }] }), /review queue/);
+  assert.throws(() => parseQueue({ schemaVersion: 3, items: [{ ...items[0], decision: 'MAYBE' }] }), /review queue/);
+  assert.throws(() => parseQueue({ schemaVersion: 3, items: [{ ...items[0], review: { reviewer: 'EDITOR', reviewedAt: 'never', revision: 1 } }] }), /review queue/);
+});
+
+test('renders persisted reviewer, time and revision', () => {
+  const html = renderQueue(items);
+  assert.match(html, /EDITOR · <time datetime="2026-11-07T10:30:00Z">2026-11-07T10:30:00Z<\/time> · r1/);
+  assert.match(html, /Not reviewed/);
 });
 
 test('only pending stories get labelled approval controls', () => {

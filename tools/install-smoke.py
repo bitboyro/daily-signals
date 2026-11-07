@@ -11,6 +11,10 @@ runtime = (ROOT / "deploy/runtime.env").read_text()
 
 assert manifest["schemaVersion"] == 1
 assert {item["name"] for item in manifest["services"]} == {"api", "streamer"}
+assert "  postgres:" in compose
+assert "condition: service_healthy" in compose
+for variable in ("DAILY_SIGNALS_DATABASE_URL", "DAILY_SIGNALS_DATABASE_USER", "DAILY_SIGNALS_DATABASE_PASSWORD"):
+    assert variable in compose, f"compose does not configure {variable}"
 for service in manifest["services"]:
     assert 1 <= service["port"] <= 65535
     assert service["healthPath"].startswith("/")

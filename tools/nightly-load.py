@@ -52,8 +52,10 @@ def fetch(url):
 
 
 api_port, stream_port = free_port(), free_port()
+java_classpath = ":".join(str(ROOT / module / "target/classes") for module in (
+    "radio-api", "radio-edition", "radio-editorial", "radio-ingestion", "radio-persistence"))
 api = subprocess.Popen([
-    "java", "-cp", str(ROOT / "radio-api/target/classes"),
+    "java", "-cp", java_classpath,
     "ro.bitboy.dailysignals.DailySignals", str(api_port)
 ], stdout=subprocess.DEVNULL)
 stream = subprocess.Popen([
