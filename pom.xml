@@ -22,6 +22,8 @@
     <postgresql.version>42.7.14</postgresql.version>
     <maven-enforcer.version>3.6.3</maven-enforcer.version>
     <spring-boot.version>4.1.2</spring-boot.version>
+    <spring-security.version>7.1.2</spring-security.version>
+    <nimbus-jose-jwt.version>10.9.1</nimbus-jose-jwt.version>
     <jacoco.version>0.8.15</jacoco.version>
   </properties>
   <dependencyManagement>
@@ -37,6 +39,21 @@
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
         <version>${jackson.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-oauth2-resource-server</artifactId>
+        <version>${spring-security.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-oauth2-jose</artifactId>
+        <version>${spring-security.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.nimbusds</groupId>
+        <artifactId>nimbus-jose-jwt</artifactId>
+        <version>${nimbus-jose-jwt.version}</version>
       </dependency>
       <dependency>
         <groupId>org.junit.jupiter</groupId>
