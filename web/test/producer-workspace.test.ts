@@ -4,6 +4,7 @@ import { isProducerPanel, renderProducerWorkspace } from '../src/producer-worksp
 
 test('producer workspace identifies supported panels', () => {
   assert.equal(isProducerPanel('candidates'), true);
+  assert.equal(isProducerPanel('script'), true);
   assert.equal(isProducerPanel('queue'), true);
   assert.equal(isProducerPanel('sources'), true);
   assert.equal(isProducerPanel('publish'), false);

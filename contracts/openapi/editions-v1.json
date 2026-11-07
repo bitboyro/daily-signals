@@ -15,10 +15,31 @@
           }
         }
       }
+    },
+    "/api/producer/script": {
+      "get": {
+        "security": [{ "producerBearer": [] }],
+        "responses": { "200": { "description": "Current producer script draft", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScriptDraft" } } } } }
+      },
+      "put": {
+        "security": [{ "producerBearer": [] }],
+        "requestBody": { "required": true, "content": { "text/plain": { "schema": { "type": "string", "minLength": 1, "maxLength": 20000 } } } },
+        "responses": { "200": { "description": "Saved producer script draft", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScriptDraft" } } } } }
+      }
     }
   },
   "components": {
+    "securitySchemes": { "producerBearer": { "type": "http", "scheme": "bearer", "bearerFormat": "JWT" } },
     "schemas": {
+      "ScriptDraft": {
+        "type": "object",
+        "required": ["schemaVersion", "text", "revision"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "enum": [1] },
+          "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
+          "revision": { "type": "integer", "minimum": 0 }
+        }
+      },
       "EditionList": {
         "type": "object",
         "required": ["schemaVersion", "editions"],

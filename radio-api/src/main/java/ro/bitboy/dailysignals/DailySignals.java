@@ -56,6 +56,7 @@ public final class DailySignals {
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
+        EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
@@ -136,6 +137,30 @@ public final class DailySignals {
                 } catch (IllegalStateException unavailable) {
                     reply(exchange, 503);
                 }
+            }
+        });
+        server.createContext("/api/producer/script", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.EDIT_SCRIPT, identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            if ("GET".equals(exchange.getRequestMethod())) {
+                respond(exchange, 200, "application/json", script.toJson().getBytes(StandardCharsets.UTF_8));
+            } else if ("PUT".equals(exchange.getRequestMethod())) {
+                try (var body = exchange.getRequestBody()) {
+                    String saved = script.saveJson(new String(body.readNBytes(20_001), StandardCharsets.UTF_8));
+                    respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
+                } catch (IllegalArgumentException invalid) {
+                    reply(exchange, 400);
+                }
+            } else {
+                reply(exchange, 405);
             }
         });
         if (webRoot != null) {

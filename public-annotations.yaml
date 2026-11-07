@@ -2792,6 +2792,20 @@
   },
   {
    "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionScriptStore.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/EditionScriptStoreTest.java",
+    "web/src/producer-script.ts",
+    "web/test/producer-script.test.ts"
+   ],
+   "features": [
+    { "id": "VOC-01", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "web/public/styles.css"
    ],
    "features": [

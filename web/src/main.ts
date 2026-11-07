@@ -7,6 +7,7 @@ import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutProducer } from './producer-auth.ts';
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
+import { fetchScript, renderScriptEditor, saveScript } from './producer-script.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -73,6 +74,24 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
       target.innerHTML = renderTodaysCandidates(await fetchTodaysCandidates(apiBase));
     } catch {
       target.textContent = 'Today’s candidates are unavailable.';
+    }
+  } else if (panel === 'script') {
+    const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+    try {
+      const draft = await fetchScript(apiBase, token);
+      target.innerHTML = renderScriptEditor(draft);
+      target.querySelector<HTMLFormElement>('form.producer-script')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const status = form.querySelector<HTMLElement>('.script-status');
+        const text = (form.elements.namedItem('script') as HTMLTextAreaElement).value;
+        void saveScript(apiBase, producerBearer(sessionStorage,
+          (element('reviewer-token') as HTMLInputElement).value), text).then((saved) => {
+          if (status) status.textContent = `Script revision ${saved.revision} saved.`;
+        }).catch((error) => { if (status) status.textContent = error instanceof Error ? error.message : 'Script save failed.'; });
+      });
+    } catch (error) {
+      target.textContent = error instanceof Error ? error.message : 'The edition script is unavailable.';
     }
   } else if (panel === 'queue') {
     await showQueue(apiBase, target);
