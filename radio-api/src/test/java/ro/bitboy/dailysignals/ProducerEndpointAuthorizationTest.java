@@ -28,6 +28,9 @@ class ProducerEndpointAuthorizationTest {
                 assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/script")))
                                 .PUT(HttpRequest.BodyPublishers.ofString("Today’s edition script.")), token),
                         HttpResponse.BodyHandlers.discarding()).statusCode());
+                assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/pronunciations")))
+                                .PUT(HttpRequest.BodyPublishers.ofString("SQL=sequel")), token),
+                        HttpResponse.BodyHandlers.discarding()).statusCode());
                 assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue + "/demo-park-path"))
                                 .POST(HttpRequest.BodyPublishers.ofString("APPROVED")), token),
                         HttpResponse.BodyHandlers.discarding()).statusCode());
@@ -38,6 +41,8 @@ class ProducerEndpointAuthorizationTest {
                             .POST(HttpRequest.BodyPublishers.ofString("APPROVED")), LISTENER),
                     HttpResponse.BodyHandlers.discarding()).statusCode());
             assertEquals(403, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/script"))).GET(), LISTENER),
+                    HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(403, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/pronunciations"))).GET(), LISTENER),
                     HttpResponse.BodyHandlers.discarding()).statusCode());
             HttpResponse<Void> anonymous = client.send(HttpRequest.newBuilder(URI.create(queue + "/audit")).GET().build(),
                     HttpResponse.BodyHandlers.discarding());

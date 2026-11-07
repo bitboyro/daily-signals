@@ -5,6 +5,7 @@ import { isProducerPanel, renderProducerWorkspace } from '../src/producer-worksp
 test('producer workspace identifies supported panels', () => {
   assert.equal(isProducerPanel('candidates'), true);
   assert.equal(isProducerPanel('script'), true);
+  assert.equal(isProducerPanel('pronunciations'), true);
   assert.equal(isProducerPanel('queue'), true);
   assert.equal(isProducerPanel('sources'), true);
   assert.equal(isProducerPanel('publish'), false);
@@ -16,6 +17,7 @@ test('producer workspace exposes an accessible active panel', () => {
   assert.match(html, /data-producer-panel="sources" aria-selected="true"/);
   assert.match(html, /data-producer-panel="queue" aria-selected="false" aria-controls="producer-panel-queue" tabindex="-1"/);
   assert.match(html, /Today’s candidates/);
+  assert.match(html, /Pronunciations/);
   assert.match(html, /id="producer-panel-sources" role="tabpanel" aria-labelledby="producer-tab-sources"/);
 });
 

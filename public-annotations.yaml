@@ -2806,6 +2806,20 @@
   },
   {
    "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PronunciationLexiconStore.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/PronunciationLexiconStoreTest.java",
+    "web/src/producer-pronunciations.ts",
+    "web/test/producer-pronunciations.test.ts"
+   ],
+   "features": [
+    { "id": "VOC-02", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "web/public/styles.css"
    ],
    "features": [

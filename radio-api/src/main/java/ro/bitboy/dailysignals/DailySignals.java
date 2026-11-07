@@ -57,6 +57,7 @@ public final class DailySignals {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
+        PronunciationLexiconStore pronunciations = new PronunciationLexiconStore();
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
@@ -155,6 +156,32 @@ public final class DailySignals {
             } else if ("PUT".equals(exchange.getRequestMethod())) {
                 try (var body = exchange.getRequestBody()) {
                     String saved = script.saveJson(new String(body.readNBytes(20_001), StandardCharsets.UTF_8));
+                    respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
+                } catch (IllegalArgumentException invalid) {
+                    reply(exchange, 400);
+                }
+            } else {
+                reply(exchange, 405);
+            }
+        });
+        server.createContext("/api/producer/pronunciations", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.EDIT_PRONUNCIATION,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            if ("GET".equals(exchange.getRequestMethod())) {
+                respond(exchange, 200, "application/json", pronunciations.toJson().getBytes(StandardCharsets.UTF_8));
+            } else if ("PUT".equals(exchange.getRequestMethod())) {
+                try (var body = exchange.getRequestBody()) {
+                    String saved = pronunciations.saveJson(
+                            new String(body.readNBytes(20_001), StandardCharsets.UTF_8));
                     respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
                 } catch (IllegalArgumentException invalid) {
                     reply(exchange, 400);

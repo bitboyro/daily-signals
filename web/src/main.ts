@@ -8,6 +8,7 @@ import { renderSourceEditor, validateSources, type SourceConfig } from './source
 import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutProducer } from './producer-auth.ts';
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 import { fetchScript, renderScriptEditor, saveScript } from './producer-script.ts';
+import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -92,6 +93,26 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
       });
     } catch (error) {
       target.textContent = error instanceof Error ? error.message : 'The edition script is unavailable.';
+    }
+  } else if (panel === 'pronunciations') {
+    const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+    try {
+      const draft = await fetchPronunciations(apiBase, token);
+      target.innerHTML = renderPronunciationEditor(draft);
+      target.querySelector<HTMLFormElement>('form.producer-pronunciations')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const status = form.querySelector<HTMLElement>('.pronunciation-status');
+        const text = (form.elements.namedItem('entries') as HTMLTextAreaElement).value;
+        void savePronunciations(apiBase, producerBearer(sessionStorage,
+          (element('reviewer-token') as HTMLInputElement).value), text).then((saved) => {
+          if (status) status.textContent = `Pronunciation revision ${saved.revision} saved.`;
+        }).catch((error) => {
+          if (status) status.textContent = error instanceof Error ? error.message : 'Save failed.';
+        });
+      });
+    } catch (error) {
+      target.textContent = error instanceof Error ? error.message : 'Pronunciations are unavailable.';
     }
   } else if (panel === 'queue') {
     await showQueue(apiBase, target);
