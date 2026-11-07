@@ -37,8 +37,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Source parser authorization matrix
-        run: mvn -B -ntp -pl radio-ingestion test -Dtest=AuthorizedSourceParserTest
+      - name: Producer endpoint authorization matrix
+        run: >-
+          mvn -B -ntp -pl radio-edition,radio-api -am test
+          -Dtest=ProducerPermissionsTest,ProducerAuthenticatorTest,ProducerEndpointAuthorizationTest
+          -Dsurefire.failIfNoSpecifiedTests=false
   secret-scan:
     runs-on: ubuntu-latest
     steps:

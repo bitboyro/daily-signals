@@ -11,6 +11,7 @@ Daily Signals installs two services from `deploy/compose.yaml`: the Java API/lis
 | `STREAMER_BIND_ADDRESS` | `0.0.0.0` | no | Streamer listener address inside the container |
 | `STREAMER_PUBLIC_PREFIXES` | `editions/,fixtures/` | no | Object-key prefixes visible to listeners |
 | `DAILY_SIGNALS_REVIEW_TOKENS` | unset | yes | Optional `token=ROLE` producer authorization pairs; supply through a secret store |
+| `JWT_ISSUER_URI` | unset | yes | Keycloak realm issuer for producer bearer-token validation; HTTPS except loopback development |
 
 The checked-in `runtime.env` contains only non-secret defaults. Do not add review tokens or provider credentials to it.
 

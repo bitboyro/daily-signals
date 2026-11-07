@@ -2742,7 +2742,8 @@
   {
    "paths": [
     "web/src/main.ts",
-    "web/public/index.html"
+    "web/public/index.html",
+    "web/public/runtime-config.js"
    ],
    "features": [
     {
@@ -2766,6 +2767,17 @@
    "provenance": "authored-review",
    "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/producer-auth.ts",
+    "web/test/producer-auth.test.ts"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": [
@@ -3304,6 +3316,49 @@
     { "id": "WEB-01", "relation": "tests" },
     { "id": "WEB-02", "relation": "tests" },
     { "id": "WEB-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["tools/enrich_nightly_report.py", "tools/test_enrich_nightly_report.py"],
+   "features": [
+    { "id": "PLT-07", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "*/src/main/java/*/ProducerAuthenticator.java",
+    "*/src/main/java/*/OidcProducerAuthenticator.java",
+    "*/src/test/java/*/ProducerAuthenticatorTest.java"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "implements" },
+    { "id": "EDT-04", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "qualification/keycloak/bitboy-internal-realm.json",
+    "tools/keycloak-fixture.py",
+    "tools/test_keycloak_fixture.py",
+    "*/src/test/java/*/KeycloakOidcIntegrationTest.java"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "tests" },
+    { "id": "EDT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/ProducerEndpointPolicy.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/ProducerEndpointAuthorizationTest.java"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "guards" },
+    { "id": "EDT-04", "relation": "guards" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }

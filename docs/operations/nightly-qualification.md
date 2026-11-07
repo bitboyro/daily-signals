@@ -15,6 +15,7 @@ Read it in this order:
 3. **Escapes** names a merged pull request that actually skipped a check which now fails on `main`.
 4. **Shadow escapes** names a check that still ran, but that Decision Lab's shadow plan would have skipped. Any shadow escape blocks moving to enforcement.
 5. **Plan misses** and its 95% upper bound are the cumulative safety ledger over observable failing changes.
+6. **Rollout evidence** applies the pre-registered sample-size gate. A green reference run and zero misses do not mean enforcement is safe while fewer than eight failing pull-request runs have been audited.
 
 One real or shadow escape keeps `rollout.mode` in `shadow` until the cause is linked from the report and the corrected selector replays the full v2 and v3 history without a miss.
 

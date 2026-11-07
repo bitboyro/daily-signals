@@ -8,4 +8,4 @@ Run `python3 tools/container-smoke.py` after building Java, Rust and the web cli
 
 Hosted deployment qualification uses the separate `post-deploy-health` check and retains its JSON evidence. See [listener release operations](operations/listener-release.md) for packaging, promotion, probing and rollback.
 
-Producer review writes stay closed unless `DAILY_SIGNALS_REVIEW_TOKENS` (`token=ROLE` pairs) is supplied to the `api` container from a secret store. `runtime.env` deliberately omits it, and tokens are never committed.
+Producer review writes stay closed unless `JWT_ISSUER_URI` points to the Keycloak realm or `DAILY_SIGNALS_REVIEW_TOKENS` (`token=ROLE` pairs) is supplied to the `api` container from a secret store for local fallback. `runtime.env` deliberately omits credentials, and tokens are never committed.

@@ -76,6 +76,37 @@ jobs:
           name: java-unit-jacoco-${{ github.run_attempt }}
           path: '**/target/site/jacoco/jacoco.xml'
           if-no-files-found: warn
+  oidc-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Start the pinned Keycloak realm fixture
+        env:
+          KC_BOOTSTRAP_ADMIN_USERNAME: admin
+          KC_BOOTSTRAP_ADMIN_PASSWORD: ${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          docker run --detach --name daily-signals-keycloak --publish 127.0.0.1:8180:8080 \
+            --env KC_BOOTSTRAP_ADMIN_USERNAME --env KC_BOOTSTRAP_ADMIN_PASSWORD \
+            --volume "$PWD/qualification/keycloak:/opt/keycloak/data/import:ro" \
+            quay.io/keycloak/keycloak:26.4.7@sha256:9409c59bdfb65dbffa20b11e6f18b8abb9281d480c7ca402f51ed3d5977e6007 \
+            start-dev --import-realm
+          python3 tools/keycloak-fixture.py --admin-password "$KC_BOOTSTRAP_ADMIN_PASSWORD" \
+            --token-file "$RUNNER_TEMP/oidc-token"
+          echo "::add-mask::$(cat "$RUNNER_TEMP/oidc-token")"
+      - name: Validate a real realm token through the API
+        env:
+          OIDC_TEST_ISSUER: http://127.0.0.1:8180/realms/bitboy-internal
+        run: |
+          OIDC_TEST_TOKEN="$(cat "$RUNNER_TEMP/oidc-token")" \
+            mvn -B -ntp -pl radio-api -am -Dtest=KeycloakOidcIntegrationTest \
+            -Dsurefire.failIfNoSpecifiedTests=false test
+      - name: Upload Keycloak logs on failure
+        if: failure()
+        run: docker logs daily-signals-keycloak
   annotation-audit:
     runs-on: ubuntu-latest
     steps:

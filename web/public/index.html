@@ -26,14 +26,20 @@
     </section>
     <section id="producer" aria-labelledby="producer-heading">
       <h2 id="producer-heading">Producer review</h2>
+      <div class="producer-auth">
+        <button id="producer-sign-in" type="button" hidden>Sign in with station account</button>
+        <button id="producer-sign-out" type="button">Clear station sign-in</button>
+        <p id="producer-auth-status" role="status"></p>
+      </div>
       <label for="reviewer-token">Reviewer token</label>
       <input id="reviewer-token" type="password" autocomplete="off" spellcheck="false"
              aria-describedby="reviewer-token-help">
-      <p id="reviewer-token-help">Issued by the station; it decides whether you can approve stories.</p>
+      <p id="reviewer-token-help">Local fallback for development; station sign-in is preferred when configured.</p>
       <div id="producer-workspace" aria-live="polite"></div>
       <p id="queue-status" role="status"></p>
     </section>
   </main>
+  <script src="/runtime-config.js"></script>
   <script type="module" src="/app/main.js"></script>
 </body>
 </html>
