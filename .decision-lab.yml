@@ -44,6 +44,8 @@ graph:
     - {from: "contracts/**", to: web}
     - {from: "contracts/openapi/**", to: radio-api}
     - {from: "deploy/**", to: "container.yml:container-smoke"}
+    - {from: "deploy/**", to: "container.yml:install-smoke"}
+    - {from: "deploy/**", to: "container.yml:install-smoke-matrix"}
     - {from: "examples/**", to: "java.yml:java-unit"}
     - {from: "examples/**", to: web}
     - {from: "examples/operations/**", to: "java.yml:java-unit"}

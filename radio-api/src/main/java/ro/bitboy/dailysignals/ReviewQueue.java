@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Producer-facing review decisions over the current candidate set; synthetic candidates until ingestion is wired in. */
-public final class ReviewQueue {
+public final class ReviewQueue implements ReviewQueueBackend {
     private final CandidateReview review = new CandidateReview();
     private final List<DecisionAudit> audit = new ArrayList<>();
 
@@ -49,6 +49,11 @@ public final class ReviewQueue {
         review.decide(storyId, parsed);
         audit.add(new DecisionAudit(audit.size() + 1, storyId, parsed));
         return new DecisionReceipt(storyId, parsed);
+    }
+
+    @Override
+    public synchronized String decideJson(String storyId, String decision, String reviewer) {
+        return decide(storyId, decision).toJson();
     }
 
     public synchronized boolean contains(String storyId) {

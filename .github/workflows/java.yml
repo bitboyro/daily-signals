@@ -289,7 +289,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - name: PostgreSQL reference integration
-        run: mvn -B -ntp -pl radio-persistence -am verify
+        run: mvn -B -ntp -pl radio-api -am verify
       - name: Upload PostgreSQL JUnit reports
         if: always()
         uses: actions/upload-artifact@v4

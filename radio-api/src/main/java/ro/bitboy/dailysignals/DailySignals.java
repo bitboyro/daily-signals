@@ -44,6 +44,11 @@ public final class DailySignals {
 
     public static HttpServer createServer(String bindAddress, int port, Path webRoot, ReviewerTokens reviewers,
                                           FetchScheduleView fetchSchedule) throws IOException {
+        return createServer(bindAddress, port, webRoot, reviewers, fetchSchedule, ReviewQueue.fixture());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ReviewerTokens reviewers,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
@@ -72,21 +77,22 @@ public final class DailySignals {
                 respond(exchange, 200, "audio/wav", fixture.readAllBytes());
             }
         });
-        var reviews = new Object() {
-            private ReviewQueue queue;
-            synchronized ReviewQueue get() {
-                if (queue == null) queue = ReviewQueue.fixture();
-                return queue;
-            }
-        };
         server.createContext("/api/review-queue", exchange -> {
             String path = exchange.getRequestURI().getPath();
             if ("GET".equals(exchange.getRequestMethod()) && "/api/review-queue".equals(path)) {
-                respond(exchange, 200, "application/json", reviews.get().toJson().getBytes(StandardCharsets.UTF_8));
+                try {
+                    respond(exchange, 200, "application/json", reviewQueue.toJson().getBytes(StandardCharsets.UTF_8));
+                } catch (IllegalStateException unavailable) {
+                    reply(exchange, 503);
+                }
                 return;
             }
             if ("GET".equals(exchange.getRequestMethod()) && "/api/review-queue/audit".equals(path)) {
-                respond(exchange, 200, "application/json", reviews.get().auditToJson().getBytes(StandardCharsets.UTF_8));
+                try {
+                    respond(exchange, 200, "application/json", reviewQueue.auditToJson().getBytes(StandardCharsets.UTF_8));
+                } catch (IllegalStateException unavailable) {
+                    reply(exchange, 503);
+                }
                 return;
             }
             String storyId = path.substring("/api/review-queue".length()).replaceFirst("^/", "");
@@ -98,14 +104,21 @@ public final class DailySignals {
                 reply(exchange, 401);
             } else if (!ProducerPermissions.mayReview(role.get())) {
                 reply(exchange, 403);
-            } else if (!reviews.get().contains(storyId)) {
-                reply(exchange, 404);
             } else {
-                try (var body = exchange.getRequestBody()) {
-                    var receipt = reviews.get().decide(storyId, new String(body.readNBytes(64), StandardCharsets.UTF_8));
-                    respondWrite(exchange, 200, "application/json", receipt.toJson().getBytes(StandardCharsets.UTF_8));
+                try {
+                    if (!reviewQueue.contains(storyId)) {
+                        reply(exchange, 404);
+                        return;
+                    }
+                    try (var body = exchange.getRequestBody()) {
+                        String receipt = reviewQueue.decideJson(storyId,
+                                new String(body.readNBytes(64), StandardCharsets.UTF_8), role.orElseThrow());
+                        respondWrite(exchange, 200, "application/json", receipt.getBytes(StandardCharsets.UTF_8));
+                    }
                 } catch (IllegalArgumentException invalid) {
                     reply(exchange, 400);
+                } catch (IllegalStateException unavailable) {
+                    reply(exchange, 503);
                 }
             }
         });
@@ -152,12 +165,21 @@ public final class DailySignals {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         int port = args.length == 0 ? 8151 : Integer.parseInt(args[0]);
         String webRoot = System.getenv("DAILY_SIGNALS_WEB_ROOT");
         String bind = System.getenv().getOrDefault("DAILY_SIGNALS_BIND_ADDRESS", "127.0.0.1");
+        var database = DatabaseRuntime.fromEnvironment(System.getenv());
+        ReviewQueueBackend reviews;
+        if (database.isPresent()) {
+            database.get().migrate();
+            reviews = new PostgresReviewQueue(database.get());
+        } else {
+            reviews = ReviewQueue.fixture();
+        }
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
-                ReviewerTokens.parse(System.getenv("DAILY_SIGNALS_REVIEW_TOKENS")));
+                ReviewerTokens.parse(System.getenv("DAILY_SIGNALS_REVIEW_TOKENS")),
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews);
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

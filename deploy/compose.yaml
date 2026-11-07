@@ -1,5 +1,18 @@
 name: daily-signals
 services:
+  postgres:
+    image: postgres:17.6-alpine3.22
+    environment:
+      POSTGRES_DB: daily_signals
+      POSTGRES_USER: daily_signals
+      POSTGRES_PASSWORD: ${DAILY_SIGNALS_DATABASE_PASSWORD:-daily-signals-local}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U daily_signals -d daily_signals"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - daily-signals-postgres:/var/lib/postgresql/data
   kokoro:
     profiles: ["kokoro"]
     image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.8.0@sha256:d32322c61254a871e0bc9c38d4e60cd18539cf9b1a2fc8f3ae04409061d0793b
@@ -14,6 +27,13 @@ services:
       context: ..
       dockerfile: deploy/api.Dockerfile
     env_file: runtime.env
+    environment:
+      DAILY_SIGNALS_DATABASE_URL: jdbc:postgresql://postgres:5432/daily_signals
+      DAILY_SIGNALS_DATABASE_USER: daily_signals
+      DAILY_SIGNALS_DATABASE_PASSWORD: ${DAILY_SIGNALS_DATABASE_PASSWORD:-daily-signals-local}
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8151:8151"
   streamer:
@@ -26,3 +46,6 @@ services:
     volumes:
       - ../contracts/publication-manifest-v2.json:/srv/published/manifest.json:ro
       - ../radio-api/src/main/resources/fixtures:/srv/published/fixtures:ro
+
+volumes:
+  daily-signals-postgres:

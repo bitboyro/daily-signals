@@ -814,6 +814,31 @@
   },
   {
    "paths": [
+    "radio-api/src/main/java/*/DatabaseRuntime.java",
+    "radio-api/src/main/java/*/PostgresReviewQueue.java",
+    "radio-api/src/main/java/*/ReviewQueueBackend.java"
+   ],
+   "features": [
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "PLT-02", "relation": "calls" },
+    { "id": "EDT-04", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/test/java/*/DatabaseRuntimeTest.java",
+    "radio-api/src/test/java/*/PostgresReviewQueueTest.java"
+   ],
+   "features": [
+    { "id": "PLT-01", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" },
+    { "id": "EDT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/ScriptAssembler.java"
    ],
    "features": [

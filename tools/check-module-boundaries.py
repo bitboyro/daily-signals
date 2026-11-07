@@ -9,7 +9,7 @@ EXPECTED = {
     'radio-editorial': {'radio-ingestion'},
     'radio-edition': {'radio-editorial'},
     'radio-persistence': {'radio-edition'},
-    'radio-api': {'radio-ingestion', 'radio-editorial', 'radio-edition'},
+    'radio-api': {'radio-ingestion', 'radio-editorial', 'radio-edition', 'radio-persistence'},
 }
 reactor = ET.parse(ROOT / 'pom.xml').getroot()
 modules = {e.text for e in reactor.findall('m:modules/m:module', NS)}
