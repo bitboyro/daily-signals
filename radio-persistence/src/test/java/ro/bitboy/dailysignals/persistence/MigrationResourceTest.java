@@ -27,4 +27,14 @@ class MigrationResourceTest {
             assertTrue(ddl.contains("REFERENCES candidate_story(candidate_id) ON DELETE CASCADE"));
         }
     }
+
+    @Test void pronunciationMigrationDefinesLexiconAndRevisionState() throws Exception {
+        try (var input = MigrationRunner.class.getResourceAsStream("/db/migration/V5__pronunciation_lexicon.sql")) {
+            assertNotNull(input);
+            String ddl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(ddl.contains("CREATE TABLE IF NOT EXISTS pronunciation_lexicon"));
+            assertTrue(ddl.contains("pronunciation_lexicon_state"));
+            assertTrue(ddl.contains("('AI', 'A I')"));
+        }
+    }
 }

@@ -54,10 +54,16 @@ public final class DailySignals {
 
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue,
+                new PronunciationLexiconStore());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
-        PronunciationLexiconStore pronunciations = new PronunciationLexiconStore();
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
@@ -176,18 +182,22 @@ public final class DailySignals {
                 reply(exchange, 403);
                 return;
             }
-            if ("GET".equals(exchange.getRequestMethod())) {
-                respond(exchange, 200, "application/json", pronunciations.toJson().getBytes(StandardCharsets.UTF_8));
-            } else if ("PUT".equals(exchange.getRequestMethod())) {
-                try (var body = exchange.getRequestBody()) {
+            try {
+                if ("GET".equals(exchange.getRequestMethod())) {
+                    respond(exchange, 200, "application/json", pronunciations.toJson().getBytes(StandardCharsets.UTF_8));
+                } else if ("PUT".equals(exchange.getRequestMethod())) {
+                    try (var body = exchange.getRequestBody()) {
                     String saved = pronunciations.saveJson(
                             new String(body.readNBytes(20_001), StandardCharsets.UTF_8));
                     respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
-                } catch (IllegalArgumentException invalid) {
-                    reply(exchange, 400);
+                    }
+                } else {
+                    reply(exchange, 405);
                 }
-            } else {
-                reply(exchange, 405);
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 400);
+            } catch (IllegalStateException unavailable) {
+                reply(exchange, 503);
             }
         });
         if (webRoot != null) {
@@ -239,17 +249,20 @@ public final class DailySignals {
         String bind = System.getenv().getOrDefault("DAILY_SIGNALS_BIND_ADDRESS", "127.0.0.1");
         var database = DatabaseRuntime.fromEnvironment(System.getenv());
         ReviewQueueBackend reviews;
+        PronunciationLexiconBackend pronunciations;
         if (database.isPresent()) {
             database.get().migrate();
             reviews = new PostgresReviewQueue(database.get());
+            pronunciations = new PostgresPronunciationLexicon(database.get());
         } else {
             reviews = ReviewQueue.fixture();
+            pronunciations = new PronunciationLexiconStore();
         }
         var environment = System.getenv();
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
-                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews);
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations);
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

@@ -4,14 +4,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** Editable pronunciation preview; the following checkpoint replaces this memory store with PostgreSQL. */
-final class PronunciationLexiconStore {
+final class PronunciationLexiconStore implements PronunciationLexiconBackend {
     private Map<String, String> entries = new LinkedHashMap<>(new PronunciationDictionary().entries());
     private int revision;
 
-    synchronized String toJson() {
-        return "{\"schemaVersion\":1,\"text\":" + quote(toText(entries)) + ",\"revision\":" + revision + "}";
+    public synchronized String toJson() {
+        return json(entries, revision);
     }
-    synchronized String saveJson(String text) {
+    public synchronized String saveJson(String text) {
         entries = parse(text);
         revision++;
         return toJson();
@@ -32,6 +32,9 @@ final class PronunciationLexiconStore {
             if (previous != null) throw new IllegalArgumentException("duplicate pronunciation term");
         }
         return new LinkedHashMap<>(new PronunciationDictionary(parsed).entries());
+    }
+    static String json(Map<String, String> values, int revision) {
+        return "{\"schemaVersion\":1,\"text\":" + quote(toText(values)) + ",\"revision\":" + revision + "}";
     }
     private static String toText(Map<String, String> values) {
         return values.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
