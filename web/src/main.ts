@@ -6,6 +6,7 @@ import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutProducer } from './producer-auth.ts';
+import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -67,7 +68,13 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
   const workspace = element('producer-workspace');
   workspace.innerHTML = renderProducerWorkspace(panel);
   const target = element(`producer-panel-${panel}`);
-  if (panel === 'queue') {
+  if (panel === 'candidates') {
+    try {
+      target.innerHTML = renderTodaysCandidates(await fetchTodaysCandidates(apiBase));
+    } catch {
+      target.textContent = 'Today’s candidates are unavailable.';
+    }
+  } else if (panel === 'queue') {
     await showQueue(apiBase, target);
   } else {
     target.innerHTML = renderSourceEditor(DEFAULT_SOURCES);
@@ -132,5 +139,5 @@ if (typeof document !== 'undefined') {
     player.innerHTML = renderPlayer(config, edition);
     bindPlaybackRecovery(player);
   });
-  void showProducerPanel(config.apiBase, 'queue');
+  void showProducerPanel(config.apiBase, 'candidates');
 }

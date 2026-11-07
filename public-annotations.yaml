@@ -2781,6 +2781,17 @@
   },
   {
    "paths": [
+    "web/src/producer-candidates.ts",
+    "web/test/producer-candidates.test.ts"
+   ],
+   "features": [
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "EDT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "web/public/styles.css"
    ],
    "features": [
