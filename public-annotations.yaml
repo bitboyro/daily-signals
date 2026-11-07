@@ -3204,6 +3204,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["web/src/fetch-schedule.ts", "web/test/fetch-schedule.test.ts"],
+   "features": [
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "PLT-04", "relation": "implements" },
+    { "id": "PLT-01", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/nightly-load.json", "tools/nightly-load.py"],
    "features": [
     { "id": "PLT-07", "relation": "tests" },
