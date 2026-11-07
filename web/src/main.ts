@@ -5,6 +5,7 @@ import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './pro
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
+import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutProducer } from './producer-auth.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -50,7 +51,7 @@ async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilt
   });
   target.querySelectorAll<HTMLButtonElement>('button[data-action]').forEach((button) => {
     button.addEventListener('click', async () => {
-      const token = (element('reviewer-token') as HTMLInputElement).value.trim();
+      const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
       try {
         const receipt = await submitDecision(apiBase, button.dataset.story!, button.dataset.action as 'APPROVED' | 'REJECTED', token);
         status.textContent = `${receipt.decision} saved for ${receipt.storyId}.`;
@@ -106,7 +107,26 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
 }
 
 if (typeof document !== 'undefined') {
-  const config = readConfig(window.location.origin);
+  const runtime = (window as Window & { DAILY_SIGNALS_CONFIG?: Parameters<typeof readConfig>[1] }).DAILY_SIGNALS_CONFIG;
+  const config = readConfig(window.location.origin, runtime);
+  const signIn = element('producer-sign-in') as HTMLButtonElement;
+  const signOut = element('producer-sign-out') as HTMLButtonElement;
+  const authStatus = element('producer-auth-status');
+  if (config.producerOidc) {
+    signIn.hidden = false;
+    void completeProducerSignIn(window.location.href, config.producerOidc, sessionStorage).then((token) => {
+      if (token) authStatus.textContent = 'Signed in with the station identity provider.';
+      if (window.location.search.includes('code=')) history.replaceState({}, '', config.producerOidc!.redirectUri);
+    }).catch((error) => { authStatus.textContent = error instanceof Error ? error.message : 'Sign-in failed.'; });
+    signIn.addEventListener('click', () => {
+      void beginProducerSignIn(config.producerOidc!, sessionStorage).then((target) => window.location.assign(target))
+        .catch((error) => { authStatus.textContent = error instanceof Error ? error.message : 'Sign-in failed.'; });
+    });
+    signOut.addEventListener('click', () => {
+      signOutProducer(sessionStorage);
+      authStatus.textContent = 'Signed out. A local reviewer token can still be used.';
+    });
+  }
   const player = element('player');
   void showEditions(config.apiBase, (edition) => {
     player.innerHTML = renderPlayer(config, edition);

@@ -2742,7 +2742,8 @@
   {
    "paths": [
     "web/src/main.ts",
-    "web/public/index.html"
+    "web/public/index.html",
+    "web/public/runtime-config.js"
    ],
    "features": [
     {
@@ -2766,6 +2767,17 @@
    "provenance": "authored-review",
    "introducedIn": "da461d2f07897471da3b2627aab55357acb70fe8",
    "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/producer-auth.ts",
+    "web/test/producer-auth.test.ts"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": [
