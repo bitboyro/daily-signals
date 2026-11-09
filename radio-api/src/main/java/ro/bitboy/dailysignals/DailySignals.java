@@ -220,7 +220,12 @@ public final class DailySignals {
                 var draft = script.synthesisScript();
                 var spoken = new ScriptAssembler.Script(pronunciations.speakable(draft.text()), draft.storyIds());
                 var audio = new FixtureVoiceProvider().render(spoken);
+                var validation = AudioValidation.inspect(audio.bytes());
+                if (!validation.playable()) throw new IllegalStateException("voice provider returned invalid audio");
                 exchange.getResponseHeaders().set("X-Script-SHA256", audio.scriptSha256());
+                exchange.getResponseHeaders().set("X-Audio-Sample-Rate", Integer.toString(validation.sampleRate()));
+                exchange.getResponseHeaders().set("X-Audio-Channels", Integer.toString(validation.channels()));
+                exchange.getResponseHeaders().set("X-Audio-Duration-Ms", Long.toString(validation.durationMillis()));
                 exchange.getResponseHeaders().set("Cache-Control", "no-store");
                 respondWrite(exchange, 200, audio.contentType(), audio.bytes());
             } catch (IllegalArgumentException invalid) {

@@ -98,8 +98,10 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
           (element('reviewer-token') as HTMLInputElement).value)).then((audio) => {
           if (!player) return;
           if (player.src.startsWith('blob:')) URL.revokeObjectURL(player.src);
-          player.src = URL.createObjectURL(audio);
+          player.src = URL.createObjectURL(audio.audio);
           player.hidden = false;
+          const validation = target.querySelector<HTMLElement>('.audio-validation');
+          if (validation) validation.textContent = `Validated ${audio.sampleRate} Hz, ${audio.channels} channel, ${(audio.durationMillis / 1000).toFixed(1)} seconds.`;
           if (status) status.textContent = 'Audio preview generated from the saved script.';
         }).catch((error) => {
           if (status) status.textContent = error instanceof Error ? error.message : 'Audio generation failed.';

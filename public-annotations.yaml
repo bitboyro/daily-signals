@@ -937,6 +937,17 @@
   },
   {
    "paths": [
+    "radio-edition/src/main/java/ro/bitboy/dailysignals/AudioValidation.java",
+    "radio-edition/src/test/java/ro/bitboy/dailysignals/AudioValidationTest.java"
+   ],
+   "features": [
+    { "id": "VOC-05", "relation": "implements" },
+    { "id": "WEB-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/KokoroProviderConfig.java"
    ],
    "features": [

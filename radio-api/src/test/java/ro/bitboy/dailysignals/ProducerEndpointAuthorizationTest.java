@@ -36,6 +36,8 @@ class ProducerEndpointAuthorizationTest {
                                 .POST(HttpRequest.BodyPublishers.noBody()), token), HttpResponse.BodyHandlers.ofByteArray());
                 assertEquals(200, audio.statusCode());
                 assertEquals("audio/wav", audio.headers().firstValue("Content-Type").orElseThrow());
+                assertEquals("8000", audio.headers().firstValue("X-Audio-Sample-Rate").orElseThrow());
+                assertEquals("1000", audio.headers().firstValue("X-Audio-Duration-Ms").orElseThrow());
                 assertEquals("RIFF", new String(audio.body(), 0, 4, java.nio.charset.StandardCharsets.US_ASCII));
                 assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue + "/demo-park-path"))
                                 .POST(HttpRequest.BodyPublishers.ofString("APPROVED")), token),
