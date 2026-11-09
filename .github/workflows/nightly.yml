@@ -168,14 +168,18 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Build editorial dependencies
-        run: mvn -B -ntp -pl radio-editorial -am install -DskipTests
+      - name: Build mutation-test dependencies
+        run: mvn -B -ntp -pl radio-api -am install -DskipTests
       - name: Run editorial mutation qualification
         run: mvn -B -ntp -f radio-editorial/pom.xml -Pmutation org.pitest:pitest-maven:mutationCoverage
+      - name: Run approval-audit mutation qualification
+        run: mvn -B -ntp -f radio-api/pom.xml -Paudit-mutation org.pitest:pitest-maven:mutationCoverage
       - name: Upload mutation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: editorial-mutation-${{ github.run_attempt }}
-          path: radio-editorial/target/pit-reports/**
+          path: |
+            radio-editorial/target/pit-reports/**
+            radio-api/target/pit-reports/**
           if-no-files-found: warn
