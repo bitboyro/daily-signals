@@ -9,6 +9,10 @@ fixture = json.loads((ROOT / "contracts/edition-list-v2.json").read_text())
 
 assert spec["openapi"].startswith("3.")
 assert "/api/editions" in spec["paths"]
+assert "/api/producer/editions/{editionId}/audit" in spec["paths"]
+assert set(spec["components"]["schemas"]["EditionApprovalEvent"]["required"]) == {
+    "editionRevision", "actor", "approvedAt"
+}
 required = set(spec["components"]["schemas"]["EditionSummary"]["required"])
 assert fixture["schemaVersion"] == 2
 for edition in fixture["editions"]:

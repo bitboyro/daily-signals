@@ -79,6 +79,12 @@ class ProducerEndpointAuthorizationTest {
                     .POST(HttpRequest.BodyPublishers.ofString("APPROVE")), PRODUCER), HttpResponse.BodyHandlers.ofString());
             assertEquals(200, approve.statusCode());
             assertTrue(approve.body().contains("\"status\":\"READY\""));
+            var audit = client.send(withToken(HttpRequest.newBuilder(
+                            URI.create(uri.toString().replace("/edition", "/editions/producer-today/audit"))).GET(),
+                    PRODUCER), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, audit.statusCode());
+            assertTrue(audit.body().contains("\"actor\":\"PRODUCER\""));
+            assertTrue(audit.body().contains("\"editionRevision\":1"));
             var publish = client.send(withToken(HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.ofString("PUBLISH")), PRODUCER), HttpResponse.BodyHandlers.ofString());
             assertEquals(200, publish.statusCode());

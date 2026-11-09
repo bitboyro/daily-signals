@@ -37,6 +37,22 @@
         "requestBody": { "required": true, "content": { "text/plain": { "schema": { "type": "string", "enum": ["APPROVE", "PUBLISH"] } } } },
         "responses": { "200": { "description": "Transitioned producer edition", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProducerEditionState" } } } } }
       }
+    },
+    "/api/producer/editions/{editionId}/audit": {
+      "get": {
+        "security": [{ "producerBearer": [] }],
+        "parameters": [{
+          "name": "editionId", "in": "path", "required": true,
+          "schema": { "type": "string", "minLength": 1 }
+        }],
+        "responses": {
+          "200": {
+            "description": "Append-only approval trail for one edition",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/EditionApprovalAudit" } } }
+          },
+          "404": { "description": "Edition not found" }
+        }
+      }
     }
   },
   "components": {
@@ -59,6 +75,27 @@
           "editionId": { "type": "string", "minLength": 1 },
           "status": { "type": "string", "enum": ["DRAFT", "READY", "PUBLISHED", "FAILED"] },
           "revision": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "EditionApprovalAudit": {
+        "type": "object",
+        "required": ["schemaVersion", "editionId", "approvals"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "enum": [1] },
+          "editionId": { "type": "string", "minLength": 1 },
+          "approvals": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EditionApprovalEvent" }
+          }
+        }
+      },
+      "EditionApprovalEvent": {
+        "type": "object",
+        "required": ["editionRevision", "actor", "approvedAt"],
+        "properties": {
+          "editionRevision": { "type": "integer", "minimum": 1 },
+          "actor": { "type": "string", "minLength": 1 },
+          "approvedAt": { "type": "string", "format": "date-time" }
         }
       },
       "EditionList": {
