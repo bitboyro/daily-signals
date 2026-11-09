@@ -10,4 +10,4 @@ COPY --from=build /src/streamer/target/release/daily-signals-streamer /usr/local
 USER 10001
 EXPOSE 8152
 ENTRYPOINT ["/usr/local/bin/daily-signals-streamer"]
-CMD ["8152", "/srv/published/manifest.json", "/srv/published"]
+CMD ["8152"]
