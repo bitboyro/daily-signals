@@ -1299,7 +1299,8 @@
   },
   {
    "paths": [
-    "*/src/test/java/*/ObjectStoreTimeoutRecoveryTest.java"
+    "*/src/test/java/*/ObjectStoreTimeoutRecoveryTest.java",
+    "*/src/test/java/*/ObjectStoreRetrySoakTest.java"
    ],
    "features": [
     {
