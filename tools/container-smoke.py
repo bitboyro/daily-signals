@@ -13,6 +13,8 @@ import subprocess
 import sys
 import time
 import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,6 +69,30 @@ def free_port():
         return sock.getsockname()[1]
 
 
+def object_store_fixture(port):
+    manifest_bytes = (ROOT / 'contracts/publication-manifest-v2.json').read_bytes()
+    manifest = json.loads(manifest_bytes)
+    audio = (ROOT / 'radio-api/src/main/resources' / manifest['audioPath']).read_bytes()
+
+    class Handler(BaseHTTPRequestHandler):
+        objects = {
+            '/daily-signals/editions/demo.json': manifest_bytes,
+            '/daily-signals/' + manifest['audioPath']: audio,
+        }
+        def do_GET(self):
+            body = self.objects.get(self.path)
+            if body is None:
+                self.send_error(404); return
+            self.send_response(200); self.send_header('Content-Length', str(len(body)))
+            self.end_headers(); self.wfile.write(body)
+        def log_message(self, *_): pass
+
+    server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    return server, thread
+
+
 def wait(url):
     for _ in range(100):
         try:
@@ -96,11 +122,12 @@ def probe(api, stream):
 def host_run():
     env = runtime_env()
     compose = (DEPLOY / 'compose.yaml').read_text()
-    for needed in ('dockerfile: deploy/api.Dockerfile', 'dockerfile: deploy/streamer.Dockerfile', 'env_file: runtime.env',
-                   '../contracts/publication-manifest-v2.json:/srv/published/manifest.json:ro',
-                   '../radio-api/src/main/resources/fixtures:/srv/published/fixtures:ro'):
+    for needed in ('dockerfile: deploy/api.Dockerfile', 'dockerfile: deploy/streamer.Dockerfile',
+                   'env_file: runtime.env', '  object-store:', 'condition: service_healthy'):
         assert needed in compose, f'compose.yaml no longer declares {needed}'
     processes = []
+    object_port = free_port()
+    object_store, object_thread = object_store_fixture(object_port)
     try:
         ports = {}
         for name in ('api', 'streamer'):
@@ -109,6 +136,7 @@ def host_run():
             argv = [host(arg) for arg in entrypoint + [str(ports[name])] + command[1:]]
             child_env = {**os.environ, **{k: host(v) for k, v in env.items()}}
             child_env.update(DAILY_SIGNALS_BIND_ADDRESS='127.0.0.1', STREAMER_BIND_ADDRESS='127.0.0.1')
+            child_env['OBJECT_STORE_ENDPOINT'] = f'http://127.0.0.1:{object_port}'
             processes.append(subprocess.Popen(argv, env=child_env, stdout=subprocess.DEVNULL))
         time.sleep(.2)
         for process in processes:
@@ -120,6 +148,7 @@ def host_run():
             process.terminate()
             try: process.wait(timeout=3)
             except subprocess.TimeoutExpired: process.kill()
+        object_store.shutdown(); object_store.server_close(); object_thread.join(timeout=3)
     print('Container descriptors valid; host-run API and streamer started and played the published edition')
 
 

@@ -37,16 +37,27 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:8151:8151"
+  object-store:
+    image: python:3.14.0-slim-bookworm
+    command: ["python3", "-m", "http.server", "9000", "--directory", "/srv/objects"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/daily-signals/editions/demo.json')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - ../contracts/publication-manifest-v2.json:/srv/objects/daily-signals/editions/demo.json:ro
+      - ../radio-api/src/main/resources/fixtures:/srv/objects/daily-signals/fixtures:ro
   streamer:
     build:
       context: ..
       dockerfile: deploy/streamer.Dockerfile
     env_file: runtime.env
+    depends_on:
+      object-store:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8152:8152"
-    volumes:
-      - ../contracts/publication-manifest-v2.json:/srv/published/manifest.json:ro
-      - ../radio-api/src/main/resources/fixtures:/srv/published/fixtures:ro
 
 volumes:
   daily-signals-postgres:

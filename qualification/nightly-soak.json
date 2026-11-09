@@ -16,6 +16,10 @@
       "command": ["cargo", "test", "--manifest-path", "streamer/Cargo.toml", "manifest"]
     },
     {
+      "name": "object-store-retry",
+      "command": ["mvn", "-B", "-ntp", "-pl", "radio-edition", "-am", "-Dtest=ObjectStoreRetrySoakTest", "-Dsurefire.failIfNoSpecifiedTests=false", "test"]
+    },
+    {
       "name": "listener-unit",
       "command": ["npm", "--prefix", "web", "test"]
     }

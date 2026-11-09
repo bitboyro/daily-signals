@@ -73,4 +73,11 @@ class PublicationConsumerTest {
         assertEquals("editions/second.wav", written.get(1).audioPath());
         assertEquals(PublicationConsumer.EditionStatus.RECORDING_REPLACED, consumer.status("edition-1").orElseThrow());
     }
+
+    @Test void manifestObjectKeyIsAdjacentToTheRecording() {
+        assertEquals("editions/edition-1.json",
+                PublicationConsumer.manifestObjectKey("editions/edition-1.wav"));
+        assertThrows(IllegalArgumentException.class,
+                () -> PublicationConsumer.manifestObjectKey("editions/edition-1.mp3"));
+    }
 }

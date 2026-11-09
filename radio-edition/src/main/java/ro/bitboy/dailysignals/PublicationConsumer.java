@@ -21,6 +21,27 @@ public final class PublicationConsumer {
 
     public PublicationConsumer(ManifestSink sink) { this.sink = sink; }
 
+    /** Store the listener manifest alongside its recording, replacing the WAV suffix with JSON. */
+    public static PublicationConsumer forObjectStore(LocalS3ObjectAdapter store) {
+        if (store == null) throw new IllegalArgumentException("object store required");
+        return new PublicationConsumer(manifest -> storeManifest(store, manifest));
+    }
+
+    private static void storeManifest(LocalS3ObjectAdapter store, PublicationManifest manifest) throws IOException {
+        try {
+            store.putJson(manifestObjectKey(manifest.audioPath()), manifest.toJson());
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IOException("manifest transfer interrupted", interrupted);
+        }
+    }
+
+    public static String manifestObjectKey(String audioPath) {
+        if (audioPath == null || !audioPath.endsWith(".wav"))
+            throw new IllegalArgumentException("WAV object path required");
+        return audioPath.substring(0, audioPath.length() - 4) + ".json";
+    }
+
     /** Returns false for an event that was already applied. A sink failure leaves the event unapplied for retry. */
     public synchronized boolean apply(PublicationEvent event) throws IOException {
         if (applied.contains(event.eventId())) return false;

@@ -8,10 +8,12 @@
     "DAILY_SIGNALS_BIND_ADDRESS",
     "DAILY_SIGNALS_WEB_ROOT",
     "STREAMER_BIND_ADDRESS",
-    "STREAMER_PUBLIC_PREFIXES"
+    "STREAMER_PUBLIC_PREFIXES",
+    "OBJECT_STORE_ENDPOINT",
+    "OBJECT_STORE_BUCKET",
+    "OBJECT_STORE_MANIFEST_KEY",
+    "OBJECT_STORE_ACCESS_KEY",
+    "OBJECT_STORE_SECRET_KEY"
   ],
-  "immutableMountInputs": [
-    "contracts/publication-manifest-v2.json",
-    "radio-api/src/main/resources/fixtures"
-  ]
+  "immutableMountInputs": []
 }
