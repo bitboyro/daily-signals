@@ -25,7 +25,9 @@ The `reference-*` jobs call the five normal verification workflows as reusable w
 
 ## Slow tier
 
-`nightly-load` starts the Java API and Rust streamer, applies the fixed profile in `qualification/nightly-load.json`, and records request errors and p95 latency for both boundaries. `nightly-browser-matrix` runs a real listener journey in Chromium, Firefox and WebKit at mobile and desktop viewports. Their JSON, JUnit and trace evidence is uploaded even on failure.
+`nightly-load` starts the Java API and Rust streamer, applies the fixed profile in `qualification/nightly-load.json`, and records request errors and p95 latency for both boundaries. Before the parallel reads it exercises the producer sequence against the running API: load the queue, approve a pending story, approve the edition, then publish it. Each step has its own reviewed latency ceiling and appears in the JSON evidence without storing the generated reviewer token.
+
+`nightly-browser-matrix` runs a real listener and producer journey in Chromium, Firefox and WebKit at mobile and desktop viewports. Their JSON, JUnit and trace evidence is uploaded even on failure.
 
 ## Nightly soak
 

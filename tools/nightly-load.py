@@ -4,11 +4,13 @@ import argparse
 import concurrent.futures
 import json
 import math
+import os
 import pathlib
 import socket
 import subprocess
 import time
 import urllib.request
+import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
@@ -18,13 +20,15 @@ parser.add_argument("--validate-only", action="store_true")
 args = parser.parse_args()
 
 profile = json.loads(args.profile.read_text())
-assert profile["schemaVersion"] == 1
+assert profile["schemaVersion"] == 2
 assert 1 <= profile["requestsPerTarget"] <= 10_000
 assert 1 <= profile["concurrency"] <= 128
 assert 1 <= profile["startupTimeoutSeconds"] <= 120
 assert 1 <= profile["maximumP95Milliseconds"] <= 60_000
 assert 0 <= profile["maximumErrorRate"] <= 1
 assert {target["service"] for target in profile["targets"]} == {"api", "stream"}
+assert profile["producerFlow"]["enabled"] is True
+assert 1 <= profile["producerFlow"]["maximumStepMilliseconds"] <= 60_000
 
 if args.validate_only:
     print(f"nightly load profile valid: {len(profile['targets'])} targets x {profile['requestsPerTarget']} requests")
@@ -51,13 +55,31 @@ def fetch(url):
     return round((time.monotonic() - started) * 1000, 3), ok
 
 
+def request_json(url, method="GET", body=None, token=None):
+    headers = {"Accept": "application/json"}
+    if body is not None:
+        headers["Content-Type"] = "text/plain"
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    started = time.monotonic()
+    request = urllib.request.Request(url, data=body.encode() if body is not None else None,
+                                     headers=headers, method=method)
+    with urllib.request.urlopen(request, timeout=5) as response:
+        payload = json.loads(response.read())
+        assert response.status == 200
+    return round((time.monotonic() - started) * 1000, 3), payload
+
+
 api_port, stream_port = free_port(), free_port()
 java_classpath = ":".join(str(ROOT / module / "target/classes") for module in (
     "radio-api", "radio-edition", "radio-editorial", "radio-ingestion", "radio-persistence"))
+producer_token = "nightly-load-" + uuid.uuid4().hex
+api_environment = dict(os.environ)
+api_environment["DAILY_SIGNALS_REVIEW_TOKENS"] = f"{producer_token}=PRODUCER"
 api = subprocess.Popen([
     "java", "-cp", java_classpath,
     "ro.bitboy.dailysignals.DailySignals", str(api_port)
-], stdout=subprocess.DEVNULL)
+], stdout=subprocess.DEVNULL, env=api_environment)
 stream = subprocess.Popen([
     str(ROOT / "streamer/target/debug/daily-signals-streamer"), str(stream_port),
     str(manifest_path), str(ROOT / "radio-api/src/main/resources")
@@ -76,6 +98,20 @@ try:
 
     bases = {"api": f"http://127.0.0.1:{api_port}", "stream": f"http://127.0.0.1:{stream_port}"}
     results = []
+    flow_steps = []
+    queue_ms, queue = request_json(bases["api"] + "/api/review-queue")
+    pending = next(item for item in queue["items"] if item["decision"] == "PENDING")
+    review_ms, _ = request_json(bases["api"] + "/api/review-queue/" + pending["storyId"],
+                                "POST", "APPROVED", producer_token)
+    approve_ms, approved = request_json(bases["api"] + "/api/producer/edition",
+                                        "POST", "APPROVE", producer_token)
+    publish_ms, published = request_json(bases["api"] + "/api/producer/edition",
+                                         "POST", "PUBLISH", producer_token)
+    assert approved["status"] == "READY" and published["status"] == "PUBLISHED"
+    for name, duration in (("queue", queue_ms), ("review", review_ms),
+                           ("approve", approve_ms), ("publish", publish_ms)):
+        flow_steps.append({"name": name, "p95Milliseconds": duration, "failures": 0, "requests": 1,
+                           "errorRate": 0.0})
     for target in profile["targets"]:
         path = target["path"].format(editionId=manifest["editionId"])
         url = bases[target["service"]] + path
@@ -91,11 +127,15 @@ try:
 
     passed = all(result["errorRate"] <= profile["maximumErrorRate"]
                  and result["p95Milliseconds"] <= profile["maximumP95Milliseconds"] for result in results)
-    report = {"schemaVersion": 1, "result": "PASS" if passed else "FAIL", "profile": profile, "targets": results}
+    passed = passed and all(step["p95Milliseconds"] <= profile["producerFlow"]["maximumStepMilliseconds"]
+                            for step in flow_steps)
+    report = {"schemaVersion": 2, "result": "PASS" if passed else "FAIL", "profile": profile,
+              "producerFlow": flow_steps, "targets": results}
     args.report.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     assert passed, "nightly load thresholds exceeded"
     print("nightly load passed: " + ", ".join(
-        f"{result['name']} p95={result['p95Milliseconds']}ms errors={result['failures']}" for result in results))
+        f"{result['name']} p95={result['p95Milliseconds']}ms errors={result['failures']}"
+        for result in [*flow_steps, *results]))
 finally:
     for process in (api, stream):
         process.terminate()
