@@ -2781,6 +2781,59 @@
   },
   {
    "paths": [
+    "web/src/producer-candidates.ts",
+    "web/test/producer-candidates.test.ts"
+   ],
+   "features": [
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "EDT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionScriptStore.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/EditionScriptStoreTest.java",
+    "web/src/producer-script.ts",
+    "web/test/producer-script.test.ts"
+   ],
+   "features": [
+    { "id": "VOC-01", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PronunciationLexiconStore.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/PronunciationLexiconStoreTest.java",
+    "web/src/producer-pronunciations.ts",
+    "web/test/producer-pronunciations.test.ts"
+   ],
+   "features": [
+    { "id": "VOC-02", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PronunciationLexiconBackend.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PostgresPronunciationLexicon.java",
+    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/PronunciationRepository.java",
+    "radio-persistence/src/main/resources/db/migration/V5__pronunciation_lexicon.sql",
+    "radio-persistence/src/test/java/ro/bitboy/dailysignals/persistence/PronunciationRepositoryPostgresTest.java"
+   ],
+   "features": [
+    { "id": "VOC-02", "relation": "implements" },
+    { "id": "PLT-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "web/public/styles.css"
    ],
    "features": [

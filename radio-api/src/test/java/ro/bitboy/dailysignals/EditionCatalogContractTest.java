@@ -19,6 +19,9 @@ class EditionCatalogContractTest {
     @Test void openApiContractRequiresTheFieldsTheCatalogPublishes() throws Exception {
         var spec = mapper.readTree(Files.readString(Path.of("../contracts/openapi/editions-v1.json")));
         assertEquals("#/components/schemas/EditionList", spec.at("/paths/~1api~1editions/get/responses/200/content/application~1json/schema/$ref").asText());
+        assertEquals("#/components/schemas/ScriptDraft", spec.at("/paths/~1api~1producer~1script/put/responses/200/content/application~1json/schema/$ref").asText());
+        assertEquals(20_000, spec.at("/paths/~1api~1producer~1script/put/requestBody/content/text~1plain/schema/maxLength").asInt());
+        assertEquals("bearer", spec.at("/components/securitySchemes/producerBearer/scheme").asText());
         var required = spec.at("/components/schemas/EditionSummary/required");
         var edition = mapper.readTree(EditionCatalog.fixture().toJson()).get("editions").get(0);
         for (var field : required) assertTrue(edition.hasNonNull(field.asText()), field.asText());

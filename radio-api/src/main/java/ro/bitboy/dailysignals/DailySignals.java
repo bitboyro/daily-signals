@@ -54,8 +54,16 @@ public final class DailySignals {
 
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue,
+                new PronunciationLexiconStore());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
+        EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
                 catalog.toJson().getBytes(StandardCharsets.UTF_8)));
@@ -138,6 +146,89 @@ public final class DailySignals {
                 }
             }
         });
+        server.createContext("/api/producer/script", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.EDIT_SCRIPT, identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            if ("GET".equals(exchange.getRequestMethod())) {
+                respond(exchange, 200, "application/json", script.toJson().getBytes(StandardCharsets.UTF_8));
+            } else if ("PUT".equals(exchange.getRequestMethod())) {
+                try (var body = exchange.getRequestBody()) {
+                    String saved = script.saveJson(new String(body.readNBytes(20_001), StandardCharsets.UTF_8));
+                    respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
+                } catch (IllegalArgumentException invalid) {
+                    reply(exchange, 400);
+                }
+            } else {
+                reply(exchange, 405);
+            }
+        });
+        server.createContext("/api/producer/pronunciations", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.EDIT_PRONUNCIATION,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            try {
+                if ("GET".equals(exchange.getRequestMethod())) {
+                    respond(exchange, 200, "application/json", pronunciations.toJson().getBytes(StandardCharsets.UTF_8));
+                } else if ("PUT".equals(exchange.getRequestMethod())) {
+                    try (var body = exchange.getRequestBody()) {
+                    String saved = pronunciations.saveJson(
+                            new String(body.readNBytes(20_001), StandardCharsets.UTF_8));
+                    respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
+                    }
+                } else {
+                    reply(exchange, 405);
+                }
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 400);
+            } catch (IllegalStateException unavailable) {
+                reply(exchange, 503);
+            }
+        });
+        server.createContext("/api/producer/audio", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.GENERATE_AUDIO,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            if (!"POST".equals(exchange.getRequestMethod())) {
+                reply(exchange, 405);
+                return;
+            }
+            try {
+                var draft = script.synthesisScript();
+                var spoken = new ScriptAssembler.Script(pronunciations.speakable(draft.text()), draft.storyIds());
+                var audio = new FixtureVoiceProvider().render(spoken);
+                exchange.getResponseHeaders().set("X-Script-SHA256", audio.scriptSha256());
+                exchange.getResponseHeaders().set("Cache-Control", "no-store");
+                respondWrite(exchange, 200, audio.contentType(), audio.bytes());
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 400);
+            } catch (IllegalStateException | IOException unavailable) {
+                reply(exchange, 503);
+            }
+        });
         if (webRoot != null) {
             Path root = webRoot.toAbsolutePath().normalize();
             server.createContext("/", exchange -> {
@@ -187,17 +278,20 @@ public final class DailySignals {
         String bind = System.getenv().getOrDefault("DAILY_SIGNALS_BIND_ADDRESS", "127.0.0.1");
         var database = DatabaseRuntime.fromEnvironment(System.getenv());
         ReviewQueueBackend reviews;
+        PronunciationLexiconBackend pronunciations;
         if (database.isPresent()) {
             database.get().migrate();
             reviews = new PostgresReviewQueue(database.get());
+            pronunciations = new PostgresPronunciationLexicon(database.get());
         } else {
             reviews = ReviewQueue.fixture();
+            pronunciations = new PronunciationLexiconStore();
         }
         var environment = System.getenv();
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
-                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews);
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations);
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

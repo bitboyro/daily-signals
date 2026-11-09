@@ -1,8 +1,8 @@
 import { escapeHtml } from './html.ts';
 
-export type ProducerPanel = 'queue' | 'sources';
+export type ProducerPanel = 'candidates' | 'script' | 'pronunciations' | 'queue' | 'sources';
 
-const PANELS: readonly ProducerPanel[] = ['queue', 'sources'];
+const PANELS: readonly ProducerPanel[] = ['candidates', 'script', 'pronunciations', 'queue', 'sources'];
 
 export function isProducerPanel(value: string | undefined): value is ProducerPanel {
   return value !== undefined && PANELS.includes(value as ProducerPanel);
@@ -16,6 +16,7 @@ export function renderProducerWorkspace(active: ProducerPanel): string {
   };
   return '<div class="producer-workspace">'
     + '<div role="tablist" aria-label="Producer workspace">'
+    + tab('candidates', 'Today’s candidates') + tab('script', 'Edition script') + tab('pronunciations', 'Pronunciations')
     + tab('queue', 'Review queue') + tab('sources', 'Source configuration')
     + '</div>'
     + `<div id="producer-panel-${active}" role="tabpanel" aria-labelledby="producer-tab-${active}"></div>`
