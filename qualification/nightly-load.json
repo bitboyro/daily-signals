@@ -1,10 +1,14 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "requestsPerTarget": 80,
   "concurrency": 8,
   "startupTimeoutSeconds": 20,
   "maximumP95Milliseconds": 750,
   "maximumErrorRate": 0.0,
+  "producerFlow": {
+    "enabled": true,
+    "maximumStepMilliseconds": 1000
+  },
   "targets": [
     {"name": "api-catalog", "service": "api", "path": "/api/editions"},
     {"name": "stream-audio", "service": "stream", "path": "/editions/{editionId}/audio"}

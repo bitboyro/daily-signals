@@ -9,6 +9,7 @@ import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutPro
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
+import { pollEditionState, transitionEdition } from './producer-edition.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -98,11 +99,30 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
           (element('reviewer-token') as HTMLInputElement).value)).then((audio) => {
           if (!player) return;
           if (player.src.startsWith('blob:')) URL.revokeObjectURL(player.src);
-          player.src = URL.createObjectURL(audio);
+          player.src = URL.createObjectURL(audio.audio);
           player.hidden = false;
+          const validation = target.querySelector<HTMLElement>('.audio-validation');
+          if (validation) validation.textContent = `Validated ${audio.sampleRate} Hz, ${audio.channels} channel, ${(audio.durationMillis / 1000).toFixed(1)} seconds.`;
           if (status) status.textContent = 'Audio preview generated from the saved script.';
         }).catch((error) => {
           if (status) status.textContent = error instanceof Error ? error.message : 'Audio generation failed.';
+        });
+      });
+      target.querySelectorAll<HTMLButtonElement>('button[data-edition-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const action = button.dataset.editionAction as 'APPROVE' | 'PUBLISH';
+          const status = target.querySelector<HTMLElement>('.script-status');
+          const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+          void transitionEdition(apiBase, token, action).then(async (state) => {
+            if (status) status.textContent = `Edition is ${state.status.toLowerCase()} at revision ${state.revision}.`;
+            if (action === 'PUBLISH' && state.status !== 'PUBLISHED') {
+              const terminal = await pollEditionState(apiBase, token);
+              if (status) status.textContent = terminal.status === 'PUBLISHED'
+                ? `Edition published at revision ${terminal.revision}.` : 'Edition publication failed.';
+            }
+          }).catch((error) => {
+            if (status) status.textContent = error instanceof Error ? error.message : 'Edition action failed.';
+          });
         });
       });
     } catch (error) {

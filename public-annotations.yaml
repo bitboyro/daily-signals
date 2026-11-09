@@ -937,6 +937,28 @@
   },
   {
    "paths": [
+    "radio-edition/src/main/java/ro/bitboy/dailysignals/VoiceProviderFactory.java",
+    "radio-edition/src/test/java/ro/bitboy/dailysignals/VoiceProviderFactoryTest.java"
+   ],
+   "features": [
+    { "id": "VOC-04", "relation": "implements" },
+    { "id": "PLT-06", "relation": "configures" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-edition/src/main/java/ro/bitboy/dailysignals/AudioValidation.java",
+    "radio-edition/src/test/java/ro/bitboy/dailysignals/AudioValidationTest.java"
+   ],
+   "features": [
+    { "id": "VOC-05", "relation": "implements" },
+    { "id": "WEB-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/main/java/*/KokoroProviderConfig.java"
    ],
    "features": [
@@ -2829,6 +2851,22 @@
    "features": [
     { "id": "VOC-02", "relation": "implements" },
     { "id": "PLT-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionWorkflowBackend.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionWorkflowStore.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PostgresEditionWorkflow.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/EditionWorkflowStoreTest.java",
+    "web/src/producer-edition.ts",
+    "web/test/producer-edition.test.ts"
+   ],
+   "features": [
+    { "id": "EDT-04", "relation": "implements" },
+    { "id": "PUB-02", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },

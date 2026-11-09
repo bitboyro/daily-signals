@@ -1,6 +1,7 @@
 import { escapeHtml } from './html.ts';
 
 export interface ScriptDraft { text: string; revision: number; }
+export interface AudioPreview { audio: Blob; sampleRate: number; channels: number; durationMillis: number; }
 
 function parseDraft(value: unknown): ScriptDraft {
   const draft = value as Record<string, unknown> | null;
@@ -31,7 +32,7 @@ export async function saveScript(apiBase: string, token: string, text: string,
 }
 
 export async function generateScriptAudio(apiBase: string, token: string,
-  fetchImpl: typeof fetch = fetch): Promise<Blob> {
+  fetchImpl: typeof fetch = fetch): Promise<AudioPreview> {
   const response = await fetchImpl(`${apiBase}/api/producer/audio`, { method: 'POST',
     headers: { Accept: 'audio/wav', Authorization: `Bearer ${token}` } });
   if (response.status === 401) throw new Error('sign in before generating audio');
@@ -39,7 +40,14 @@ export async function generateScriptAudio(apiBase: string, token: string,
   if (!response.ok) throw new Error(`audio generation failed: ${response.status}`);
   const audio = await response.blob();
   if (audio.type !== 'audio/wav' || audio.size < 4) throw new Error('voice provider returned invalid audio');
-  return audio;
+  const sampleRate = Number(response.headers.get('X-Audio-Sample-Rate'));
+  const channels = Number(response.headers.get('X-Audio-Channels'));
+  const durationMillis = Number(response.headers.get('X-Audio-Duration-Ms'));
+  if (!Number.isInteger(sampleRate) || sampleRate < 8_000 || !Number.isInteger(channels) || channels < 1
+      || !Number.isInteger(durationMillis) || durationMillis < 1) {
+    throw new Error('voice provider omitted audio validation');
+  }
+  return { audio, sampleRate, channels, durationMillis };
 }
 
 export function renderScriptEditor(draft: ScriptDraft): string {
@@ -47,5 +55,8 @@ export function renderScriptEditor(draft: ScriptDraft): string {
     + `<label for="edition-script">Edition script</label><textarea id="edition-script" name="script" maxlength="20000" rows="14">${escapeHtml(draft.text)}</textarea>`
     + `<p>Revision ${draft.revision}</p><button type="submit">Save script</button>`
     + '<button type="button" data-generate-audio>Generate audio preview</button>'
-    + '<audio controls hidden data-audio-preview></audio><p class="script-status" role="status"></p></form>';
+    + '<button type="button" data-edition-action="APPROVE">Approve edition</button>'
+    + '<button type="button" data-edition-action="PUBLISH">Publish edition</button>'
+    + '<audio controls hidden data-audio-preview></audio><p class="audio-validation"></p>'
+    + '<p class="script-status" role="status"></p></form>';
 }

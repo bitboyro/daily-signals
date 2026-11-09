@@ -29,10 +29,12 @@ test('generates a WAV preview from the saved workspace script', async () => {
   const audio = await generateScriptAudio('http://radio', 'producer', async (_url, init) => {
     request = init;
     return new Response(new Uint8Array([82, 73, 70, 70]),
-      { status: 200, headers: { 'Content-Type': 'audio/wav' } });
+      { status: 200, headers: { 'Content-Type': 'audio/wav', 'X-Audio-Sample-Rate': '8000',
+        'X-Audio-Channels': '1', 'X-Audio-Duration-Ms': '1000' } });
   });
-  assert.equal(audio.type, 'audio/wav');
-  assert.equal(audio.size, 4);
+  assert.equal(audio.audio.type, 'audio/wav');
+  assert.equal(audio.audio.size, 4);
+  assert.equal(audio.durationMillis, 1000);
   assert.equal(request?.method, 'POST');
   assert.equal((request?.headers as Record<string, string>).Authorization, 'Bearer producer');
 });

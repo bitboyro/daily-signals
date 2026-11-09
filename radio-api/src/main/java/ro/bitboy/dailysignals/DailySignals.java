@@ -55,12 +55,28 @@ public final class DailySignals {
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
         return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue,
-                new PronunciationLexiconStore());
+                new PronunciationLexiconStore(), new EditionWorkflowStore());
     }
 
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
                                    PronunciationLexiconBackend pronunciations) throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
+                new EditionWorkflowStore(), new FixtureVoiceProvider());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow)
+            throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
+                workflow, new FixtureVoiceProvider());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow,
+                                   VoiceProvider voiceProvider) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
@@ -219,13 +235,46 @@ public final class DailySignals {
             try {
                 var draft = script.synthesisScript();
                 var spoken = new ScriptAssembler.Script(pronunciations.speakable(draft.text()), draft.storyIds());
-                var audio = new FixtureVoiceProvider().render(spoken);
+                var audio = voiceProvider.render(spoken);
+                var validation = AudioValidation.inspect(audio.bytes());
+                if (!validation.playable()) throw new IllegalStateException("voice provider returned invalid audio");
                 exchange.getResponseHeaders().set("X-Script-SHA256", audio.scriptSha256());
+                exchange.getResponseHeaders().set("X-Audio-Sample-Rate", Integer.toString(validation.sampleRate()));
+                exchange.getResponseHeaders().set("X-Audio-Channels", Integer.toString(validation.channels()));
+                exchange.getResponseHeaders().set("X-Audio-Duration-Ms", Long.toString(validation.durationMillis()));
                 exchange.getResponseHeaders().set("Cache-Control", "no-store");
                 respondWrite(exchange, 200, audio.contentType(), audio.bytes());
             } catch (IllegalArgumentException invalid) {
                 reply(exchange, 400);
             } catch (IllegalStateException | IOException unavailable) {
+                reply(exchange, 503);
+            }
+        });
+        server.createContext("/api/producer/edition", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.PUBLISH_EDITION,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            try {
+                if ("GET".equals(exchange.getRequestMethod())) {
+                    respond(exchange, 200, "application/json", workflow.toJson().getBytes(StandardCharsets.UTF_8));
+                } else if ("POST".equals(exchange.getRequestMethod())) {
+                    try (var body = exchange.getRequestBody()) {
+                        String state = workflow.transitionJson(
+                                new String(body.readNBytes(32), StandardCharsets.UTF_8));
+                        respondWrite(exchange, 200, "application/json", state.getBytes(StandardCharsets.UTF_8));
+                    }
+                } else reply(exchange, 405);
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 409);
+            } catch (IllegalStateException unavailable) {
                 reply(exchange, 503);
             }
         });
@@ -279,19 +328,23 @@ public final class DailySignals {
         var database = DatabaseRuntime.fromEnvironment(System.getenv());
         ReviewQueueBackend reviews;
         PronunciationLexiconBackend pronunciations;
+        EditionWorkflowBackend workflow;
         if (database.isPresent()) {
             database.get().migrate();
             reviews = new PostgresReviewQueue(database.get());
             pronunciations = new PostgresPronunciationLexicon(database.get());
+            workflow = new PostgresEditionWorkflow(database.get());
         } else {
             reviews = ReviewQueue.fixture();
             pronunciations = new PronunciationLexiconStore();
+            workflow = new EditionWorkflowStore();
         }
         var environment = System.getenv();
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
-                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations);
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow,
+                VoiceProviderFactory.fromEnvironment(environment));
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

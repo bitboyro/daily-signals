@@ -20,6 +20,8 @@ class EditionCatalogContractTest {
         var spec = mapper.readTree(Files.readString(Path.of("../contracts/openapi/editions-v1.json")));
         assertEquals("#/components/schemas/EditionList", spec.at("/paths/~1api~1editions/get/responses/200/content/application~1json/schema/$ref").asText());
         assertEquals("#/components/schemas/ScriptDraft", spec.at("/paths/~1api~1producer~1script/put/responses/200/content/application~1json/schema/$ref").asText());
+        assertEquals("#/components/schemas/ProducerEditionState", spec.at("/paths/~1api~1producer~1edition/get/responses/200/content/application~1json/schema/$ref").asText());
+        assertEquals(4, spec.at("/components/schemas/ProducerEditionState/properties/status/enum").size());
         assertEquals(20_000, spec.at("/paths/~1api~1producer~1script/put/requestBody/content/text~1plain/schema/maxLength").asInt());
         assertEquals("bearer", spec.at("/components/securitySchemes/producerBearer/scheme").asText());
         var required = spec.at("/components/schemas/EditionSummary/required");

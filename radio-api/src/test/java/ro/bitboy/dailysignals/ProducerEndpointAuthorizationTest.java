@@ -9,6 +9,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ProducerEndpointAuthorizationTest {
     private static final String PRODUCER = "producer-token-0123456789abcdef";
@@ -36,6 +37,8 @@ class ProducerEndpointAuthorizationTest {
                                 .POST(HttpRequest.BodyPublishers.noBody()), token), HttpResponse.BodyHandlers.ofByteArray());
                 assertEquals(200, audio.statusCode());
                 assertEquals("audio/wav", audio.headers().firstValue("Content-Type").orElseThrow());
+                assertEquals("8000", audio.headers().firstValue("X-Audio-Sample-Rate").orElseThrow());
+                assertEquals("1000", audio.headers().firstValue("X-Audio-Duration-Ms").orElseThrow());
                 assertEquals("RIFF", new String(audio.body(), 0, 4, java.nio.charset.StandardCharsets.US_ASCII));
                 assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue + "/demo-park-path"))
                                 .POST(HttpRequest.BodyPublishers.ofString("APPROVED")), token),
@@ -53,6 +56,8 @@ class ProducerEndpointAuthorizationTest {
             assertEquals(403, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/audio")))
                             .POST(HttpRequest.BodyPublishers.noBody()), LISTENER),
                     HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(403, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/edition"))).GET(), LISTENER),
+                    HttpResponse.BodyHandlers.discarding()).statusCode());
             HttpResponse<Void> anonymous = client.send(HttpRequest.newBuilder(URI.create(queue + "/audit")).GET().build(),
                     HttpResponse.BodyHandlers.discarding());
             assertEquals(401, anonymous.statusCode());
@@ -62,6 +67,23 @@ class ProducerEndpointAuthorizationTest {
         } finally {
             server.stop(0);
         }
+    }
+
+    @Test void producerApprovesAndPublishesTheEditionInOrder() throws Exception {
+        HttpServer server = DailySignals.createServer(0, ReviewerTokens.parse(PRODUCER + "=PRODUCER"));
+        server.start();
+        try {
+            var uri = URI.create("http://127.0.0.1:" + server.getAddress().getPort() + "/api/producer/edition");
+            var client = HttpClient.newHttpClient();
+            var approve = client.send(withToken(HttpRequest.newBuilder(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString("APPROVE")), PRODUCER), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, approve.statusCode());
+            assertTrue(approve.body().contains("\"status\":\"READY\""));
+            var publish = client.send(withToken(HttpRequest.newBuilder(uri)
+                    .POST(HttpRequest.BodyPublishers.ofString("PUBLISH")), PRODUCER), HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, publish.statusCode());
+            assertTrue(publish.body().contains("\"status\":\"PUBLISHED\""));
+        } finally { server.stop(0); }
     }
 
     private static HttpRequest withToken(HttpRequest.Builder request, String token) {
