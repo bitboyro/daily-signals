@@ -55,6 +55,8 @@ export function renderScriptEditor(draft: ScriptDraft): string {
     + `<label for="edition-script">Edition script</label><textarea id="edition-script" name="script" maxlength="20000" rows="14">${escapeHtml(draft.text)}</textarea>`
     + `<p>Revision ${draft.revision}</p><button type="submit">Save script</button>`
     + '<button type="button" data-generate-audio>Generate audio preview</button>'
+    + '<button type="button" data-edition-action="APPROVE">Approve edition</button>'
+    + '<button type="button" data-edition-action="PUBLISH">Publish edition</button>'
     + '<audio controls hidden data-audio-preview></audio><p class="audio-validation"></p>'
     + '<p class="script-status" role="status"></p></form>';
 }

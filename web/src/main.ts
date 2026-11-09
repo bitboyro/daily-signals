@@ -9,6 +9,7 @@ import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutPro
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
+import { transitionEdition } from './producer-edition.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -105,6 +106,18 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
           if (status) status.textContent = 'Audio preview generated from the saved script.';
         }).catch((error) => {
           if (status) status.textContent = error instanceof Error ? error.message : 'Audio generation failed.';
+        });
+      });
+      target.querySelectorAll<HTMLButtonElement>('button[data-edition-action]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const action = button.dataset.editionAction as 'APPROVE' | 'PUBLISH';
+          const status = target.querySelector<HTMLElement>('.script-status');
+          void transitionEdition(apiBase, producerBearer(sessionStorage,
+            (element('reviewer-token') as HTMLInputElement).value), action).then((state) => {
+            if (status) status.textContent = `Edition is ${state.status.toLowerCase()} at revision ${state.revision}.`;
+          }).catch((error) => {
+            if (status) status.textContent = error instanceof Error ? error.message : 'Edition action failed.';
+          });
         });
       });
     } catch (error) {

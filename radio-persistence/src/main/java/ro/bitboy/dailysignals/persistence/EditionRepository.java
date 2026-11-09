@@ -23,6 +23,19 @@ public final class EditionRepository {
         }
     }
 
+    public void createIfAbsent(Connection connection, String id, LocalDate day, String zoneId) throws SQLException {
+        if (id == null || id.isBlank() || day == null || zoneId == null || zoneId.isBlank())
+            throw new IllegalArgumentException("edition identity, date and zone are required");
+        try (var statement = connection.prepareStatement(
+                "INSERT INTO edition_lifecycle (edition_id, air_date, zone_id, status) VALUES (?, ?, ?, 'DRAFT') "
+                        + "ON CONFLICT (edition_id) DO NOTHING")) {
+            statement.setString(1, id);
+            statement.setDate(2, Date.valueOf(day));
+            statement.setString(3, zoneId);
+            statement.executeUpdate();
+        }
+    }
+
     public Optional<StoredEdition> get(Connection connection, String id) throws SQLException {
         try (var statement = connection.prepareStatement(
                 "SELECT edition_id, air_date, zone_id, status, revision FROM edition_lifecycle WHERE edition_id = ?")) {

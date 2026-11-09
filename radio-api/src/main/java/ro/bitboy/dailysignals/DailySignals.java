@@ -55,12 +55,20 @@ public final class DailySignals {
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue) throws IOException {
         return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue,
-                new PronunciationLexiconStore());
+                new PronunciationLexiconStore(), new EditionWorkflowStore());
     }
 
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
                                    PronunciationLexiconBackend pronunciations) throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
+                new EditionWorkflowStore());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow)
+            throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
@@ -234,6 +242,34 @@ public final class DailySignals {
                 reply(exchange, 503);
             }
         });
+        server.createContext("/api/producer/edition", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.PUBLISH_EDITION,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            try {
+                if ("GET".equals(exchange.getRequestMethod())) {
+                    respond(exchange, 200, "application/json", workflow.toJson().getBytes(StandardCharsets.UTF_8));
+                } else if ("POST".equals(exchange.getRequestMethod())) {
+                    try (var body = exchange.getRequestBody()) {
+                        String state = workflow.transitionJson(
+                                new String(body.readNBytes(32), StandardCharsets.UTF_8));
+                        respondWrite(exchange, 200, "application/json", state.getBytes(StandardCharsets.UTF_8));
+                    }
+                } else reply(exchange, 405);
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 409);
+            } catch (IllegalStateException unavailable) {
+                reply(exchange, 503);
+            }
+        });
         if (webRoot != null) {
             Path root = webRoot.toAbsolutePath().normalize();
             server.createContext("/", exchange -> {
@@ -284,19 +320,22 @@ public final class DailySignals {
         var database = DatabaseRuntime.fromEnvironment(System.getenv());
         ReviewQueueBackend reviews;
         PronunciationLexiconBackend pronunciations;
+        EditionWorkflowBackend workflow;
         if (database.isPresent()) {
             database.get().migrate();
             reviews = new PostgresReviewQueue(database.get());
             pronunciations = new PostgresPronunciationLexicon(database.get());
+            workflow = new PostgresEditionWorkflow(database.get());
         } else {
             reviews = ReviewQueue.fixture();
             pronunciations = new PronunciationLexiconStore();
+            workflow = new EditionWorkflowStore();
         }
         var environment = System.getenv();
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
-                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations);
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow);
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

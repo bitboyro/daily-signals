@@ -2845,6 +2845,22 @@
   },
   {
    "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionWorkflowBackend.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionWorkflowStore.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PostgresEditionWorkflow.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/EditionWorkflowStoreTest.java",
+    "web/src/producer-edition.ts",
+    "web/test/producer-edition.test.ts"
+   ],
+   "features": [
+    { "id": "EDT-04", "relation": "implements" },
+    { "id": "PUB-02", "relation": "implements" },
+    { "id": "WEB-03", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "web/public/styles.css"
    ],
    "features": [
