@@ -279,6 +279,39 @@ public final class DailySignals {
                 reply(exchange, 503);
             }
         });
+        server.createContext("/api/producer/editions/", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.READ_AUDIT,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            String path = exchange.getRequestURI().getPath();
+            String prefix = "/api/producer/editions/";
+            String suffix = "/audit";
+            if (!"GET".equals(exchange.getRequestMethod()) || !path.startsWith(prefix) || !path.endsWith(suffix)) {
+                reply(exchange, 405);
+                return;
+            }
+            String editionId = path.substring(prefix.length(), path.length() - suffix.length());
+            if (editionId.isBlank() || editionId.contains("/")) {
+                reply(exchange, 404);
+                return;
+            }
+            try {
+                respond(exchange, 200, "application/json",
+                        workflow.auditJson(editionId).getBytes(StandardCharsets.UTF_8));
+            } catch (IllegalArgumentException unknown) {
+                reply(exchange, 404);
+            } catch (IllegalStateException unavailable) {
+                reply(exchange, 503);
+            }
+        });
         if (webRoot != null) {
             Path root = webRoot.toAbsolutePath().normalize();
             server.createContext("/", exchange -> {

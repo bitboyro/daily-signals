@@ -30,6 +30,17 @@ final class PostgresEditionWorkflow implements EditionWorkflowBackend {
         } catch (SQLException failure) { throw unavailable(failure); }
     }
 
+    @Override public String auditJson(String editionId) {
+        try (var connection = database.open()) {
+            if (editions.get(connection, editionId).isEmpty()) throw new IllegalArgumentException("unknown edition");
+            var history = approvals.history(connection, editionId).stream()
+                    .map(event -> new EditionApprovalAudit.Entry(
+                            event.editionRevision(), event.actor(), event.approvedAt()))
+                    .toList();
+            return EditionApprovalAudit.json(editionId, history);
+        } catch (SQLException failure) { throw unavailable(failure); }
+    }
+
     @Override public String transitionJson(String action, String actor) {
         try (var connection = database.open()) {
             connection.setAutoCommit(false);

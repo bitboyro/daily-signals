@@ -3484,6 +3484,16 @@
     { "id": "PLT-02", "relation": "calls" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/EditionApprovalAudit.java"
+   ],
+   "features": [
+    { "id": "EDT-05", "relation": "implements" },
+    { "id": "PLT-01", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [
