@@ -56,6 +56,10 @@ test('producer prepares a narrated edition across the complete workspace', async
 
   await page.getByRole('button', { name: 'Approve edition' }).click();
   await expect(page.getByRole('status').filter({ hasText: /Edition is ready at revision 1/ })).toBeVisible();
+  await page.getByRole('tab', { name: 'Approval history' }).click();
+  await expect(page.getByRole('heading', { name: 'Approval history' })).toBeVisible();
+  await expect(page.locator('ol.approval-history')).toContainText('PRODUCER approved revision 1');
+  await page.getByRole('tab', { name: 'Edition script' }).click();
   await page.getByRole('button', { name: 'Publish edition' }).click();
   await expect(page.getByRole('status').filter({ hasText: /Edition is published at revision 2/ })).toBeVisible();
 });

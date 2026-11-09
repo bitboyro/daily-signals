@@ -9,7 +9,7 @@ import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutPro
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
-import { pollEditionState, transitionEdition } from './producer-edition.ts';
+import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -150,6 +150,13 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
     }
   } else if (panel === 'queue') {
     await showQueue(apiBase, target);
+  } else if (panel === 'history') {
+    const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+    try {
+      target.innerHTML = renderApprovalHistory(await fetchApprovalAudit(apiBase, token));
+    } catch (error) {
+      target.textContent = error instanceof Error ? error.message : 'Approval history is unavailable.';
+    }
   } else {
     target.innerHTML = renderSourceEditor(DEFAULT_SOURCES);
     const form = target.querySelector<HTMLFormElement>('form.source-editor');
