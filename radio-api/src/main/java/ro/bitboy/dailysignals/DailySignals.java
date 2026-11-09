@@ -200,6 +200,35 @@ public final class DailySignals {
                 reply(exchange, 503);
             }
         });
+        server.createContext("/api/producer/audio", exchange -> {
+            var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+            if (identity.isEmpty()) {
+                exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                reply(exchange, 401);
+                return;
+            }
+            if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.GENERATE_AUDIO,
+                    identity.get().role())) {
+                reply(exchange, 403);
+                return;
+            }
+            if (!"POST".equals(exchange.getRequestMethod())) {
+                reply(exchange, 405);
+                return;
+            }
+            try {
+                var draft = script.synthesisScript();
+                var spoken = new ScriptAssembler.Script(pronunciations.speakable(draft.text()), draft.storyIds());
+                var audio = new FixtureVoiceProvider().render(spoken);
+                exchange.getResponseHeaders().set("X-Script-SHA256", audio.scriptSha256());
+                exchange.getResponseHeaders().set("Cache-Control", "no-store");
+                respondWrite(exchange, 200, audio.contentType(), audio.bytes());
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 400);
+            } catch (IllegalStateException | IOException unavailable) {
+                reply(exchange, 503);
+            }
+        });
         if (webRoot != null) {
             Path root = webRoot.toAbsolutePath().normalize();
             server.createContext("/", exchange -> {

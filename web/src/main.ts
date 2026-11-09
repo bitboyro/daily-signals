@@ -7,7 +7,7 @@ import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './
 import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutProducer } from './producer-auth.ts';
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
-import { fetchScript, renderScriptEditor, saveScript } from './producer-script.ts';
+import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
 
 function element(id: string): HTMLElement {
@@ -90,6 +90,20 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
           (element('reviewer-token') as HTMLInputElement).value), text).then((saved) => {
           if (status) status.textContent = `Script revision ${saved.revision} saved.`;
         }).catch((error) => { if (status) status.textContent = error instanceof Error ? error.message : 'Script save failed.'; });
+      });
+      target.querySelector<HTMLButtonElement>('button[data-generate-audio]')?.addEventListener('click', () => {
+        const status = target.querySelector<HTMLElement>('.script-status');
+        const player = target.querySelector<HTMLAudioElement>('audio[data-audio-preview]');
+        void generateScriptAudio(apiBase, producerBearer(sessionStorage,
+          (element('reviewer-token') as HTMLInputElement).value)).then((audio) => {
+          if (!player) return;
+          if (player.src.startsWith('blob:')) URL.revokeObjectURL(player.src);
+          player.src = URL.createObjectURL(audio);
+          player.hidden = false;
+          if (status) status.textContent = 'Audio preview generated from the saved script.';
+        }).catch((error) => {
+          if (status) status.textContent = error instanceof Error ? error.message : 'Audio generation failed.';
+        });
       });
     } catch (error) {
       target.textContent = error instanceof Error ? error.message : 'The edition script is unavailable.';

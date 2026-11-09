@@ -32,6 +32,14 @@ final class PostgresPronunciationLexicon implements PronunciationLexiconBackend 
         }
     }
 
+    @Override public String speakable(String text) {
+        try (var connection = database.open()) {
+            return new PronunciationDictionary(pronunciations.load(connection).entries()).speakable(text);
+        } catch (SQLException failure) {
+            throw unavailable(failure);
+        }
+    }
+
     private static IllegalStateException unavailable(SQLException failure) {
         return new IllegalStateException("pronunciation database unavailable", failure);
     }

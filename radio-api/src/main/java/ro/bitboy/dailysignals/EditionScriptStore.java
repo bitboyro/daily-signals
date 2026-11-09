@@ -19,6 +19,10 @@ final class EditionScriptStore {
         return toJson();
     }
 
+    synchronized ScriptAssembler.Script synthesisScript() {
+        return new ScriptAssembler.Script(text, java.util.List.of("producer-workspace-draft"));
+    }
+
     private static String validate(String value) {
         if (value == null || value.isBlank() || value.length() > 20_000
                 || value.chars().anyMatch(c -> Character.isISOControl(c) && c != '\n' && c != '\r' && c != '\t')) {

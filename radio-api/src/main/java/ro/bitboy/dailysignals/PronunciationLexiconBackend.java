@@ -4,4 +4,5 @@ package ro.bitboy.dailysignals;
 interface PronunciationLexiconBackend {
     String toJson();
     String saveJson(String text);
+    String speakable(String text);
 }

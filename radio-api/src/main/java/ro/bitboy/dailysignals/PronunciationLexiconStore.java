@@ -16,6 +16,9 @@ final class PronunciationLexiconStore implements PronunciationLexiconBackend {
         revision++;
         return toJson();
     }
+    @Override public synchronized String speakable(String text) {
+        return dictionary().speakable(text);
+    }
     synchronized PronunciationDictionary dictionary() {
         return new PronunciationDictionary(entries);
     }
