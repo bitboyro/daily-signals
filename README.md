@@ -13,6 +13,17 @@ The repository history is intentionally authored as small, identifiable product 
 
 The API serves `GET /health`, `GET /api/editions` (versioned edition list), `GET /editions/{editionId}/audio`, and the producer review queue at `/api/review-queue`. Review decisions require a validated Keycloak bearer token when `JWT_ISSUER_URI` is set. Tokens configured in `DAILY_SIGNALS_REVIEW_TOKENS` (`token=ROLE` pairs, at least 24 characters) remain a local-development fallback; without either configuration the API refuses every review write. The retired `/editions/demo/audio` link redirects permanently to the demo edition. Shared contracts live in `contracts/`.
 
+## Producer flow
+
+Open **Produce**, sign in with the station identity provider (or enter a local development token), and work through the tabs:
+
+1. Review today's candidates and approve the stories that belong in the edition.
+2. Edit and save the edition script. Add whole-token pronunciation fixes as `term=spoken form` entries.
+3. Generate the audio preview. The workspace shows the validated sample rate, channel count and duration; listen before approving.
+4. Approve the edition, then publish it. The client follows the persisted edition state until it reaches `PUBLISHED` or `FAILED`.
+
+The fixture voice is the offline default. Operators may select the local Kokoro adapter with `DAILY_SIGNALS_VOICE_PROVIDER=kokoro` plus the endpoint, immutable model revision, model SHA-256 and supported voice ID described in the [Kokoro operations guide](docs/operations/kokoro.md). Incomplete configuration fails closed instead of silently changing providers.
+
 ## Checks
 
 `python3 tools/check-module-boundaries.py`, `check-fixtures.py`, `check-source-example.py`, `check-audio-fixture.py` and `check-docs.py` validate structure, fixtures and documentation. `check-annotations.py` audits `public-annotations.yaml`, which maps every tracked path to stable feature IDs or an explicit classification, and records when each rule's paths entered and left the history. After building Java, Rust and the web client, `dual-process-smoke.py`, `voice-playback-smoke.py` and `container-smoke.py` check the cross-process playback paths. PostgreSQL reference tests require the configured test database. Release qualification is described in [docs/release-qualification.md](docs/release-qualification.md), [nightly qualification](docs/operations/nightly-qualification.md), and deployment setup in [docs/operations/installation.md](docs/operations/installation.md).

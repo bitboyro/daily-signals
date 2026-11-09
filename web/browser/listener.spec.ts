@@ -53,4 +53,9 @@ test('producer prepares a narrated edition across the complete workspace', async
   await expect(preview).toBeVisible();
   await expect(preview).toHaveAttribute('src', /^blob:/);
   await expect(page.getByRole('status').filter({ hasText: /Audio preview generated/ })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Approve edition' }).click();
+  await expect(page.getByRole('status').filter({ hasText: /Edition is ready at revision 1/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Publish edition' }).click();
+  await expect(page.getByRole('status').filter({ hasText: /Edition is published at revision 2/ })).toBeVisible();
 });
