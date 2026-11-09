@@ -4,6 +4,7 @@ const viewports = {
   mobile: { width: 390, height: 844 },
   desktop: { width: 1440, height: 900 },
 };
+const localChromiumChannel = process.env.PLAYWRIGHT_CHROMIUM_CHANNEL;
 
 export default defineConfig({
   testDir: './browser',
@@ -23,6 +24,7 @@ export default defineConfig({
   projects: ['chromium', 'firefox', 'webkit'].flatMap((browserName) =>
     Object.entries(viewports).map(([profile, viewport]) => ({
       name: `${browserName}-${profile}`,
-      use: { browserName: browserName as 'chromium' | 'firefox' | 'webkit', viewport },
+      use: { browserName: browserName as 'chromium' | 'firefox' | 'webkit', viewport,
+        ...(browserName === 'chromium' && localChromiumChannel ? { channel: localChromiumChannel } : {}) },
     }))),
 });
