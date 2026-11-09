@@ -62,13 +62,21 @@ public final class DailySignals {
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
                                    PronunciationLexiconBackend pronunciations) throws IOException {
         return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
-                new EditionWorkflowStore());
+                new EditionWorkflowStore(), new FixtureVoiceProvider());
     }
 
     static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
                                    PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow)
             throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
+                workflow, new FixtureVoiceProvider());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow,
+                                   VoiceProvider voiceProvider) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
@@ -227,7 +235,7 @@ public final class DailySignals {
             try {
                 var draft = script.synthesisScript();
                 var spoken = new ScriptAssembler.Script(pronunciations.speakable(draft.text()), draft.storyIds());
-                var audio = new FixtureVoiceProvider().render(spoken);
+                var audio = voiceProvider.render(spoken);
                 var validation = AudioValidation.inspect(audio.bytes());
                 if (!validation.playable()) throw new IllegalStateException("voice provider returned invalid audio");
                 exchange.getResponseHeaders().set("X-Script-SHA256", audio.scriptSha256());
@@ -335,7 +343,8 @@ public final class DailySignals {
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
-                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow);
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow,
+                VoiceProviderFactory.fromEnvironment(environment));
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;
