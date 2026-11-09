@@ -26,6 +26,17 @@
         "requestBody": { "required": true, "content": { "text/plain": { "schema": { "type": "string", "minLength": 1, "maxLength": 20000 } } } },
         "responses": { "200": { "description": "Saved producer script draft", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScriptDraft" } } } } }
       }
+    },
+    "/api/producer/edition": {
+      "get": {
+        "security": [{ "producerBearer": [] }],
+        "responses": { "200": { "description": "Current producer edition state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProducerEditionState" } } } } }
+      },
+      "post": {
+        "security": [{ "producerBearer": [] }],
+        "requestBody": { "required": true, "content": { "text/plain": { "schema": { "type": "string", "enum": ["APPROVE", "PUBLISH"] } } } },
+        "responses": { "200": { "description": "Transitioned producer edition", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ProducerEditionState" } } } } }
+      }
     }
   },
   "components": {
@@ -37,6 +48,16 @@
         "properties": {
           "schemaVersion": { "type": "integer", "enum": [1] },
           "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
+          "revision": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "ProducerEditionState": {
+        "type": "object",
+        "required": ["schemaVersion", "editionId", "status", "revision"],
+        "properties": {
+          "schemaVersion": { "type": "integer", "enum": [1] },
+          "editionId": { "type": "string", "minLength": 1 },
+          "status": { "type": "string", "enum": ["DRAFT", "READY", "PUBLISHED", "FAILED"] },
           "revision": { "type": "integer", "minimum": 0 }
         }
       },

@@ -9,7 +9,7 @@ import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutPro
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
-import { transitionEdition } from './producer-edition.ts';
+import { pollEditionState, transitionEdition } from './producer-edition.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -112,9 +112,14 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
         button.addEventListener('click', () => {
           const action = button.dataset.editionAction as 'APPROVE' | 'PUBLISH';
           const status = target.querySelector<HTMLElement>('.script-status');
-          void transitionEdition(apiBase, producerBearer(sessionStorage,
-            (element('reviewer-token') as HTMLInputElement).value), action).then((state) => {
+          const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+          void transitionEdition(apiBase, token, action).then(async (state) => {
             if (status) status.textContent = `Edition is ${state.status.toLowerCase()} at revision ${state.revision}.`;
+            if (action === 'PUBLISH' && state.status !== 'PUBLISHED') {
+              const terminal = await pollEditionState(apiBase, token);
+              if (status) status.textContent = terminal.status === 'PUBLISHED'
+                ? `Edition published at revision ${terminal.revision}.` : 'Edition publication failed.';
+            }
           }).catch((error) => {
             if (status) status.textContent = error instanceof Error ? error.message : 'Edition action failed.';
           });
