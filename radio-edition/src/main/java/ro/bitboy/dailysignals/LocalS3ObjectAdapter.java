@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 
 /** Path-style PUT/GET adapter for an unauthenticated local S3-compatible endpoint. */
 public final class LocalS3ObjectAdapter implements PublishOutbox.ObjectWriter {
@@ -33,12 +34,17 @@ public final class LocalS3ObjectAdapter implements PublishOutbox.ObjectWriter {
         put(key, data, "audio/wav");
     }
     public void put(String key, byte[] data, String contentType) throws IOException, InterruptedException {
-        if (data == null || data.length == 0 || !"audio/wav".equals(contentType))
-            throw new IllegalArgumentException("nonempty WAV required");
+        if (data == null || data.length == 0
+                || !("audio/wav".equals(contentType) || "application/json".equals(contentType)))
+            throw new IllegalArgumentException("nonempty WAV or JSON object required");
         var request = HttpRequest.newBuilder(objectUri(key)).timeout(Duration.ofSeconds(10))
                 .header("Content-Type", contentType).PUT(HttpRequest.BodyPublishers.ofByteArray(data)).build();
         var response = client.send(request, HttpResponse.BodyHandlers.discarding());
         if (response.statusCode() / 100 != 2) throw new IOException("object PUT failed: " + response.statusCode());
+    }
+    public void putJson(String key, String json) throws IOException, InterruptedException {
+        if (json == null || json.isBlank()) throw new IllegalArgumentException("nonempty JSON required");
+        put(key, json.getBytes(StandardCharsets.UTF_8), "application/json");
     }
     public byte[] get(String key) throws IOException, InterruptedException {
         var response = client.send(HttpRequest.newBuilder(objectUri(key)).timeout(Duration.ofSeconds(10)).GET().build(),

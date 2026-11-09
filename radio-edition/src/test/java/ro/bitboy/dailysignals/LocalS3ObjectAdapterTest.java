@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LocalS3ObjectAdapterTest {
@@ -60,6 +62,43 @@ class LocalS3ObjectAdapterTest {
             assertEquals("audio/wav", contentType.get());
             assertArrayEquals(wav, adapter.get(manifest.audioPath()));
             assertEquals(0, outbox.pendingCount());
+        } finally { server.stop(0); }
+    }
+
+    @Test void publicationConsumerStoresManifestBesideRecording() throws Exception {
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        Map<String, byte[]> objects = new ConcurrentHashMap<>();
+        Map<String, String> contentTypes = new ConcurrentHashMap<>();
+        server.createContext("/radio-fixtures/editions/", exchange -> {
+            var path = exchange.getRequestURI().getPath();
+            if ("PUT".equals(exchange.getRequestMethod())) {
+                contentTypes.put(path, exchange.getRequestHeaders().getFirst("Content-Type"));
+                objects.put(path, exchange.getRequestBody().readAllBytes());
+                exchange.sendResponseHeaders(200, -1);
+            } else if ("GET".equals(exchange.getRequestMethod()) && objects.containsKey(path)) {
+                exchange.sendResponseHeaders(200, objects.get(path).length);
+                exchange.getResponseBody().write(objects.get(path));
+            } else exchange.sendResponseHeaders(404, -1);
+            exchange.close();
+        });
+        server.start();
+        try {
+            var adapter = new LocalS3ObjectAdapter(
+                    URI.create("http://127.0.0.1:" + server.getAddress().getPort()), "radio-fixtures");
+            var outbox = new PublishOutbox();
+            var consumer = PublicationConsumer.forObjectStore(adapter);
+            byte[] wav = new byte[]{'R','I','F','F',5,6,7,8};
+            outbox.stage("edition-2", "editions/edition-2.wav", wav);
+            outbox.publish("edition-2", "PRODUCER", adapter);
+
+            assertTrue(consumer.apply(outbox.drainEvents().getFirst()));
+
+            var manifestPath = "/radio-fixtures/editions/edition-2.json";
+            var manifestJson = new String(objects.get(manifestPath), java.nio.charset.StandardCharsets.UTF_8);
+            assertEquals("application/json", contentTypes.get(manifestPath));
+            assertTrue(manifestJson.contains("\"editionId\":\"edition-2\""));
+            assertTrue(manifestJson.contains("\"audioPath\":\"editions/edition-2.wav\""));
+            assertArrayEquals(wav, objects.get("/radio-fixtures/editions/edition-2.wav"));
         } finally { server.stop(0); }
     }
 }
