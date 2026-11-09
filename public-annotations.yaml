@@ -1299,7 +1299,25 @@
   },
   {
    "paths": [
-    "*/src/test/java/*/ObjectStoreTimeoutRecoveryTest.java",
+    "*/src/test/java/*/ObjectStoreTimeoutRecoveryTest.java"
+   ],
+   "features": [
+    {
+     "id": "PUB-03",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": "cc88ae6f1001601d1f99396ccbeaa509ad5e5b16",
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "*/src/test/java/*/ObjectStoreRetrySoakTest.java"
    ],
    "features": [
@@ -1314,7 +1332,7 @@
    ],
    "confidence": "high",
    "provenance": "authored-review",
-   "introducedIn": null,
+   "introducedIn": "e761ac95674a895624dd0d5d49a8bcce204d6ce0",
    "retiredIn": null
   },
   {

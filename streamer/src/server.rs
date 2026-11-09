@@ -1,7 +1,6 @@
 use crate::manifest::PublicationManifest;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::path::Path;
 
 pub struct Response {
     pub status: u16,
@@ -18,7 +17,7 @@ fn object_store_get(
     endpoint: &str,
     bucket: &str,
     key: &str,
-) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+) -> Result<Option<Vec<u8>>, Box<dyn std::error::Error>> {
     let authority = endpoint
         .strip_prefix("http://")
         .ok_or("HTTP object-store endpoint required")?;
@@ -57,23 +56,29 @@ fn object_store_get(
         .next()
         .and_then(|line| line.split_whitespace().nth(1))
         .ok_or("missing object-store status")?;
+    if status == "404" {
+        return Ok(None);
+    }
     if status != "200" {
         return Err(format!("object GET failed: {status}").into());
     }
-    Ok(response[split + 4..].to_vec())
+    Ok(Some(response[split + 4..].to_vec()))
 }
 
 pub fn load_from_object_store(
     endpoint: &str,
     bucket: &str,
     manifest_key: &str,
-) -> Result<(PublicationManifest, Vec<u8>), Box<dyn std::error::Error>> {
-    let manifest: PublicationManifest =
-        serde_json::from_slice(&object_store_get(endpoint, bucket, manifest_key)?)?;
+) -> Result<(PublicationManifest, Option<Vec<u8>>), Box<dyn std::error::Error>> {
+    let manifest_bytes = object_store_get(endpoint, bucket, manifest_key)?
+        .ok_or("publication manifest not found")?;
+    let manifest: PublicationManifest = serde_json::from_slice(&manifest_bytes)?;
     manifest.validate()?;
     let audio = object_store_get(endpoint, bucket, &manifest.audio_path)?;
-    if audio.len() as u64 != manifest.size_bytes {
-        return Err("audio size does not match manifest".into());
+    if let Some(bytes) = &audio {
+        if bytes.len() as u64 != manifest.size_bytes {
+            return Err("audio size does not match manifest".into());
+        }
     }
     Ok((manifest, audio))
 }
@@ -254,26 +259,6 @@ fn serve(
     let request = String::from_utf8_lossy(&buffer[..size]);
     stream.write_all(&route_with_policy(&request, manifest, audio, policy).wire())
 }
-pub fn listen(
-    bind: &str,
-    port: u16,
-    manifest_path: &Path,
-    audio_root: &Path,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let manifest: PublicationManifest = serde_json::from_slice(&std::fs::read(manifest_path)?)?;
-    manifest.validate()?;
-    let audio = match std::fs::read(audio_root.join(&manifest.audio_path)) {
-        Ok(bytes) => Some(bytes),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => None,
-        Err(error) => return Err(error.into()),
-    };
-    if let Some(bytes) = &audio {
-        if bytes.len() as u64 != manifest.size_bytes {
-            return Err("audio size does not match manifest".into());
-        }
-    }
-    listen_loaded(bind, port, manifest, audio)
-}
 pub fn listen_from_object_store(
     bind: &str,
     port: u16,
@@ -282,7 +267,7 @@ pub fn listen_from_object_store(
     manifest_key: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let (manifest, audio) = load_from_object_store(endpoint, bucket, manifest_key)?;
-    listen_loaded(bind, port, manifest, Some(audio))
+    listen_loaded(bind, port, manifest, audio)
 }
 fn listen_loaded(
     bind: &str,
@@ -480,6 +465,52 @@ mod tests {
         .unwrap();
         fixture.join().unwrap();
         assert_eq!(loaded.edition_id, "demo-2026-01-15");
-        assert_eq!(bytes.len() as u64, loaded.size_bytes);
+        assert_eq!(bytes.as_ref().unwrap().len() as u64, loaded.size_bytes);
+    }
+
+    #[test]
+    fn missing_object_store_recording_becomes_not_found() {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let manifest = include_bytes!("../../contracts/publication-manifest-v2.json").to_vec();
+        let fixture = thread::spawn(move || {
+            for (expected, status, body) in [
+                ("/radio/editions/demo.json", "200 OK", manifest.as_slice()),
+                ("/radio/fixtures/demo-edition.wav", "404 Not Found", &[][..]),
+            ] {
+                let (mut stream, _) = listener.accept().unwrap();
+                let mut request = [0_u8; 2048];
+                let size = stream.read(&mut request).unwrap();
+                assert!(String::from_utf8_lossy(&request[..size])
+                    .starts_with(&format!("GET {expected} HTTP/1.1")));
+                stream
+                    .write_all(
+                        format!(
+                            "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                            body.len()
+                        )
+                        .as_bytes(),
+                    )
+                    .unwrap();
+                stream.write_all(body).unwrap();
+            }
+        });
+        let (loaded, audio) = load_from_object_store(
+            &format!("http://127.0.0.1:{port}"),
+            "radio",
+            "editions/demo.json",
+        )
+        .unwrap();
+        fixture.join().unwrap();
+        assert!(audio.is_none());
+        assert_eq!(
+            route_for_object(
+                "GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n",
+                &loaded,
+                None
+            )
+            .status,
+            404
+        );
     }
 }
