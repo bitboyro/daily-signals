@@ -268,7 +268,8 @@ public final class DailySignals {
                 } else if ("POST".equals(exchange.getRequestMethod())) {
                     try (var body = exchange.getRequestBody()) {
                         String state = workflow.transitionJson(
-                                new String(body.readNBytes(32), StandardCharsets.UTF_8));
+                                new String(body.readNBytes(32), StandardCharsets.UTF_8),
+                                identity.orElseThrow().subject());
                         respondWrite(exchange, 200, "application/json", state.getBytes(StandardCharsets.UTF_8));
                     }
                 } else reply(exchange, 405);

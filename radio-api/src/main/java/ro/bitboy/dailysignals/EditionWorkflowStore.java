@@ -7,9 +7,12 @@ final class EditionWorkflowStore implements EditionWorkflowBackend {
 
     @Override public synchronized String toJson() { return json(status, revision); }
 
-    @Override public synchronized String transitionJson(String action) {
+    @Override public synchronized String transitionJson(String action, String actor) {
         String requested = action == null ? "" : action.strip();
-        if ("APPROVE".equals(requested) && "DRAFT".equals(status)) status = "READY";
+        if ("APPROVE".equals(requested) && "DRAFT".equals(status)) {
+            if (actor == null || actor.isBlank()) throw new IllegalArgumentException("approval actor is required");
+            status = "READY";
+        }
         else if ("PUBLISH".equals(requested) && "READY".equals(status)) status = "PUBLISHED";
         else throw new IllegalArgumentException("invalid edition transition");
         revision++;

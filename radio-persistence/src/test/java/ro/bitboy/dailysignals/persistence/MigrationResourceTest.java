@@ -37,4 +37,15 @@ class MigrationResourceTest {
             assertTrue(ddl.contains("('AI', 'A I')"));
         }
     }
+
+    @Test void approvalAuditMigrationRequiresActorTimeAndEditionRevision() throws Exception {
+        try (var input = MigrationRunner.class.getResourceAsStream("/db/migration/V6__approval_audit.sql")) {
+            assertNotNull(input);
+            String ddl = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(ddl.contains("CREATE TABLE IF NOT EXISTS edition_approval_event"));
+            assertTrue(ddl.contains("actor VARCHAR(200) NOT NULL"));
+            assertTrue(ddl.contains("approved_at TIMESTAMPTZ NOT NULL"));
+            assertTrue(ddl.contains("UNIQUE (edition_id, edition_revision)"));
+        }
+    }
 }

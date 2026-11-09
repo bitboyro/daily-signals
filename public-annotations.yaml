@@ -3471,6 +3471,19 @@
     { "id": "EDT-04", "relation": "guards" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/ApprovalAuditRepository.java",
+    "radio-persistence/src/main/resources/db/migration/V6__approval_audit.sql",
+    "radio-persistence/src/test/java/ro/bitboy/dailysignals/persistence/ApprovalAuditRepositoryPostgresTest.java"
+   ],
+   "features": [
+    { "id": "EDT-04", "relation": "implements" },
+    { "id": "EDT-05", "relation": "implements" },
+    { "id": "PLT-02", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [
