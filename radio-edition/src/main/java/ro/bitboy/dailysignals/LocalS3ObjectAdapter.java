@@ -8,7 +8,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 /** Path-style PUT/GET adapter for an unauthenticated local S3-compatible endpoint. */
-public final class LocalS3ObjectAdapter {
+public final class LocalS3ObjectAdapter implements PublishOutbox.ObjectWriter {
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
     private final URI endpoint;
     private final String bucket;
@@ -26,6 +26,11 @@ public final class LocalS3ObjectAdapter {
         if (key == null || !key.matches("[a-zA-Z0-9][a-zA-Z0-9/_.-]*") || key.contains("..") || key.contains("//"))
             throw new IllegalArgumentException("invalid object key");
         return endpoint.resolve("/" + bucket + "/" + key);
+    }
+    /** Publish-outbox boundary: recordings are always stored as WAV objects. */
+    @Override
+    public void put(String key, byte[] data) throws IOException, InterruptedException {
+        put(key, data, "audio/wav");
     }
     public void put(String key, byte[] data, String contentType) throws IOException, InterruptedException {
         if (data == null || data.length == 0 || !"audio/wav".equals(contentType))
