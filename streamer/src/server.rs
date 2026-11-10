@@ -194,6 +194,13 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
             "application/json",
         );
     }
+    if path == format!("/editions/{}/chapters", manifest.edition_id) {
+        let body = serde_json::to_vec(&serde_json::json!({
+            "schemaVersion": 1,
+            "chapters": manifest.chapters,
+        })).expect("validated chapters serialize");
+        return Response::new(200, body, "application/json");
+    }
     if path != format!("/editions/{}/audio", manifest.edition_id) {
         return Response::new(404, vec![], "text/plain");
     }
@@ -329,6 +336,23 @@ mod tests {
             .headers
             .iter()
             .any(|(k, v)| k == "Cache-Control" && v == "public, max-age=300, immutable"));
+    }
+    #[test]
+    fn exposes_manifest_chapters_without_audio_bytes() {
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v3.json"))
+                .unwrap();
+        let response = route(
+            "GET /editions/demo-2026-01-15/chapters HTTP/1.1\r\n",
+            &manifest,
+            b"RIFF-demo",
+        );
+        assert_eq!(response.status, 200);
+        assert!(response.headers.iter().any(|(key, value)|
+            key == "Content-Type" && value == "application/json"));
+        let payload: serde_json::Value = serde_json::from_slice(&response.body).unwrap();
+        assert_eq!(payload["chapters"][1]["title"], "Local report");
+        assert_eq!(payload["chapters"][1]["startMillis"], 650);
     }
     #[test]
     fn inclusive_range_end_and_single_byte_boundary() {
