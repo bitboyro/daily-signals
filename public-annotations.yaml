@@ -3420,6 +3420,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["tools/object_store_fixture.py", "tools/test_object_store_fixture.py"],
+   "features": [
+    { "id": "PLT-07", "relation": "tests" },
+    { "id": "STR-01", "relation": "tests" },
+    { "id": "STR-05", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/required-status-policy.json", "tools/test_prepare_pr_qualification.py"],
    "features": [
     { "id": "PLT-06", "relation": "guards" }
