@@ -30,8 +30,26 @@ jobs:
           mkdir -p nightly-attempts
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/attempts/1/jobs?per_page=100" \
             > nightly-attempts/attempt-1-jobs.json
+          printf '{"requested":false,"completed":false,"reason":"not-needed"}\n' \
+            > nightly-attempts/rerun-status.json
           if test "$SOURCE_CONCLUSION" = failure; then
-            gh run rerun "$SOURCE_RUN_ID" --failed
+            if ! error=$(gh api --method POST \
+              "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/rerun-failed-jobs" 2>&1); then
+              python3 - "$error" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          Path('nightly-attempts/rerun-status.json').write_text(json.dumps({
+              'requested': False,
+              'completed': False,
+              'reason': 'request-rejected',
+              'detail': sys.argv[1][:500],
+          }, indent=2) + '\n')
+          PY
+              exit 0
+            fi
+            printf '{"requested":true,"completed":false,"reason":"waiting"}\n' \
+              > nightly-attempts/rerun-status.json
             for ignored in $(seq 1 120); do
               read -r attempt status < <(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" \
                 --jq '[.run_attempt,.status] | @tsv')
@@ -40,10 +58,15 @@ jobs:
               fi
               sleep 5
             done
-            test "${attempt:-1}" -ge 2
-            test "${status:-unknown}" = completed
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/attempts/2/jobs?per_page=100" \
-              > nightly-attempts/attempt-2-jobs.json
+            if test "${attempt:-1}" -ge 2 && test "${status:-unknown}" = completed; then
+              gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID/attempts/2/jobs?per_page=100" \
+                > nightly-attempts/attempt-2-jobs.json
+              printf '{"requested":true,"completed":true,"reason":"completed"}\n' \
+                > nightly-attempts/rerun-status.json
+            else
+              printf '{"requested":true,"completed":false,"reason":"timeout"}\n' \
+                > nightly-attempts/rerun-status.json
+            fi
           fi
       - name: Classify first-fail-then-pass jobs
         run: |
@@ -61,10 +84,11 @@ jobs:
               })
           first = attempts[0]['jobs']
           last = attempts[-1]['jobs']
+          rerun = json.loads((folder / 'rerun-status.json').read_text())
           flaky = sorted(name for name, result in first.items() if result == 'failure' and last.get(name) == 'success')
           failing = sorted(name for name, result in last.items() if result == 'failure')
           report = {'schemaVersion': 1, 'runId': '${{ github.event.workflow_run.id }}',
-                    'attempts': len(attempts), 'flaky': flaky, 'failing': failing}
+                    'attempts': len(attempts), 'rerun': rerun, 'flaky': flaky, 'failing': failing}
           (folder / 'flake-check.json').write_text(json.dumps(report, indent=2) + '\n')
           PY
       - uses: actions/upload-artifact@v4
