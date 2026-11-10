@@ -10,6 +10,7 @@ import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candid
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
 import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
+import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -229,6 +230,10 @@ if (typeof document !== 'undefined') {
   void showEditions(config.apiBase, (edition) => {
     player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
     bindPlaybackRecovery(player);
+    void fetchChapters(config.streamBase, edition.editionId).then((chapters) => {
+      player.insertAdjacentHTML('beforeend', renderChapters(chapters));
+      bindChapterSeeking(player);
+    }).catch(() => { /* v1/v2 editions remain playable without chapter metadata. */ });
   });
   void showProducerPanel(config.apiBase, 'candidates');
 }

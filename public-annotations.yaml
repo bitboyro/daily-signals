@@ -3401,6 +3401,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["web/src/chapters.ts", "web/test/chapters.test.ts"],
+   "features": [
+    { "id": "WEB-02", "relation": "implements" },
+    { "id": "STR-01", "relation": "calls" },
+    { "id": "PUB-01", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["radio-ingestion/src/test/java/ro/bitboy/dailysignals/DailyFetchSchedulerSoakTest.java"],
    "features": [
     { "id": "PLT-04", "relation": "tests" },
