@@ -4,6 +4,11 @@
   "paths": {
     "/api/editions": {
       "get": {
+        "parameters": [{
+          "name": "date", "in": "query", "required": false,
+          "description": "Return editions for one station air date",
+          "schema": { "type": "string", "format": "date" }
+        }],
         "responses": {
           "200": {
             "description": "Newest-first archived editions",

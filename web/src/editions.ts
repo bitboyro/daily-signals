@@ -40,10 +40,18 @@ export function parseEditionList(payload: unknown): EditionSummary[] {
   return [...editions].sort((a, b) => b.airDate.localeCompare(a.airDate));
 }
 
-export async function fetchEditions(apiBase: string, fetchImpl: typeof fetch = fetch): Promise<EditionSummary[]> {
-  const response = await fetchImpl(`${apiBase}/api/editions`, { headers: { Accept: 'application/json' } });
+export async function fetchEditions(apiBase: string, fetchImpl: typeof fetch = fetch, airDate?: string): Promise<EditionSummary[]> {
+  if (airDate && !/^\d{4}-\d{2}-\d{2}$/.test(airDate)) throw new Error('invalid archive date');
+  const query = airDate ? `?date=${encodeURIComponent(airDate)}` : '';
+  const response = await fetchImpl(`${apiBase}/api/editions${query}`, { headers: { Accept: 'application/json' } });
   if (!response.ok) throw new Error(`edition list unavailable: ${response.status}`);
   return parseEditionList(await response.json());
+}
+
+export function renderArchiveFilter(selected = ''): string {
+  return '<form class="archive-filter"><label for="archive-date">Find editions by date</label>'
+    + `<input id="archive-date" name="date" type="date" value="${escapeHtml(selected)}">`
+    + '<button type="submit">Show date</button><button type="button" data-clear-date>Show all</button></form>';
 }
 
 /** Prefer the station's calendar day; retain the latest published edition while today's is prepared. */

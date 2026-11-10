@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 public final class DailySignals {
@@ -81,8 +83,23 @@ public final class DailySignals {
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
-        server.createContext("/api/editions", exchange -> respond(exchange, 200, "application/json",
-                catalog.toJson().getBytes(StandardCharsets.UTF_8)));
+        server.createContext("/api/editions", exchange -> {
+            String query = exchange.getRequestURI().getRawQuery();
+            if (query == null || query.isBlank()) {
+                respond(exchange, 200, "application/json", catalog.toJson().getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            if (!query.startsWith("date=") || query.indexOf('&') >= 0) {
+                reply(exchange, 400);
+                return;
+            }
+            try {
+                var date = LocalDate.parse(java.net.URLDecoder.decode(query.substring(5), StandardCharsets.UTF_8));
+                respond(exchange, 200, "application/json", catalog.toJson(date).getBytes(StandardCharsets.UTF_8));
+            } catch (DateTimeParseException | IllegalArgumentException invalidDate) {
+                reply(exchange, 400);
+            }
+        });
         server.createContext("/api/schedule", exchange -> respond(exchange, 200, "application/json",
                 fetchSchedule.toJson().getBytes(StandardCharsets.UTF_8)));
         server.createContext("/editions/", exchange -> {

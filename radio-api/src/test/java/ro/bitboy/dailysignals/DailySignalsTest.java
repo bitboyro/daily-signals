@@ -109,6 +109,13 @@ class DailySignalsTest {
             assertEquals(200, editions.statusCode());
             assertEquals("application/json", editions.headers().firstValue("Content-Type").orElseThrow());
             assertTrue(editions.body().startsWith("{\"schemaVersion\":2,\"editions\":[{\"editionId\":\"demo-2026-01-15\""));
+            assertTrue(client.send(HttpRequest.newBuilder(URI.create(base + "/api/editions?date=2026-01-15")).GET().build(),
+                    HttpResponse.BodyHandlers.ofString()).body().contains("demo-2026-01-15"));
+            assertEquals("{\"schemaVersion\":2,\"editions\":[]}", client.send(
+                    HttpRequest.newBuilder(URI.create(base + "/api/editions?date=2026-01-16")).GET().build(),
+                    HttpResponse.BodyHandlers.ofString()).body());
+            assertEquals(400, client.send(HttpRequest.newBuilder(URI.create(base + "/api/editions?date=today")).GET().build(),
+                    HttpResponse.BodyHandlers.discarding()).statusCode());
         } finally {
             server.stop(0);
         }

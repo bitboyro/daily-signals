@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fetchEditions, formatAirDate, parseEditionList, renderDailyEdition, renderEditionList, renderSchedulePreview, selectTodaysEdition } from '../src/editions.ts';
+import { fetchEditions, formatAirDate, parseEditionList, renderArchiveFilter, renderDailyEdition, renderEditionList, renderSchedulePreview, selectTodaysEdition } from '../src/editions.ts';
 
 const read = (name: string) => JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), 'utf8'));
 const contract = read('edition-list-v2.json');
@@ -36,6 +36,18 @@ test('rejects malformed responses and reports unavailable APIs', async () => {
   assert.throws(() => parseEditionList([{ editionId: 'x', airDate: 'today', title: 't', audioPath: '/a' }]));
   const unavailable = async () => new Response('', { status: 503 });
   await assert.rejects(fetchEditions('http://api.invalid', unavailable as typeof fetch), /503/);
+});
+
+test('requests and renders an exact archive date', async () => {
+  let requested = '';
+  const editions = await fetchEditions('http://radio', async (url) => {
+    requested = String(url);
+    return new Response(JSON.stringify(contract));
+  }, '2026-01-15');
+  assert.equal(requested, 'http://radio/api/editions?date=2026-01-15');
+  assert.equal(editions.length, 1);
+  assert.match(renderArchiveFilter('2026-01-15'), /type="date" value="2026-01-15"/);
+  await assert.rejects(fetchEditions('http://radio', fetch, 'today'), /invalid archive date/);
 });
 
 test('renders an empty archive message', () => {
