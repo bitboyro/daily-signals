@@ -1,5 +1,5 @@
 import { readConfig } from './config.ts';
-import { fetchEditions, renderEditionList, type EditionSummary } from './editions.ts';
+import { fetchEditions, renderDailyEdition, renderEditionList, selectTodaysEdition, type EditionSummary } from './editions.ts';
 import { bindPlaybackRecovery, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
@@ -28,7 +28,8 @@ async function showEditions(apiBase: string, play: (edition: EditionSummary) => 
         if (chosen) play(chosen);
       });
     });
-    if (editions.length > 0) play(editions[0]);
+    const today = selectTodaysEdition(editions);
+    if (today) play(today);
   } catch {
     target.textContent = 'Editions are unavailable right now.';
   }
@@ -217,7 +218,7 @@ if (typeof document !== 'undefined') {
   }
   const player = element('player');
   void showEditions(config.apiBase, (edition) => {
-    player.innerHTML = renderPlayer(config, edition);
+    player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
     bindPlaybackRecovery(player);
   });
   void showProducerPanel(config.apiBase, 'candidates');

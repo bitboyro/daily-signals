@@ -46,6 +46,12 @@ export async function fetchEditions(apiBase: string, fetchImpl: typeof fetch = f
   return parseEditionList(await response.json());
 }
 
+/** Prefer the station's calendar day; retain the latest published edition while today's is prepared. */
+export function selectTodaysEdition(editions: EditionSummary[], today = new Date()): EditionSummary | undefined {
+  const stationDay = today.toISOString().slice(0, 10);
+  return editions.find((edition) => edition.airDate === stationDay) ?? editions[0];
+}
+
 export function renderEditionList(editions: EditionSummary[]): string {
   if (editions.length === 0) return '<p class="empty">No editions have been published yet. Please check back after the next scheduled broadcast.</p>';
   const items = editions.map((e) =>
@@ -56,5 +62,5 @@ export function renderEditionList(editions: EditionSummary[]): string {
 
 /** Context shown above a selected edition without duplicating the player controls. */
 export function renderDailyEdition(edition: EditionSummary): string {
-  return `<p class="daily-edition" aria-live="polite">Selected daily edition: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time> — ${escapeHtml(edition.title)}</p>`;
+  return `<p class="daily-edition" aria-live="polite">Today’s listening: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time> — ${escapeHtml(edition.title)}</p>`;
 }

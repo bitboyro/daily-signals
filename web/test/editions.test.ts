@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fetchEditions, formatAirDate, parseEditionList, renderDailyEdition, renderEditionList, renderSchedulePreview } from '../src/editions.ts';
+import { fetchEditions, formatAirDate, parseEditionList, renderDailyEdition, renderEditionList, renderSchedulePreview, selectTodaysEdition } from '../src/editions.ts';
 
 const read = (name: string) => JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), 'utf8'));
 const contract = read('edition-list-v2.json');
@@ -50,6 +50,17 @@ test('renders a station-local schedule preview', () => {
 test('renders the selected daily edition as live context', () => {
   assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /aria-live="polite"/);
   assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /&lt;Morning&gt;/);
+});
+
+test('selects the calendar edition and falls back to the latest published one', () => {
+  const editions = parseEditionList([
+    { editionId: 'older', airDate: '2026-11-08', title: 'Older', audioPath: '/older' },
+    { editionId: 'today', airDate: '2026-11-10', title: 'Today', audioPath: '/today' },
+    { editionId: 'latest', airDate: '2026-11-11', title: 'Latest', audioPath: '/latest' },
+  ]);
+  assert.equal(selectTodaysEdition(editions, new Date('2026-11-10T23:00:00Z'))?.editionId, 'today');
+  assert.equal(selectTodaysEdition(editions, new Date('2026-11-12T08:00:00Z'))?.editionId, 'latest');
+  assert.equal(selectTodaysEdition([], new Date('2026-11-10T08:00:00Z')), undefined);
 });
 
 test('formats air dates with an explicit locale and stable timezone', () => {
