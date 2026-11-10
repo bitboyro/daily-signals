@@ -2,6 +2,7 @@
 """Exercise the API and Rust stream boundary with a fixed, reviewable load profile."""
 import argparse
 import concurrent.futures
+import hashlib
 import json
 import math
 import os
@@ -11,6 +12,8 @@ import subprocess
 import time
 import urllib.request
 import uuid
+
+from object_store_fixture import start_object_store
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser()
@@ -36,6 +39,9 @@ if args.validate_only:
 
 manifest_path = ROOT / "contracts/publication-manifest-v2.json"
 manifest = json.loads(manifest_path.read_text())
+audio = (ROOT / "radio-api/src/main/resources" / manifest["audioPath"]).read_bytes()
+assert len(audio) == manifest["sizeBytes"]
+assert hashlib.sha256(audio).hexdigest() == manifest["checksumSha256"]
 
 
 def free_port():
@@ -76,13 +82,14 @@ java_classpath = ":".join(str(ROOT / module / "target/classes") for module in (
 producer_token = "nightly-load-" + uuid.uuid4().hex
 api_environment = dict(os.environ)
 api_environment["DAILY_SIGNALS_REVIEW_TOKENS"] = f"{producer_token}=PRODUCER"
+object_store, object_store_endpoint, object_store_bucket, manifest_key = start_object_store(manifest, audio)
 api = subprocess.Popen([
     "java", "-cp", java_classpath,
     "ro.bitboy.dailysignals.DailySignals", str(api_port)
 ], stdout=subprocess.DEVNULL, env=api_environment)
 stream = subprocess.Popen([
     str(ROOT / "streamer/target/debug/daily-signals-streamer"), str(stream_port),
-    str(manifest_path), str(ROOT / "radio-api/src/main/resources")
+    object_store_endpoint, object_store_bucket, manifest_key,
 ], stdout=subprocess.DEVNULL)
 
 try:
@@ -143,3 +150,5 @@ finally:
             process.wait(timeout=3)
         except subprocess.TimeoutExpired:
             process.kill()
+    object_store.shutdown()
+    object_store.server_close()
