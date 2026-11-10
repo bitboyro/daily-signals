@@ -21,14 +21,25 @@ jobs:
     secrets: inherit
 
   pr-metadata:
+    needs: decision-lab
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Download the Decision Lab plan
+        uses: actions/download-artifact@v4
+        with:
+          name: decision-lab-plan
+          path: .decision-lab-plan
       - name: Record the qualification context
         env:
           EVENT_PATH: ${{ github.event_path }}
-        run: python3 tools/prepare-pr-qualification.py --event "$EVENT_PATH" --output pr-qualification-context.json
+        run: |
+          python3 tools/prepare-pr-qualification.py --event "$EVENT_PATH" \
+            --plan .decision-lab-plan/decision-lab-plan.json \
+            --required-policy qualification/required-status-policy.json \
+            --output pr-qualification-context.json
       - name: Retain the qualification context
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pr-qualification-context-${{ github.run_attempt }}

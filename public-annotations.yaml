@@ -3420,6 +3420,13 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["qualification/required-status-policy.json", "tools/test_prepare_pr_qualification.py"],
+   "features": [
+    { "id": "PLT-06", "relation": "guards" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["qualification/rollout-decision.json"],
    "features": [
     { "id": "PLT-06", "relation": "configures" },
