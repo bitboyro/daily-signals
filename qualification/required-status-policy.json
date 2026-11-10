@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "branch": "main",
+  "protection": "unprotected",
+  "requiredChecks": [],
+  "allowedWhenSelective": [
+    "decision-lab / plan",
+    "decision-lab-audit / audit"
+  ]
+}

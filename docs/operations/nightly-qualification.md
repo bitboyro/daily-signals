@@ -19,6 +19,19 @@ Read it in this order:
 
 One real or shadow escape keeps `rollout.mode` in `shadow` until the cause is linked from the report and the corrected selector replays the full v2 and v3 history without a miss.
 
+## Day-3 rollout decision
+
+DS-69 applied the gate exactly as registered before day 1. Decision Lab remains in shadow mode because all four conditions had to pass and two were still unproven.
+
+| Condition | Evidence at the decision | Result |
+|---|---|---|
+| Every audited shadow run misses zero failing jobs | 47 audited changes; 0 of 10 failing pull-request runs missed | Pass |
+| At least eight failing pull-request runs audited | 10 observed; 8 required | Pass |
+| Frozen configuration misses no failing change across the combined v2 and v3 replay | Combined replay not complete | Not met |
+| No nightly shadow escape through the end of day 2 | Zero reported so far, but no published nightly covers final day-2 merge `fcd5e24` | Not met |
+
+The source reports are [the 10-run sample-size report](https://github.com/bitboyro/daily-signals/issues/24#issuecomment-6719381531) and [the latest report available at the decision](https://github.com/bitboyro/daily-signals/issues/24#issuecomment-6736342210). The machine-readable decision is `qualification/rollout-decision.json`; the applied morning record is `qualification/nightly-follow-up.json`. No selective workflow conditions or holdback were enabled.
+
 ## Full reference
 
 The `reference-*` jobs call the five normal verification workflows as reusable workflows with the Decision Lab mode fixed to `shadow`. This produces the day's ground truth without maintaining a second copy of the build and test commands. The final `reference` job fails if any verification family fails.
