@@ -3425,6 +3425,14 @@
     { "id": "PLT-06", "relation": "configures" },
     { "id": "PLT-07", "relation": "documents" }
    ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "69d45cfa1fdc3a15c585c161c9a6565aa95fb3ad", "retiredIn": null
+  },
+  {
+   "paths": ["qualification/nightly-follow-up.json"],
+   "features": [
+    { "id": "PLT-06", "relation": "configures" },
+    { "id": "PLT-07", "relation": "documents" }
+   ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
