@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "decision": "shadow",
+  "setting": "lean-safe",
+  "rollout": {
+    "mode": "shadow",
+    "holdback": null
+  },
+  "gate": {
+    "zeroMissesInAuditedShadowRuns": {
+      "status": "pass",
+      "auditedChanges": 47,
+      "failingPullRequestRuns": 10,
+      "missedFailingRuns": 0
+    },
+    "minimumFailingPullRequestRuns": {
+      "status": "pass",
+      "required": 8,
+      "observed": 10
+    },
+    "frozenHistoryReplay": {
+      "status": "not_met",
+      "reason": "The combined v2 and v3 replay with the frozen configuration has not completed."
+    },
+    "nightlyEscapes": {
+      "status": "not_met",
+      "observedEscapes": 0,
+      "reason": "No published nightly report covers the final day-2 merge fcd5e24."
+    }
+  },
+  "evidence": [
+    "https://github.com/bitboyro/daily-signals/issues/24#issuecomment-6719381531",
+    "https://github.com/bitboyro/daily-signals/issues/24#issuecomment-6736342210"
+  ],
+  "rule": "All four pre-registered conditions must pass; otherwise shadow mode continues for the rest of the plan."
+}

@@ -16,8 +16,9 @@
 apiVersion: decision-lab/v1
 
 rollout:
-  # Shadow on days 1 and 2. Day 3 switches to enforce only if the §7 gate holds,
-  # and then sets holdback to 0.2 in the same commit.
+  # DS-69 applied the pre-registered day-3 gate. Shadow continues because the
+  # frozen combined-history replay and a nightly covering the final day-2 merge
+  # were not available; qualification/rollout-decision.json records the evidence.
   mode: shadow
   holdback: null
   overrideLabel: run-all-checks
