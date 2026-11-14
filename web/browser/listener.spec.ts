@@ -65,6 +65,25 @@ test('listener plays, seeks, resumes and replays today\'s edition offline', asyn
   await context.setOffline(false);
 });
 
+test('listener player supports documented keyboard controls', async ({ page }) => {
+  await page.goto('/');
+  const audio = page.locator('#player audio');
+  await expect(audio).toBeVisible();
+  await audio.evaluate((element) => {
+    element.currentTime = 0;
+    element.play = async () => { (window as Window & { keyboardPlayRequested?: boolean }).keyboardPlayRequested = true; };
+  });
+  await audio.focus();
+  await page.keyboard.press('Space');
+  expect(await page.evaluate(() => (window as Window & { keyboardPlayRequested?: boolean }).keyboardPlayRequested)).toBe(true);
+  await page.keyboard.press('ArrowRight');
+  expect(await audio.evaluate((element) => element.currentTime)).toBeGreaterThanOrEqual(10);
+  await page.keyboard.press('n');
+  expect(await audio.evaluate((element) => element.currentTime)).toBeGreaterThanOrEqual(30);
+  await page.keyboard.press('p');
+  expect(await audio.evaluate((element) => element.currentTime)).toBeLessThan(30);
+});
+
 test('producer prepares a narrated edition across the complete workspace', async ({ page, browserName }, testInfo) => {
   test.skip(browserName !== 'chromium' || testInfo.project.name !== 'chromium-desktop',
     'the stateful producer journey runs once; the listener journey owns the cross-browser matrix');

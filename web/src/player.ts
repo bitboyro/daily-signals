@@ -9,6 +9,18 @@ export function audioUrl(config: ListenerConfig, edition: EditionSummary): strin
 export interface NowPlayingState { editionId: string; title: string; airDate: string; }
 export interface PlaybackControls { preload: 'none'; nativeControls: true; downloadUrl: string; }
 export type RecoveryState = 'idle' | 'retryable' | 'exhausted';
+export type PlaybackKeyAction = 'toggle' | 'seek-back' | 'seek-forward' | 'previous-chapter' | 'next-chapter';
+
+const KEY_ACTIONS: Readonly<Record<string, PlaybackKeyAction>> = {
+  ' ': 'toggle',
+  Enter: 'toggle',
+  ArrowLeft: 'seek-back',
+  ArrowRight: 'seek-forward',
+  p: 'previous-chapter',
+  P: 'previous-chapter',
+  n: 'next-chapter',
+  N: 'next-chapter',
+};
 
 export function recoveryState(failures: number, maxRetries = 1): RecoveryState {
   if (failures === 0) return 'idle';
@@ -23,6 +35,20 @@ export function playbackControls(config: ListenerConfig, edition: EditionSummary
   return { preload: 'none', nativeControls: true, downloadUrl: audioUrl(config, edition) };
 }
 
+export function playbackKeyAction(key: string): PlaybackKeyAction | undefined {
+  return KEY_ACTIONS[key];
+}
+
+export function chapterTarget(offsets: number[], currentSeconds: number,
+                              direction: 'previous' | 'next'): number | undefined {
+  const ordered = offsets.filter(Number.isFinite).sort((left, right) => left - right);
+  if (direction === 'next') return ordered.find((offset) => offset > currentSeconds + 0.25);
+  for (let index = ordered.length - 1; index >= 0; index -= 1) {
+    if (ordered[index] < currentSeconds - 0.25) return ordered[index];
+  }
+  return undefined;
+}
+
 export function renderNoEditionGuidance(): string {
   return '<p class="empty listener-empty">Today\'s edition is being prepared. Check the archive or return after the next scheduled broadcast.</p>';
 }
@@ -35,13 +61,39 @@ export function renderPlayer(config: ListenerConfig, edition: EditionSummary): s
   const controls = playbackControls(config, edition);
   return `<article class="daily-edition" data-edition="${id}" aria-labelledby="player-title-${id}"><figure class="player" aria-labelledby="player-title-${id}">`
     + `<figcaption id="player-title-${id}">${title} <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time></figcaption>`
-    + `<audio controls preload="${controls.preload}" src="${src}" aria-labelledby="player-title-${id}" aria-describedby="player-help-${id}" aria-keyshortcuts="Space Enter ArrowLeft ArrowRight">`
+    + `<audio controls preload="${controls.preload}" src="${src}" aria-labelledby="player-title-${id}" aria-describedby="player-help-${id}" aria-keyshortcuts="Space Enter ArrowLeft ArrowRight N P">`
     + `<a href="${src}">Download the ${title} recording</a></audio>`
-    + `<p id="player-help-${id}" class="player-help">Space or Enter plays and pauses; arrow keys seek. Playback does not start automatically.</p>`
+    + `<p id="player-help-${id}" class="player-help">Space or Enter plays and pauses; arrow keys seek 10 seconds; N and P move between chapters. Playback does not start automatically.</p>`
     + `<p class="playback-status" role="status" aria-live="polite">Ready to play.</p>`
     + `<button class="playback-retry" type="button" hidden>Retry playback</button>`
     + `<p class="playback-download">If streaming remains unavailable, <a href="${src}">download the recording</a>.</p>`
     + '</figure></article>';
+}
+
+export function bindPlaybackKeyboard(root: HTMLElement): void {
+  const audio = root.querySelector<HTMLAudioElement>('audio');
+  if (!audio) return;
+  audio.addEventListener('keydown', (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    const action = playbackKeyAction(event.key);
+    if (!action) return;
+    event.preventDefault();
+    if (action === 'toggle') {
+      if (audio.paused) void audio.play();
+      else audio.pause();
+      return;
+    }
+    if (action === 'seek-back' || action === 'seek-forward') {
+      const delta = action === 'seek-back' ? -10 : 10;
+      const upperBound = Number.isFinite(audio.duration) ? audio.duration : Number.POSITIVE_INFINITY;
+      audio.currentTime = Math.min(upperBound, Math.max(0, audio.currentTime + delta));
+      return;
+    }
+    const offsets = Array.from(root.querySelectorAll<HTMLButtonElement>('button[data-seek-millis]'))
+      .map((button) => Number(button.dataset.seekMillis) / 1000);
+    const target = chapterTarget(offsets, audio.currentTime, action === 'next-chapter' ? 'next' : 'previous');
+    if (target !== undefined) audio.currentTime = target;
+  });
 }
 
 export function bindPlaybackRecovery(root: ParentNode, maxRetries = 1): void {

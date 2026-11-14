@@ -1,6 +1,6 @@
 import { readConfig } from './config.ts';
 import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, selectTodaysEdition, type EditionSummary } from './editions.ts';
-import { bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
+import { bindPlaybackKeyboard, bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
@@ -243,6 +243,7 @@ if (typeof document !== 'undefined') {
   void showEditions(config.apiBase, (edition) => {
     player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
     bindPlaybackRecovery(player);
+    bindPlaybackKeyboard(player);
     bindPlaybackPosition(player, edition.editionId);
     void fetchChapters(config.streamBase, edition.editionId).then((chapters) => {
       player.insertAdjacentHTML('beforeend', renderChapters(chapters));

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readConfig } from '../src/config.ts';
-import { audioUrl, nowPlayingState, playbackControls, recoveryState, renderNoEditionGuidance, renderPlayer } from '../src/player.ts';
+import { audioUrl, chapterTarget, nowPlayingState, playbackControls, playbackKeyAction, recoveryState, renderNoEditionGuidance, renderPlayer } from '../src/player.ts';
 
 const edition = { editionId: 'demo-2026-01-15', airDate: '2026-01-15', title: 'Morning & "late" news', audioPath: '/editions/demo/audio' };
 const config = readConfig('http://listener.test/', { streamBase: 'http://stream.test/' });
@@ -24,8 +24,20 @@ test('player is labelled, described and keyboard operable', () => {
   assert.match(html, /aria-labelledby="player-title-demo-2026-01-15"/);
   assert.match(html, /<figcaption id="player-title-demo-2026-01-15">/);
   assert.match(html, /aria-describedby="player-help-demo-2026-01-15"/);
-  assert.match(html, /aria-keyshortcuts="Space Enter ArrowLeft ArrowRight"/);
+  assert.match(html, /aria-keyshortcuts="Space Enter ArrowLeft ArrowRight N P"/);
   assert.match(html, /id="player-help-demo-2026-01-15"/);
+});
+
+test('player keyboard map covers playback, seek and chapter movement', () => {
+  assert.equal(playbackKeyAction(' '), 'toggle');
+  assert.equal(playbackKeyAction('ArrowLeft'), 'seek-back');
+  assert.equal(playbackKeyAction('ArrowRight'), 'seek-forward');
+  assert.equal(playbackKeyAction('p'), 'previous-chapter');
+  assert.equal(playbackKeyAction('N'), 'next-chapter');
+  assert.equal(playbackKeyAction('Escape'), undefined);
+  assert.equal(chapterTarget([0, 30, 90], 30, 'next'), 90);
+  assert.equal(chapterTarget([90, 0, 30], 30, 'previous'), 0);
+  assert.equal(chapterTarget([0, 30], 30, 'next'), undefined);
 });
 
 test('player never autoplays and offers a download fallback', () => {
