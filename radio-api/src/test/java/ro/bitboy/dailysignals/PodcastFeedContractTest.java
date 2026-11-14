@@ -12,11 +12,42 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PodcastFeedContractTest {
+    @Test
+    void settingIsOptInAndRejectsAmbiguousValues() {
+        assertEquals(new PodcastFeedSettings(false), PodcastFeedSettings.fromEnvironment(Map.of()));
+        assertEquals(new PodcastFeedSettings(true), PodcastFeedSettings.fromEnvironment(
+                Map.of(PodcastFeedSettings.ENVIRONMENT_KEY, "true")));
+        assertEquals(new PodcastFeedSettings(false), PodcastFeedSettings.fromEnvironment(
+                Map.of(PodcastFeedSettings.ENVIRONMENT_KEY, "FALSE")));
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> PodcastFeedSettings.fromEnvironment(Map.of(PodcastFeedSettings.ENVIRONMENT_KEY, "yes")));
+    }
+
+    @Test
+    void disabledFeedIsNotPublished() throws Exception {
+        HttpServer server = DailySignals.createServer("127.0.0.1", 0, null,
+                ProducerAuthenticator.local(ReviewerTokens.none()),
+                FetchScheduleView.defaults(Clock.systemUTC().instant()), ReviewQueue.fixture(),
+                new PronunciationLexiconStore(), new EditionWorkflowStore(), new FixtureVoiceProvider(),
+                new PodcastFeedSettings(false));
+        server.start();
+        try {
+            var response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(
+                            "http://127.0.0.1:" + server.getAddress().getPort() + "/feed.xml")).GET().build(),
+                    HttpResponse.BodyHandlers.discarding());
+            assertEquals(404, response.statusCode());
+        } finally {
+            server.stop(0);
+        }
+    }
+
     @Test
     void publishesRssAndItunesMetadataAtThePublicEndpoint() throws Exception {
         HttpServer server = DailySignals.createServer(0);

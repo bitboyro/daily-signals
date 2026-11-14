@@ -1893,6 +1893,10 @@
      "relation": "configures"
     },
     {
+     "id": "PUB-05",
+     "relation": "configures"
+    },
+    {
      "id": "PLT-05",
      "relation": "configures"
     }
@@ -3601,6 +3605,16 @@
    "features": [
     { "id": "PUB-05", "relation": "tests" },
     { "id": "PLT-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PodcastFeedSettings.java"
+   ],
+   "features": [
+    { "id": "PUB-05", "relation": "configures" },
+    { "id": "PLT-05", "relation": "implements" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
