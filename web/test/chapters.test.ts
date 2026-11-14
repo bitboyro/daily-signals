@@ -27,6 +27,7 @@ test('loads the streamer chapter endpoint', async () => {
 test('renders safe seek controls with readable offsets', () => {
   const html = renderChapters(parseChapters(payload));
   assert.match(html, /data-seek-millis="65000"/);
+  assert.match(html, /aria-label="Play chapter Local &lt;report&gt; at 1:05"/);
   assert.match(html, /1:05/);
   assert.match(html, /Local &lt;report&gt;/);
   assert.equal(renderChapters([]), '');

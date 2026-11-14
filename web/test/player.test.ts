@@ -26,6 +26,8 @@ test('player is labelled, described and keyboard operable', () => {
   assert.match(html, /aria-describedby="player-help-demo-2026-01-15"/);
   assert.match(html, /aria-keyshortcuts="Space Enter ArrowLeft ArrowRight N P"/);
   assert.match(html, /id="player-help-demo-2026-01-15"/);
+  assert.match(html, /role="status" aria-live="polite" aria-atomic="true"/);
+  assert.match(html, /aria-label="Retry Morning &amp; &quot;late&quot; news"/);
 });
 
 test('player keyboard map covers playback, seek and chapter movement', () => {

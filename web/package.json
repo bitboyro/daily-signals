@@ -15,6 +15,7 @@
     "e2e": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-e2e.xml --test-reporter=lcov --test-reporter-destination=reports/web-e2e.lcov e2e/*.test.ts",
     "pwa:check": "mkdir -p reports && node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/pwa-check.xml pwa/*.test.ts",
     "browser:e2e": "playwright test",
+    "a11y": "playwright test --config=playwright.a11y.config.ts",
     "visual": "playwright test --config=playwright.visual.config.ts"
   },
   "devDependencies": {

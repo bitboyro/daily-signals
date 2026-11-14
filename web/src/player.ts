@@ -64,10 +64,21 @@ export function renderPlayer(config: ListenerConfig, edition: EditionSummary): s
     + `<audio controls preload="${controls.preload}" src="${src}" aria-labelledby="player-title-${id}" aria-describedby="player-help-${id}" aria-keyshortcuts="Space Enter ArrowLeft ArrowRight N P">`
     + `<a href="${src}">Download the ${title} recording</a></audio>`
     + `<p id="player-help-${id}" class="player-help">Space or Enter plays and pauses; arrow keys seek 10 seconds; N and P move between chapters. Playback does not start automatically.</p>`
-    + `<p class="playback-status" role="status" aria-live="polite">Ready to play.</p>`
-    + `<button class="playback-retry" type="button" hidden>Retry playback</button>`
+    + `<p class="playback-status" role="status" aria-live="polite" aria-atomic="true">Ready to play ${title}.</p>`
+    + `<button class="playback-retry" type="button" aria-label="Retry ${title}" hidden>Retry playback</button>`
     + `<p class="playback-download">If streaming remains unavailable, <a href="${src}">download the recording</a>.</p>`
     + '</figure></article>';
+}
+
+export function bindPlaybackAnnouncements(root: HTMLElement, title: string): void {
+  const audio = root.querySelector<HTMLAudioElement>('audio');
+  const status = root.querySelector<HTMLElement>('.playback-status');
+  if (!audio || !status) return;
+  audio.addEventListener('play', () => { status.textContent = `Playing ${title}.`; });
+  audio.addEventListener('pause', () => {
+    if (!audio.ended) status.textContent = `Paused ${title} at ${Math.floor(audio.currentTime)} seconds.`;
+  });
+  audio.addEventListener('ended', () => { status.textContent = `${title} finished.`; });
 }
 
 export function bindPlaybackKeyboard(root: HTMLElement): void {

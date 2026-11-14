@@ -1,6 +1,6 @@
 import { readConfig } from './config.ts';
 import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, selectTodaysEdition, type EditionSummary } from './editions.ts';
-import { bindPlaybackKeyboard, bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
+import { bindPlaybackAnnouncements, bindPlaybackKeyboard, bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
@@ -242,6 +242,7 @@ if (typeof document !== 'undefined') {
   const player = element('player');
   void showEditions(config.apiBase, (edition) => {
     player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
+    bindPlaybackAnnouncements(player, edition.title);
     bindPlaybackRecovery(player);
     bindPlaybackKeyboard(player);
     bindPlaybackPosition(player, edition.editionId);
