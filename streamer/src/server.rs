@@ -6,6 +6,8 @@ pub struct Response {
     pub status: u16,
     pub headers: Vec<(String, String)>,
     pub body: Vec<u8>,
+    content_length: usize,
+    head_only: bool,
 }
 #[derive(Debug, PartialEq)]
 pub struct ThroughputProfile {
@@ -96,10 +98,13 @@ pub fn profile_routes(
 }
 impl Response {
     fn new(status: u16, body: Vec<u8>, content_type: &str) -> Self {
+        let content_length = body.len();
         Self {
             status,
             headers: vec![("Content-Type".into(), content_type.into())],
             body,
+            content_length,
+            head_only: false,
         }
     }
     fn wire(&self) -> Vec<u8> {
@@ -117,14 +122,16 @@ impl Response {
             "HTTP/1.1 {} {}\r\nContent-Length: {}\r\nConnection: close\r\n",
             self.status,
             reason,
-            self.body.len()
+            self.content_length
         )
         .into_bytes();
         for (key, value) in &self.headers {
             wire.extend_from_slice(format!("{}: {}\r\n", key, value).as_bytes());
         }
         wire.extend_from_slice(b"\r\n");
-        wire.extend_from_slice(&self.body);
+        if !self.head_only {
+            wire.extend_from_slice(&self.body);
+        }
         wire
     }
 }
@@ -184,7 +191,8 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     let mut parts = request.lines().next().unwrap_or("").split_whitespace();
     let method = parts.next().unwrap_or("");
     let path = parts.next().unwrap_or("");
-    if method != "GET" {
+    let audio_path = format!("/editions/{}/audio", manifest.edition_id);
+    if method != "GET" && !(method == "HEAD" && path == audio_path) {
         return Response::new(405, vec![], "text/plain");
     }
     if path == "/health" {
@@ -206,7 +214,7 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
         .expect("validated chapters serialize");
         return Response::new(200, body, "application/json");
     }
-    if path != format!("/editions/{}/audio", manifest.edition_id) {
+    if path != audio_path {
         return Response::new(404, vec![], "text/plain");
     }
     let etag = format!("\"{}\"", manifest.checksum_sha256);
@@ -225,6 +233,7 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
     {
         response.status = 304;
         response.body.clear();
+        response.content_length = 0;
         return response;
     }
     let range = request
@@ -253,10 +262,14 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
         }
         response.status = 206;
         response.body = audio[start..=end].to_vec();
+        response.content_length = response.body.len();
         response.headers.push((
             "Content-Range".into(),
             format!("bytes {}-{}/{}", start, end, audio.len()),
         ));
+    }
+    if method == "HEAD" {
+        response.head_only = true;
     }
     response
 }
@@ -341,6 +354,23 @@ mod tests {
             .headers
             .iter()
             .any(|(k, v)| k == "Cache-Control" && v == "public, max-age=300, immutable"));
+    }
+
+    #[test]
+    fn head_reports_the_enclosure_without_sending_audio() {
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json"))
+                .unwrap();
+        let response = route(
+            "HEAD /editions/demo-2026-01-15/audio HTTP/1.1\r\n",
+            &manifest,
+            b"RIFF-demo",
+        );
+        let wire = String::from_utf8(response.wire()).unwrap();
+        assert_eq!(response.status, 200);
+        assert!(wire.contains("Content-Length: 9\r\n"));
+        assert!(wire.contains("Accept-Ranges: bytes\r\n"));
+        assert!(wire.ends_with("\r\n\r\n"));
     }
     #[test]
     fn exposes_manifest_chapters_without_audio_bytes() {

@@ -3460,7 +3460,8 @@
    "features": [
     { "id": "PLT-07", "relation": "tests" },
     { "id": "PLT-01", "relation": "tests" },
-    { "id": "STR-05", "relation": "tests" }
+    { "id": "STR-05", "relation": "tests" },
+    { "id": "PUB-05", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },

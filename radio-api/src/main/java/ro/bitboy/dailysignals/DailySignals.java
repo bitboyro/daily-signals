@@ -94,8 +94,8 @@ public final class DailySignals {
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         if (feedSettings.enabled()) {
-            server.createContext("/feed.xml", exchange -> respond(exchange, 200, "application/rss+xml; charset=utf-8",
-                    PodcastFeed.from(catalog).getBytes(StandardCharsets.UTF_8)));
+            server.createContext("/feed.xml", exchange -> respondReadable(exchange, 200,
+                    "application/rss+xml; charset=utf-8", PodcastFeed.from(catalog).getBytes(StandardCharsets.UTF_8)));
         }
         server.createContext("/api/editions", exchange -> {
             String query = exchange.getRequestURI().getRawQuery();
@@ -431,6 +431,18 @@ public final class DailySignals {
         try (var output = exchange.getResponseBody()) {
             output.write(body);
         }
+    }
+
+    private static void respondReadable(HttpExchange exchange, int status, String contentType, byte[] body)
+            throws IOException {
+        if ("HEAD".equals(exchange.getRequestMethod())) {
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.getResponseHeaders().set("Content-Length", Integer.toString(body.length));
+            exchange.sendResponseHeaders(status, -1);
+            exchange.close();
+            return;
+        }
+        respond(exchange, status, contentType, body);
     }
 
     public static void main(String[] args) throws Exception {

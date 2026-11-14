@@ -130,6 +130,22 @@ class PodcastFeedContractTest {
         }
     }
 
+    @Test
+    void headReportsTheFeedSizeWithoutSendingTheDocument() throws Exception {
+        HttpServer server = DailySignals.createServer(0);
+        server.start();
+        try {
+            var response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(
+                            "http://127.0.0.1:" + server.getAddress().getPort() + "/feed.xml"))
+                    .method("HEAD", HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofByteArray());
+            assertEquals(200, response.statusCode());
+            assertEquals(0, response.body().length);
+            assertTrue(response.headers().firstValueAsLong("Content-Length").orElseThrow() > 100);
+        } finally {
+            server.stop(0);
+        }
+    }
+
     private static Document parse(String xml) throws Exception {
         var factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
