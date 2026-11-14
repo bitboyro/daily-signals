@@ -8,7 +8,9 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json && cp -R public/. dist/",
+    "build": "npm run locales:check && tsc -p tsconfig.json && cp -R public/. dist/",
+    "locales:generate": "node tools/generate-messages.mjs",
+    "locales:check": "node tools/generate-messages.mjs --check",
     "bundle:budget": "npm run build && node tools/check-bundle-budget.mjs",
     "release:package": "npm run build && python3 ../tools/package-listener.py",
     "test": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-unit.xml --test-reporter=lcov --test-reporter-destination=reports/web-unit.lcov test/*.test.ts",
