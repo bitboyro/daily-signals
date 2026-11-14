@@ -54,21 +54,37 @@ export function renderArchiveFilter(selected = ''): string {
     + '<button type="submit">Show date</button><button type="button" data-clear-date>Show all</button></form>';
 }
 
+export function editionIdFromSearch(search: string): string | undefined {
+  const editionId = new URLSearchParams(search).get('edition');
+  return editionId && /^[a-z0-9-]+$/.test(editionId) ? editionId : undefined;
+}
+
+export function editionSharePath(editionId: string): string {
+  if (!/^[a-z0-9-]+$/.test(editionId)) throw new Error('invalid edition id');
+  return `/?edition=${encodeURIComponent(editionId)}`;
+}
+
 /** Prefer the station's calendar day; retain the latest published edition while today's is prepared. */
 export function selectTodaysEdition(editions: EditionSummary[], today = new Date()): EditionSummary | undefined {
   const stationDay = today.toISOString().slice(0, 10);
   return editions.find((edition) => edition.airDate === stationDay) ?? editions[0];
 }
 
+/** Honour a stable shared edition URL before applying the normal daily selection. */
+export function selectListenerEdition(editions: EditionSummary[], requestedId?: string, today = new Date()): EditionSummary | undefined {
+  return editions.find((edition) => edition.editionId === requestedId) ?? selectTodaysEdition(editions, today);
+}
+
 export function renderEditionList(editions: EditionSummary[]): string {
   if (editions.length === 0) return '<p class="empty">No editions have been published yet. Please check back after the next scheduled broadcast.</p>';
   const items = editions.map((e) =>
-    `<li><a href="#edition-${escapeHtml(e.editionId)}" data-edition="${escapeHtml(e.editionId)}">`
+    `<li><a href="${escapeHtml(editionSharePath(e.editionId))}#edition-${escapeHtml(e.editionId)}" data-edition="${escapeHtml(e.editionId)}">`
     + `<time datetime="${escapeHtml(e.airDate)}">${escapeHtml(e.airDate)}</time> ${escapeHtml(e.title)}</a></li>`);
   return `<ul class="editions">${items.join('')}</ul>`;
 }
 
 /** Context shown above a selected edition without duplicating the player controls. */
 export function renderDailyEdition(edition: EditionSummary): string {
-  return `<p class="daily-edition" aria-live="polite">Today’s listening: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time> — ${escapeHtml(edition.title)}</p>`;
+  const sharePath = escapeHtml(editionSharePath(edition.editionId));
+  return `<p class="daily-edition" aria-live="polite">Today’s listening: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time> — ${escapeHtml(edition.title)} <a class="edition-share" href="${sharePath}">Share this edition</a></p>`;
 }

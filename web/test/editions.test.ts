@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { fetchEditions, formatAirDate, parseEditionList, renderArchiveFilter, renderDailyEdition, renderEditionList, renderSchedulePreview, selectTodaysEdition } from '../src/editions.ts';
+import { editionIdFromSearch, editionSharePath, fetchEditions, formatAirDate, parseEditionList, renderArchiveFilter, renderDailyEdition, renderEditionList, renderSchedulePreview, selectListenerEdition, selectTodaysEdition } from '../src/editions.ts';
 
 const read = (name: string) => JSON.parse(readFileSync(new URL(`../../contracts/${name}`, import.meta.url), 'utf8'));
 const contract = read('edition-list-v2.json');
@@ -29,6 +29,7 @@ test('lists newest editions first and escapes titles', () => {
   ]));
   assert.ok(html.indexOf('2026-02-01') < html.indexOf('2026-01-01'));
   assert.ok(html.includes('&lt;b&gt;Newer&lt;/b&gt;'));
+  assert.ok(html.includes('/?edition=b#edition-b'));
 });
 
 test('rejects malformed responses and reports unavailable APIs', async () => {
@@ -62,6 +63,15 @@ test('renders a station-local schedule preview', () => {
 test('renders the selected daily edition as live context', () => {
   assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /aria-live="polite"/);
   assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /&lt;Morning&gt;/);
+  assert.match(renderDailyEdition({ editionId: 'today', airDate: '2026-01-16', title: '<Morning>', audioPath: '/today' }), /href="\/\?edition=today"/);
+});
+
+test('creates and reads stable edition share links', () => {
+  assert.equal(editionSharePath('morning-2026-11-10'), '/?edition=morning-2026-11-10');
+  assert.equal(editionIdFromSearch('?edition=morning-2026-11-10'), 'morning-2026-11-10');
+  assert.equal(editionIdFromSearch('?edition=../private'), undefined);
+  assert.equal(editionIdFromSearch('?date=2026-11-10'), undefined);
+  assert.throws(() => editionSharePath('../private'), /invalid edition id/);
 });
 
 test('selects the calendar edition and falls back to the latest published one', () => {
@@ -73,6 +83,8 @@ test('selects the calendar edition and falls back to the latest published one', 
   assert.equal(selectTodaysEdition(editions, new Date('2026-11-10T23:00:00Z'))?.editionId, 'today');
   assert.equal(selectTodaysEdition(editions, new Date('2026-11-12T08:00:00Z'))?.editionId, 'latest');
   assert.equal(selectTodaysEdition([], new Date('2026-11-10T08:00:00Z')), undefined);
+  assert.equal(selectListenerEdition(editions, 'older', new Date('2026-11-10T23:00:00Z'))?.editionId, 'older');
+  assert.equal(selectListenerEdition(editions, 'missing', new Date('2026-11-10T23:00:00Z'))?.editionId, 'today');
 });
 
 test('formats air dates with an explicit locale and stable timezone', () => {

@@ -1,5 +1,5 @@
 import { readConfig } from './config.ts';
-import { fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectTodaysEdition, type EditionSummary } from './editions.ts';
+import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, type EditionSummary } from './editions.ts';
 import { bindPlaybackRecovery, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
@@ -18,7 +18,7 @@ function element(id: string): HTMLElement {
   return found;
 }
 
-async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = ''): Promise<void> {
+async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string): Promise<void> {
   const target = element('editions');
   try {
     const editions = await fetchEditions(apiBase, fetch, airDate || undefined);
@@ -33,13 +33,17 @@ async function showEditions(apiBase: string, play: (edition: EditionSummary) => 
       void showEditions(apiBase, play);
     });
     target.querySelectorAll<HTMLAnchorElement>('a[data-edition]').forEach((link) => {
-      link.addEventListener('click', () => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
         const chosen = editions.find((edition) => edition.editionId === link.dataset.edition);
-        if (chosen) play(chosen);
+        if (chosen) {
+          history.replaceState({}, '', editionSharePath(chosen.editionId));
+          play(chosen);
+        }
       });
     });
-    const today = selectTodaysEdition(editions);
-    if (today) play(today);
+    const selected = selectListenerEdition(editions, requestedId);
+    if (selected) play(selected);
   } catch {
     target.textContent = 'Editions are unavailable right now.';
   }
@@ -234,6 +238,6 @@ if (typeof document !== 'undefined') {
       player.insertAdjacentHTML('beforeend', renderChapters(chapters));
       bindChapterSeeking(player);
     }).catch(() => { /* v1/v2 editions remain playable without chapter metadata. */ });
-  });
+  }, '', editionIdFromSearch(window.location.search));
   void showProducerPanel(config.apiBase, 'candidates');
 }
