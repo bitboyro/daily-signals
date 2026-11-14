@@ -1,0 +1,14 @@
+{
+  "name": "Daily Signals Public Radio",
+  "short_name": "Daily Signals",
+  "description": "Listen to today's Daily Signals edition and browse the archive.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#13243a",
+  "icons": [
+    { "src": "/icons/radio-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icons/radio-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -12,6 +12,7 @@ import { fetchPronunciations, renderPronunciationEditor, savePronunciations } fr
 import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
 import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
 import { bindPlaybackPosition } from './playback-position.ts';
+import { registerServiceWorker } from './pwa.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -211,6 +212,7 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
 }
 
 if (typeof document !== 'undefined') {
+  void registerServiceWorker().catch(() => { /* Installation is optional; listening stays available. */ });
   const runtime = (window as Window & { DAILY_SIGNALS_CONFIG?: Parameters<typeof readConfig>[1] }).DAILY_SIGNALS_CONFIG;
   const config = readConfig(window.location.origin, runtime);
   const signIn = element('producer-sign-in') as HTMLButtonElement;
