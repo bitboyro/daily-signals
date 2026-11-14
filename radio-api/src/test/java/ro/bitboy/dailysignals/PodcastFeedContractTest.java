@@ -13,12 +13,61 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PodcastFeedContractTest {
+    @Test
+    void generatedEditionsKeepStableGuidsDatesAndEnclosures() throws Exception {
+        var entries = new ArrayList<EditionCatalog.Entry>();
+        for (int index = 0; index < 40; index++) {
+            entries.add(new EditionCatalog.Entry("generated-" + index, LocalDate.of(2026, 1, 1).plusDays(index),
+                    "Edition " + index + " & community", "/editions/generated-" + index + "/audio",
+                    index % 2 == 0 ? "audio/wav" : "audio/mpeg", 1_000L + index));
+        }
+
+        Document feed = parse(PodcastFeed.from(new EditionCatalog(entries)));
+        var observed = new HashMap<String, org.w3c.dom.Element>();
+        var items = feed.getElementsByTagName("item");
+        for (int index = 0; index < items.getLength(); index++) {
+            var item = (org.w3c.dom.Element) items.item(index);
+            observed.put(item.getElementsByTagName("guid").item(0).getTextContent(), item);
+        }
+        assertEquals(entries.size(), observed.size());
+
+        var expectedGuids = new HashSet<String>();
+        for (var entry : entries) {
+            String guid = "urn:daily-signals:edition:" + entry.editionId();
+            expectedGuids.add(guid);
+            var item = observed.get(guid);
+            assertEquals(DateTimeFormatter.RFC_1123_DATE_TIME.format(
+                    entry.airDate().atStartOfDay(ZoneOffset.UTC)),
+                    item.getElementsByTagName("pubDate").item(0).getTextContent());
+            var enclosure = ((org.w3c.dom.Element) item.getElementsByTagName("enclosure").item(0));
+            assertEquals("https://daily-signals.example" + entry.audioPath(), enclosure.getAttribute("url"));
+            assertEquals(Long.toString(entry.sizeBytes()), enclosure.getAttribute("length"));
+            assertEquals(entry.contentType(), enclosure.getAttribute("type"));
+        }
+
+        var retitled = entries.stream().map(entry -> new EditionCatalog.Entry(entry.editionId(), entry.airDate(),
+                "Corrected " + entry.title(), entry.audioPath(), entry.contentType(), entry.sizeBytes())).toList();
+        Document revised = parse(PodcastFeed.from(new EditionCatalog(retitled)));
+        var revisedGuids = new HashSet<String>();
+        var revisedItems = revised.getElementsByTagName("guid");
+        for (int index = 0; index < revisedItems.getLength(); index++) {
+            revisedGuids.add(revisedItems.item(index).getTextContent());
+        }
+        assertEquals(expectedGuids, revisedGuids, "editorial corrections must not change episode identity");
+    }
+
     @Test
     void settingIsOptInAndRejectsAmbiguousValues() {
         assertEquals(new PodcastFeedSettings(false), PodcastFeedSettings.fromEnvironment(Map.of()));
