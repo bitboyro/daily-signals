@@ -2014,6 +2014,10 @@
     {
      "id": "WEB-01",
      "relation": "calls"
+    },
+    {
+     "id": "PUB-05",
+     "relation": "implements"
     }
    ],
    "confidence": "high",
@@ -2494,6 +2498,10 @@
     },
     {
      "id": "STR-01",
+     "relation": "tests"
+    },
+    {
+     "id": "PUB-05",
      "relation": "tests"
     }
    ],
@@ -3574,6 +3582,26 @@
     { "id": "PLT-01", "relation": "implements" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PodcastFeed.java"
+   ],
+   "features": [
+    { "id": "PUB-05", "relation": "implements" },
+    { "id": "EDI-05", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/test/java/ro/bitboy/dailysignals/PodcastFeedContractTest.java"
+   ],
+   "features": [
+    { "id": "PUB-05", "relation": "tests" },
+    { "id": "PLT-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [
@@ -3731,6 +3759,13 @@
    "check": "web.yml:pwa-check",
    "tests": [
     { "path": "web/pwa/installability.test.ts" }
+   ]
+  },
+  {
+   "features": ["PUB-05", "PLT-01", "EDI-05"],
+   "check": "java.yml:feed-contract",
+   "tests": [
+    { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/PodcastFeedContractTest.java" }
    ]
   }
  ]
