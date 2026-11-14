@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Component, Path};
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct PublicationManifest {
     pub schema_version: u32,
@@ -26,26 +26,44 @@ pub struct Chapter {
 }
 impl PublicationManifest {
     pub fn validate(&self) -> Result<(), &'static str> {
-        if !matches!(self.schema_version, 1 | 2 | 3) || self.status != "PUBLISHED" || self.edition_id.is_empty() {
+        if !matches!(self.schema_version, 1 | 2 | 3)
+            || self.status != "PUBLISHED"
+            || self.edition_id.is_empty()
+        {
             return Err("unpublished or unsupported manifest");
         }
         let dated = self.air_date.as_deref().is_some_and(is_iso_date_shape);
-        if (self.schema_version >= 2) != dated || (self.schema_version == 1 && self.air_date.is_some()) {
+        if (self.schema_version >= 2) != dated
+            || (self.schema_version == 1 && self.air_date.is_some())
+        {
             return Err("air date does not match schema version");
         }
         if (self.schema_version == 3) != !self.chapters.is_empty() {
             return Err("chapters do not match schema version");
         }
-        if self.chapters.iter().any(|chapter| chapter.title.trim().is_empty())
-            || self.chapters.windows(2).any(|pair| pair[0].start_millis >= pair[1].start_millis)
+        if self
+            .chapters
+            .iter()
+            .any(|chapter| chapter.title.trim().is_empty())
+            || self
+                .chapters
+                .windows(2)
+                .any(|pair| pair[0].start_millis >= pair[1].start_millis)
         {
             return Err("invalid chapter order");
         }
-        if self.content_type != "audio/wav" || self.size_bytes == 0 || self.checksum_sha256.len() != 64 {
+        if self.content_type != "audio/wav"
+            || self.size_bytes == 0
+            || self.checksum_sha256.len() != 64
+        {
             return Err("invalid audio metadata");
         }
         let path = Path::new(&self.audio_path);
-        if path.is_absolute() || path.components().any(|c| !matches!(c, Component::Normal(_))) {
+        if path.is_absolute()
+            || path
+                .components()
+                .any(|c| !matches!(c, Component::Normal(_)))
+        {
             return Err("audio path escapes root");
         }
         Ok(())
@@ -85,27 +103,35 @@ mod tests {
     use super::*;
     #[test]
     fn parses_shared_published_fixture() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json"))
+                .unwrap();
         manifest.validate().unwrap();
         assert!(manifest.audio_path.ends_with(".wav"));
     }
     #[test]
     fn still_accepts_v1_manifests_without_air_date() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json"))
+                .unwrap();
         manifest.validate().unwrap();
         assert!(manifest.air_date.is_none());
         assert_eq!(manifest.effective_air_date(), Some("2026-01-15"));
     }
     #[test]
     fn parses_shared_v2_fixture_with_air_date() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json"))
+                .unwrap();
         manifest.validate().unwrap();
         assert_eq!(manifest.air_date.as_deref(), Some("2026-01-15"));
         assert_eq!(manifest.effective_air_date(), Some("2026-01-15"));
     }
     #[test]
     fn parses_shared_v3_fixture_with_story_chapters() {
-        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v3.json")).unwrap();
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v3.json"))
+                .unwrap();
         manifest.validate().unwrap();
         assert_eq!(manifest.chapters.len(), 2);
         assert_eq!(manifest.chapters[1].title, "Local report");
@@ -113,7 +139,9 @@ mod tests {
     }
     #[test]
     fn legacy_ids_without_a_safe_date_suffix_have_no_effective_air_date() {
-        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json")).unwrap();
+        let mut manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v1.json"))
+                .unwrap();
         manifest.edition_id = "legacy-demo".into();
         manifest.validate().unwrap();
         assert_eq!(manifest.effective_air_date(), None);
@@ -126,7 +154,9 @@ mod tests {
     }
     #[test]
     fn air_date_must_match_schema_version() {
-        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        let mut manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json"))
+                .unwrap();
         manifest.air_date = None;
         assert!(manifest.validate().is_err());
         manifest.air_date = Some("15/01/2026".into());
@@ -137,7 +167,9 @@ mod tests {
     }
     #[test]
     fn rejects_unpublished_manifest_and_traversal() {
-        let mut manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json")).unwrap();
+        let mut manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json"))
+                .unwrap();
         manifest.status = "READY".into();
         assert!(manifest.validate().is_err());
         manifest.status = "PUBLISHED".into();

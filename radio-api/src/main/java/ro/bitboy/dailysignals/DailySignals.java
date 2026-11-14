@@ -19,7 +19,9 @@ public final class DailySignals {
     }
 
     private static final Map<String, String> WEB_TYPES = Map.of(
-            "html", "text/html; charset=utf-8", "js", "text/javascript; charset=utf-8", "css", "text/css; charset=utf-8");
+            "html", "text/html; charset=utf-8", "js", "text/javascript; charset=utf-8",
+            "css", "text/css; charset=utf-8", "webmanifest", "application/manifest+json",
+            "svg", "image/svg+xml");
 
     public static HttpServer createServer(int port) throws IOException {
         return createServer(port, null, ReviewerTokens.none());
@@ -103,16 +105,37 @@ public final class DailySignals {
         server.createContext("/api/schedule", exchange -> respond(exchange, 200, "application/json",
                 fetchSchedule.toJson().getBytes(StandardCharsets.UTF_8)));
         server.createContext("/editions/", exchange -> {
-            var legacy = LegacyRoutes.redirectFor(exchange.getRequestURI().getPath());
+            String path = exchange.getRequestURI().getPath();
+            var legacy = LegacyRoutes.redirectFor(path);
             if (legacy.isPresent()) {
                 exchange.getResponseHeaders().set("Location", legacy.get());
                 reply(exchange, 308);
                 return;
             }
             var edition = catalog.entries().stream()
-                    .filter(entry -> entry.audioPath().equals(exchange.getRequestURI().getPath())).findFirst();
+                    .filter(entry -> path.equals(entry.audioPath())
+                            || path.equals("/editions/" + entry.editionId() + "/manifest")
+                            || path.equals("/editions/" + entry.editionId() + "/chapters"))
+                    .findFirst();
             if (edition.isEmpty()) {
                 respond(exchange, 404, "text/plain", "Unknown edition".getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            if (path.endsWith("/manifest")) {
+                String manifest = "{\"schemaVersion\":3,\"editionId\":\"" + edition.get().editionId()
+                        + "\",\"airDate\":\"" + edition.get().airDate()
+                        + "\",\"status\":\"PUBLISHED\",\"audioPath\":\"fixtures/demo-edition.wav\""
+                        + ",\"contentType\":\"audio/wav\",\"sizeBytes\":16044"
+                        + ",\"checksumSha256\":\"f9efab5003000788f6851091398494c71506d3319e03f2abea702aa8214bc8f0\""
+                        + ",\"chapters\":[{\"title\":\"Headlines\",\"startMillis\":0}"
+                        + ",{\"title\":\"Local report\",\"startMillis\":650}]}";
+                respond(exchange, 200, "application/json", manifest.getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            if (path.endsWith("/chapters")) {
+                respond(exchange, 200, "application/json",
+                        "{\"schemaVersion\":1,\"chapters\":[{\"title\":\"Headlines\",\"startMillis\":0},{\"title\":\"Local report\",\"startMillis\":650}]}"
+                                .getBytes(StandardCharsets.UTF_8));
                 return;
             }
             try (InputStream fixture = DailySignals.class.getResourceAsStream("/fixtures/demo-edition.wav")) {
@@ -120,7 +143,7 @@ public final class DailySignals {
                     respond(exchange, 500, "text/plain", "Audio fixture unavailable".getBytes(StandardCharsets.UTF_8));
                     return;
                 }
-                respond(exchange, 200, "audio/wav", fixture.readAllBytes());
+                respondAudio(exchange, fixture.readAllBytes());
             }
         });
         server.createContext("/api/review-queue", exchange -> {
@@ -349,6 +372,32 @@ public final class DailySignals {
     private static void reply(HttpExchange exchange, int status) throws IOException {
         exchange.sendResponseHeaders(status, -1);
         exchange.close();
+    }
+
+    private static void respondAudio(HttpExchange exchange, byte[] audio) throws IOException {
+        exchange.getResponseHeaders().set("Accept-Ranges", "bytes");
+        String range = exchange.getRequestHeaders().getFirst("Range");
+        if (range == null) {
+            respond(exchange, 200, "audio/wav", audio);
+            return;
+        }
+        if (!range.startsWith("bytes=") || range.indexOf(',') >= 0) {
+            reply(exchange, 416);
+            return;
+        }
+        try {
+            String[] bounds = range.substring(6).split("-", -1);
+            int start = Integer.parseInt(bounds[0]);
+            int end = bounds.length == 2 && !bounds[1].isBlank() ? Integer.parseInt(bounds[1]) : audio.length - 1;
+            if (start < 0 || end < start || end >= audio.length) {
+                reply(exchange, 416);
+                return;
+            }
+            exchange.getResponseHeaders().set("Content-Range", "bytes " + start + "-" + end + "/" + audio.length);
+            respond(exchange, 206, "audio/wav", java.util.Arrays.copyOfRange(audio, start, end + 1));
+        } catch (NumberFormatException invalidRange) {
+            reply(exchange, 416);
+        }
     }
 
     private static void respondWrite(HttpExchange exchange, int status, String contentType, byte[] body) throws IOException {

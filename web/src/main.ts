@@ -1,6 +1,6 @@
 import { readConfig } from './config.ts';
-import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, type EditionSummary } from './editions.ts';
-import { bindPlaybackRecovery, renderPlayer } from './player.ts';
+import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, selectTodaysEdition, type EditionSummary } from './editions.ts';
+import { bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
@@ -11,6 +11,8 @@ import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
 import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
 import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
+import { bindPlaybackPosition } from './playback-position.ts';
+import { cacheEditionForOffline, registerServiceWorker } from './pwa.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -18,19 +20,20 @@ function element(id: string): HTMLElement {
   return found;
 }
 
-async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string): Promise<void> {
+async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string,
+  retainOffline?: (edition: EditionSummary) => void, showEmpty?: () => void): Promise<void> {
   const target = element('editions');
   try {
     const editions = await fetchEditions(apiBase, fetch, airDate || undefined);
-    target.innerHTML = renderArchiveFilter(airDate) + renderEditionList(editions);
+    target.innerHTML = renderArchiveFilter(airDate) + renderEditionList(editions, Boolean(airDate));
     target.querySelector<HTMLFormElement>('form.archive-filter')?.addEventListener('submit', (event) => {
       event.preventDefault();
       const form = event.currentTarget as HTMLFormElement;
       const date = (form.elements.namedItem('date') as HTMLInputElement).value;
-      void showEditions(apiBase, play, date);
+      void showEditions(apiBase, play, date, undefined, retainOffline, showEmpty);
     });
     target.querySelector<HTMLButtonElement>('button[data-clear-date]')?.addEventListener('click', () => {
-      void showEditions(apiBase, play);
+      void showEditions(apiBase, play, '', undefined, retainOffline, showEmpty);
     });
     target.querySelectorAll<HTMLAnchorElement>('a[data-edition]').forEach((link) => {
       link.addEventListener('click', (event) => {
@@ -44,8 +47,13 @@ async function showEditions(apiBase: string, play: (edition: EditionSummary) => 
     });
     const selected = selectListenerEdition(editions, requestedId);
     if (selected) play(selected);
+    else if (!airDate) showEmpty?.();
+    if (!airDate) {
+      const daily = selectTodaysEdition(editions);
+      if (daily) retainOffline?.(daily);
+    }
   } catch {
-    target.textContent = 'Editions are unavailable right now.';
+    target.innerHTML = '<div class="empty archive-empty"><strong>The archive is temporarily unavailable.</strong><p>Your saved edition may still be playable offline. Please try the archive again shortly.</p></div>';
   }
 }
 
@@ -210,6 +218,7 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
 }
 
 if (typeof document !== 'undefined') {
+  void registerServiceWorker().catch(() => { /* Installation is optional; listening stays available. */ });
   const runtime = (window as Window & { DAILY_SIGNALS_CONFIG?: Parameters<typeof readConfig>[1] }).DAILY_SIGNALS_CONFIG;
   const config = readConfig(window.location.origin, runtime);
   const signIn = element('producer-sign-in') as HTMLButtonElement;
@@ -234,10 +243,15 @@ if (typeof document !== 'undefined') {
   void showEditions(config.apiBase, (edition) => {
     player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
     bindPlaybackRecovery(player);
+    bindPlaybackPosition(player, edition.editionId);
     void fetchChapters(config.streamBase, edition.editionId).then((chapters) => {
       player.insertAdjacentHTML('beforeend', renderChapters(chapters));
       bindChapterSeeking(player);
     }).catch(() => { /* v1/v2 editions remain playable without chapter metadata. */ });
-  }, '', editionIdFromSearch(window.location.search));
+  }, '', editionIdFromSearch(window.location.search), (edition) => {
+    void cacheEditionForOffline(config, edition).catch(() => { /* Online playback remains available. */ });
+  }, () => {
+    player.innerHTML = renderNoEditionGuidance();
+  });
   void showProducerPanel(config.apiBase, 'candidates');
 }

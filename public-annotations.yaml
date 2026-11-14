@@ -3410,6 +3410,30 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["web/src/playback-position.ts", "web/test/playback-position.test.ts"],
+   "features": [
+    { "id": "WEB-02", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/src/pwa.ts",
+    "web/public/manifest.webmanifest",
+    "web/public/service-worker.js",
+    "web/public/icons/radio-192.svg",
+    "web/public/icons/radio-512.svg",
+    "web/pwa/installability.test.ts"
+   ],
+   "features": [
+    { "id": "WEB-01", "relation": "implements" },
+    { "id": "WEB-02", "relation": "implements" },
+    { "id": "STR-03", "relation": "calls" },
+    { "id": "PLT-05", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["radio-ingestion/src/test/java/ro/bitboy/dailysignals/DailyFetchSchedulerSoakTest.java"],
    "features": [
     { "id": "PLT-04", "relation": "tests" },
@@ -3476,13 +3500,14 @@
     "web/visual/listener.visual.spec.ts",
     "web/visual/__screenshots__/listener-home.png",
     "web/visual/__screenshots__/listener-archive.png",
-    "web/visual/__screenshots__/listener-player.png"
+    "web/visual/__screenshots__/listener-player.png",
+    "web/visual/__screenshots__/listener-empty.png"
    ],
    "features": [
     { "id": "WEB-01", "relation": "tests" },
     { "id": "WEB-02", "relation": "tests" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "cebd30d73626fe63224c388c13bd162bd58cf74d", "retiredIn": null
   },
   {
    "paths": ["tools/enrich_nightly_report.py", "tools/test_enrich_nightly_report.py"],
@@ -3699,6 +3724,13 @@
    "check": "web.yml:web-visual",
    "tests": [
     { "path": "web/visual/listener.visual.spec.ts" }
+   ]
+  },
+  {
+   "features": ["WEB-01", "WEB-02", "STR-03", "PLT-05"],
+   "check": "web.yml:pwa-check",
+   "tests": [
+    { "path": "web/pwa/installability.test.ts" }
    ]
   }
  ]

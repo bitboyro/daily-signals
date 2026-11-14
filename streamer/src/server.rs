@@ -194,11 +194,16 @@ pub fn route(request: &str, manifest: &PublicationManifest, audio: &[u8]) -> Res
             "application/json",
         );
     }
+    if path == format!("/editions/{}/manifest", manifest.edition_id) {
+        let body = serde_json::to_vec(manifest).expect("validated manifest serializes");
+        return Response::new(200, body, "application/json");
+    }
     if path == format!("/editions/{}/chapters", manifest.edition_id) {
         let body = serde_json::to_vec(&serde_json::json!({
             "schemaVersion": 1,
             "chapters": manifest.chapters,
-        })).expect("validated chapters serialize");
+        }))
+        .expect("validated chapters serialize");
         return Response::new(200, body, "application/json");
     }
     if path != format!("/editions/{}/audio", manifest.edition_id) {
@@ -348,11 +353,34 @@ mod tests {
             b"RIFF-demo",
         );
         assert_eq!(response.status, 200);
-        assert!(response.headers.iter().any(|(key, value)|
-            key == "Content-Type" && value == "application/json"));
+        assert!(response
+            .headers
+            .iter()
+            .any(|(key, value)| key == "Content-Type" && value == "application/json"));
         let payload: serde_json::Value = serde_json::from_slice(&response.body).unwrap();
         assert_eq!(payload["chapters"][1]["title"], "Local report");
         assert_eq!(payload["chapters"][1]["startMillis"], 650);
+    }
+
+    #[test]
+    fn exposes_the_publication_manifest_for_offline_clients() {
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v3.json"))
+                .unwrap();
+        let response = route(
+            "GET /editions/demo-2026-01-15/manifest HTTP/1.1\r\n",
+            &manifest,
+            b"RIFF-demo",
+        );
+        assert_eq!(response.status, 200);
+        assert!(response
+            .headers
+            .iter()
+            .any(|(name, value)| name == "Content-Type" && value == "application/json"));
+        let body: serde_json::Value = serde_json::from_slice(&response.body).unwrap();
+        assert_eq!(body["editionId"], "demo-2026-01-15");
+        assert_eq!(body["schemaVersion"], 3);
+        assert_eq!(body["chapters"].as_array().unwrap().len(), 2);
     }
     #[test]
     fn inclusive_range_end_and_single_byte_boundary() {

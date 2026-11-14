@@ -75,8 +75,11 @@ export function selectListenerEdition(editions: EditionSummary[], requestedId?: 
   return editions.find((edition) => edition.editionId === requestedId) ?? selectTodaysEdition(editions, today);
 }
 
-export function renderEditionList(editions: EditionSummary[]): string {
-  if (editions.length === 0) return '<p class="empty">No editions have been published yet. Please check back after the next scheduled broadcast.</p>';
+export function renderEditionList(editions: EditionSummary[], filtered = false): string {
+  if (editions.length === 0 && filtered) {
+    return '<div class="empty archive-empty"><strong>No broadcast on that date.</strong><p>Choose another day or show all published editions.</p></div>';
+  }
+  if (editions.length === 0) return '<div class="empty archive-empty"><strong>The archive is still quiet.</strong><p>No editions have been published yet. Please check back after the next scheduled broadcast.</p></div>';
   const items = editions.map((e) =>
     `<li><a href="${escapeHtml(editionSharePath(e.editionId))}#edition-${escapeHtml(e.editionId)}" data-edition="${escapeHtml(e.editionId)}">`
     + `<time datetime="${escapeHtml(e.airDate)}">${escapeHtml(e.airDate)}</time> ${escapeHtml(e.title)}</a></li>`);

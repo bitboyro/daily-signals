@@ -99,6 +99,24 @@ class DailySignalsTest {
             assertEquals('F', audio.body()[2]);
             assertEquals('F', audio.body()[3]);
 
+            HttpResponse<byte[]> audioRange = client.send(
+                HttpRequest.newBuilder(URI.create(base + "/editions/demo-2026-01-15/audio"))
+                    .header("Range", "bytes=0-43").GET().build(),
+                HttpResponse.BodyHandlers.ofByteArray());
+            assertEquals(206, audioRange.statusCode());
+            assertEquals(44, audioRange.body().length);
+            assertEquals("bytes", audioRange.headers().firstValue("Accept-Ranges").orElseThrow());
+            assertEquals("bytes 0-43/16044", audioRange.headers().firstValue("Content-Range").orElseThrow());
+
+            HttpResponse<String> manifest = client.send(
+                HttpRequest.newBuilder(URI.create(base + "/editions/demo-2026-01-15/manifest")).GET().build(),
+                HttpResponse.BodyHandlers.ofString());
+            assertEquals(200, manifest.statusCode());
+            assertTrue(manifest.body().contains("\"editionId\":\"demo-2026-01-15\""));
+            assertTrue(client.send(HttpRequest.newBuilder(
+                URI.create(base + "/editions/demo-2026-01-15/chapters")).GET().build(),
+                HttpResponse.BodyHandlers.ofString()).body().contains("\"startMillis\":650"));
+
             assertEquals(404, client.send(
                 HttpRequest.newBuilder(URI.create(base + "/editions/unknown/audio")).GET().build(),
                 HttpResponse.BodyHandlers.discarding()).statusCode());
