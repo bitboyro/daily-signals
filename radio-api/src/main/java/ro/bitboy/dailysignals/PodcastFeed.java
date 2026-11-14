@@ -26,7 +26,10 @@ public final class PodcastFeed {
                     .append("<guid isPermaLink=\"false\">urn:daily-signals:edition:")
                     .append(escape(edition.editionId())).append("</guid>")
                     .append("<pubDate>").append(RFC_1123.format(edition.airDate().atStartOfDay(ZoneOffset.UTC)))
-                    .append("</pubDate><itunes:episodeType>full</itunes:episodeType></item>");
+                    .append("</pubDate><enclosure url=\"https://daily-signals.example")
+                    .append(escape(edition.audioPath())).append("\" length=\"").append(edition.sizeBytes())
+                    .append("\" type=\"").append(escape(edition.contentType())).append("\"/>")
+                    .append("<itunes:episodeType>full</itunes:episodeType></item>");
         }
         return xml.append("</channel></rss>").toString();
     }

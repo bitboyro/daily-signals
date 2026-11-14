@@ -3589,7 +3589,8 @@
    ],
    "features": [
     { "id": "PUB-05", "relation": "implements" },
-    { "id": "EDI-05", "relation": "calls" }
+    { "id": "EDI-05", "relation": "calls" },
+    { "id": "OBJ-01", "relation": "calls" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
@@ -3762,7 +3763,7 @@
    ]
   },
   {
-   "features": ["PUB-05", "PLT-01", "EDI-05"],
+   "features": ["PUB-05", "PLT-01", "EDI-05", "OBJ-01"],
    "check": "java.yml:feed-contract",
    "tests": [
     { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/PodcastFeedContractTest.java" }

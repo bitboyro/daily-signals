@@ -40,6 +40,11 @@ class PodcastFeedContractTest {
             assertTrue(feed.getElementsByTagName("guid").item(0).getTextContent()
                     .startsWith("urn:daily-signals:edition:"));
             assertTrue(feed.getElementsByTagName("pubDate").item(0).getTextContent().endsWith("GMT"));
+            var enclosure = feed.getElementsByTagName("enclosure").item(0).getAttributes();
+            assertEquals("https://daily-signals.example/editions/demo-2026-01-15/audio",
+                    enclosure.getNamedItem("url").getNodeValue());
+            assertEquals("16044", enclosure.getNamedItem("length").getNodeValue());
+            assertEquals("audio/wav", enclosure.getNamedItem("type").getNodeValue());
         } finally {
             server.stop(0);
         }
