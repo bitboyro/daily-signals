@@ -52,7 +52,7 @@ test('the API serves the listener UI and its module', async () => {
   const module = await fetch(`${apiBase}${script}`);
   assert.equal(module.status, 200);
   assert.match(module.headers.get('content-type') ?? '', /javascript/);
-  assert.match(await module.text(), /from "\.\/editions\.js"/);
+  assert.match(await module.text(), /from ["']\.\/editions\.js["']/);
 });
 
 test('listener browses the archive and plays the newest edition', async () => {
