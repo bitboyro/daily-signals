@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import urllib.request
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
 import xml.etree.ElementTree as ET
@@ -118,12 +119,18 @@ def probe(api, stream):
         assert rss.tag == 'rss' and rss.attrib['version'] == '2.0'
         assert rss.findtext('./channel/title') == 'Daily Signals'
         assert len(rss.findall('./channel/item')) == 1
-    audio = f'{stream}/editions/{manifest["editionId"]}/audio'
+        enclosure = rss.find('./channel/item/enclosure')
+        enclosure_url = urllib.parse.urlparse(enclosure.attrib['url'])
+        assert enclosure_url.netloc == 'stream.daily-signals.example'
+        assert enclosure.attrib['length'] == str(manifest['sizeBytes'])
+        assert enclosure.attrib['type'] == manifest['contentType']
+    audio = f'{stream}{enclosure_url.path}'
     with urllib.request.urlopen(audio) as response:
         body = response.read()
         assert len(body) == manifest['sizeBytes'] and response.headers['ETag'] == f'"{manifest["checksumSha256"]}"'
     with urllib.request.urlopen(urllib.request.Request(audio, headers={'Range': 'bytes=0-3'})) as response:
         assert response.status == 206 and response.read() == b'RIFF'
+        assert response.headers['Content-Range'] == f'bytes 0-3/{manifest["sizeBytes"]}'
 
 
 def host_run():

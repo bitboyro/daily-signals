@@ -52,7 +52,7 @@ class PodcastFeedContractTest {
                     entry.airDate().atStartOfDay(ZoneOffset.UTC)),
                     item.getElementsByTagName("pubDate").item(0).getTextContent());
             var enclosure = ((org.w3c.dom.Element) item.getElementsByTagName("enclosure").item(0));
-            assertEquals("https://daily-signals.example" + entry.audioPath(), enclosure.getAttribute("url"));
+            assertEquals("https://stream.daily-signals.example" + entry.audioPath(), enclosure.getAttribute("url"));
             assertEquals(Long.toString(entry.sizeBytes()), enclosure.getAttribute("length"));
             assertEquals(entry.contentType(), enclosure.getAttribute("type"));
         }
@@ -121,7 +121,7 @@ class PodcastFeedContractTest {
                     .startsWith("urn:daily-signals:edition:"));
             assertTrue(feed.getElementsByTagName("pubDate").item(0).getTextContent().endsWith("GMT"));
             var enclosure = feed.getElementsByTagName("enclosure").item(0).getAttributes();
-            assertEquals("https://daily-signals.example/editions/demo-2026-01-15/audio",
+            assertEquals("https://stream.daily-signals.example/editions/demo-2026-01-15/audio",
                     enclosure.getNamedItem("url").getNodeValue());
             assertEquals("16044", enclosure.getNamedItem("length").getNodeValue());
             assertEquals("audio/wav", enclosure.getNamedItem("type").getNodeValue());

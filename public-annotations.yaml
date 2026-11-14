@@ -3594,7 +3594,8 @@
    "features": [
     { "id": "PUB-05", "relation": "implements" },
     { "id": "EDI-05", "relation": "calls" },
-    { "id": "OBJ-01", "relation": "calls" }
+    { "id": "OBJ-01", "relation": "calls" },
+    { "id": "STR-02", "relation": "calls" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },

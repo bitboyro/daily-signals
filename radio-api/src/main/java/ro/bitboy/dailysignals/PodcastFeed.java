@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 /** RSS 2.0 representation of published editions for podcast clients. */
 public final class PodcastFeed {
     private static final DateTimeFormatter RFC_1123 = DateTimeFormatter.RFC_1123_DATE_TIME;
+    private static final String STREAM_ORIGIN = "https://stream.daily-signals.example";
 
     private PodcastFeed() {
     }
@@ -26,7 +27,7 @@ public final class PodcastFeed {
                     .append("<guid isPermaLink=\"false\">urn:daily-signals:edition:")
                     .append(escape(edition.editionId())).append("</guid>")
                     .append("<pubDate>").append(RFC_1123.format(edition.airDate().atStartOfDay(ZoneOffset.UTC)))
-                    .append("</pubDate><enclosure url=\"https://daily-signals.example")
+                    .append("</pubDate><enclosure url=\"").append(STREAM_ORIGIN)
                     .append(escape(edition.audioPath())).append("\" length=\"").append(edition.sizeBytes())
                     .append("\" type=\"").append(escape(edition.contentType())).append("\"/>")
                     .append("<itunes:episodeType>full</itunes:episodeType></item>");
