@@ -85,6 +85,8 @@ public final class DailySignals {
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
+        server.createContext("/feed.xml", exchange -> respond(exchange, 200, "application/rss+xml; charset=utf-8",
+                PodcastFeed.from(catalog).getBytes(StandardCharsets.UTF_8)));
         server.createContext("/api/editions", exchange -> {
             String query = exchange.getRequestURI().getRawQuery();
             if (query == null || query.isBlank()) {
