@@ -11,6 +11,7 @@ import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
 import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
 import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
+import { bindPlaybackPosition } from './playback-position.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -234,6 +235,7 @@ if (typeof document !== 'undefined') {
   void showEditions(config.apiBase, (edition) => {
     player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
     bindPlaybackRecovery(player);
+    bindPlaybackPosition(player, edition.editionId);
     void fetchChapters(config.streamBase, edition.editionId).then((chapters) => {
       player.insertAdjacentHTML('beforeend', renderChapters(chapters));
       bindChapterSeeking(player);
