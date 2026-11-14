@@ -30,9 +30,18 @@ public final class EditionCatalog {
     public static final int SCHEMA_VERSION = 2;
 
     public String toJson() {
+        return toJson(entries);
+    }
+
+    public String toJson(LocalDate airDate) {
+        if (airDate == null) throw new IllegalArgumentException("archive date is required");
+        return toJson(entries.stream().filter(entry -> entry.airDate().equals(airDate)).toList());
+    }
+
+    private static String toJson(List<Entry> selected) {
         var json = new StringBuilder("{\"schemaVersion\":" + SCHEMA_VERSION + ",\"editions\":[");
         int first = json.length();
-        for (var entry : entries) {
+        for (var entry : selected) {
             if (json.length() > first) json.append(',');
             json.append("{\"editionId\":").append(quote(entry.editionId()))
                     .append(",\"airDate\":").append(quote(entry.airDate().toString()))

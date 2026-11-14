@@ -3401,6 +3401,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["web/src/chapters.ts", "web/test/chapters.test.ts"],
+   "features": [
+    { "id": "WEB-02", "relation": "implements" },
+    { "id": "STR-01", "relation": "calls" },
+    { "id": "PUB-01", "relation": "calls" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": ["radio-ingestion/src/test/java/ro/bitboy/dailysignals/DailyFetchSchedulerSoakTest.java"],
    "features": [
     { "id": "PLT-04", "relation": "tests" },
@@ -3458,6 +3467,20 @@
     { "id": "WEB-01", "relation": "tests" },
     { "id": "WEB-02", "relation": "tests" },
     { "id": "WEB-03", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/playwright.visual.config.ts",
+    "web/visual/listener.visual.spec.ts",
+    "web/visual/__screenshots__/listener-home.png",
+    "web/visual/__screenshots__/listener-archive.png",
+    "web/visual/__screenshots__/listener-player.png"
+   ],
+   "features": [
+    { "id": "WEB-01", "relation": "tests" },
+    { "id": "WEB-02", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
@@ -3669,6 +3692,13 @@
    "tests": [
     { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/FetchScheduleContractTest.java" },
     { "path": "tools/check-openapi-contract.py" }
+   ]
+  },
+  {
+   "features": ["WEB-01", "WEB-02"],
+   "check": "web.yml:web-visual",
+   "tests": [
+    { "path": "web/visual/listener.visual.spec.ts" }
    ]
   }
  ]

@@ -41,4 +41,14 @@ class EditionCatalogContractTest {
         assertEquals("newer", json.get("editions").get(0).get("editionId").asText());
         assertEquals("Quote \" and \\ slash", json.get("editions").get(0).get("title").asText());
     }
+
+    @Test void filtersTheArchiveByExactAirDate() throws Exception {
+        var catalog = new EditionCatalog(List.of(
+                new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Older", "/editions/older/audio"),
+                new EditionCatalog.Entry("newer", LocalDate.of(2026, 1, 2), "Newer", "/editions/newer/audio")));
+        var selected = mapper.readTree(catalog.toJson(LocalDate.of(2026, 1, 1))).get("editions");
+        assertEquals(1, selected.size());
+        assertEquals("older", selected.get(0).get("editionId").asText());
+        assertEquals(0, mapper.readTree(catalog.toJson(LocalDate.of(2026, 2, 1))).get("editions").size());
+    }
 }

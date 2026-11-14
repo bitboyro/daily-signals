@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PublicationManifestContractTest {
@@ -23,6 +24,15 @@ class PublicationManifestContractTest {
         assertEquals("PUBLISHED", manifest.status());
         assertEquals("fixtures/demo-edition.wav", manifest.audioPath());
         assertEquals("2026-01-15", manifest.airDate());
+    }
+
+    @Test void javaReadsOrderedStoryChaptersFromV3() throws Exception {
+        var manifest = readVersion(3);
+        assertEquals(3, manifest.schemaVersion());
+        assertEquals(List.of("Headlines", "Local report"), manifest.chapters().stream()
+                .map(PublicationManifest.Chapter::title).toList());
+        assertEquals(List.of(0L, 650L), manifest.chapters().stream()
+                .map(PublicationManifest.Chapter::startMillis).toList());
     }
 
     @Test void adjacentManifestVersionsRetainCommonAudioMetadata() throws Exception {

@@ -1,5 +1,5 @@
 import { readConfig } from './config.ts';
-import { fetchEditions, renderEditionList, type EditionSummary } from './editions.ts';
+import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, type EditionSummary } from './editions.ts';
 import { bindPlaybackRecovery, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
@@ -10,6 +10,7 @@ import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candid
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
 import { fetchPronunciations, renderPronunciationEditor, savePronunciations } from './producer-pronunciations.ts';
 import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
+import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -17,18 +18,32 @@ function element(id: string): HTMLElement {
   return found;
 }
 
-async function showEditions(apiBase: string, play: (edition: EditionSummary) => void): Promise<void> {
+async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string): Promise<void> {
   const target = element('editions');
   try {
-    const editions = await fetchEditions(apiBase);
-    target.innerHTML = renderEditionList(editions);
+    const editions = await fetchEditions(apiBase, fetch, airDate || undefined);
+    target.innerHTML = renderArchiveFilter(airDate) + renderEditionList(editions);
+    target.querySelector<HTMLFormElement>('form.archive-filter')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.currentTarget as HTMLFormElement;
+      const date = (form.elements.namedItem('date') as HTMLInputElement).value;
+      void showEditions(apiBase, play, date);
+    });
+    target.querySelector<HTMLButtonElement>('button[data-clear-date]')?.addEventListener('click', () => {
+      void showEditions(apiBase, play);
+    });
     target.querySelectorAll<HTMLAnchorElement>('a[data-edition]').forEach((link) => {
-      link.addEventListener('click', () => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
         const chosen = editions.find((edition) => edition.editionId === link.dataset.edition);
-        if (chosen) play(chosen);
+        if (chosen) {
+          history.replaceState({}, '', editionSharePath(chosen.editionId));
+          play(chosen);
+        }
       });
     });
-    if (editions.length > 0) play(editions[0]);
+    const selected = selectListenerEdition(editions, requestedId);
+    if (selected) play(selected);
   } catch {
     target.textContent = 'Editions are unavailable right now.';
   }
@@ -217,8 +232,12 @@ if (typeof document !== 'undefined') {
   }
   const player = element('player');
   void showEditions(config.apiBase, (edition) => {
-    player.innerHTML = renderPlayer(config, edition);
+    player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
     bindPlaybackRecovery(player);
-  });
+    void fetchChapters(config.streamBase, edition.editionId).then((chapters) => {
+      player.insertAdjacentHTML('beforeend', renderChapters(chapters));
+      bindChapterSeeking(player);
+    }).catch(() => { /* v1/v2 editions remain playable without chapter metadata. */ });
+  }, '', editionIdFromSearch(window.location.search));
   void showProducerPanel(config.apiBase, 'candidates');
 }

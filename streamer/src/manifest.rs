@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::path::{Component, Path};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -14,15 +14,32 @@ pub struct PublicationManifest {
     /// Required from schema version 2; absent in version 1 manifests.
     #[serde(default)]
     pub air_date: Option<String>,
+    #[serde(default)]
+    pub chapters: Vec<Chapter>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Chapter {
+    pub title: String,
+    pub start_millis: u64,
 }
 impl PublicationManifest {
     pub fn validate(&self) -> Result<(), &'static str> {
-        if !matches!(self.schema_version, 1 | 2) || self.status != "PUBLISHED" || self.edition_id.is_empty() {
+        if !matches!(self.schema_version, 1 | 2 | 3) || self.status != "PUBLISHED" || self.edition_id.is_empty() {
             return Err("unpublished or unsupported manifest");
         }
         let dated = self.air_date.as_deref().is_some_and(is_iso_date_shape);
-        if (self.schema_version == 2) != dated || (self.schema_version == 1 && self.air_date.is_some()) {
+        if (self.schema_version >= 2) != dated || (self.schema_version == 1 && self.air_date.is_some()) {
             return Err("air date does not match schema version");
+        }
+        if (self.schema_version == 3) != !self.chapters.is_empty() {
+            return Err("chapters do not match schema version");
+        }
+        if self.chapters.iter().any(|chapter| chapter.title.trim().is_empty())
+            || self.chapters.windows(2).any(|pair| pair[0].start_millis >= pair[1].start_millis)
+        {
+            return Err("invalid chapter order");
         }
         if self.content_type != "audio/wav" || self.size_bytes == 0 || self.checksum_sha256.len() != 64 {
             return Err("invalid audio metadata");
@@ -37,7 +54,7 @@ impl PublicationManifest {
     /// Returns the explicit v2 air date or the conventional date suffix used
     /// by legacy v1 edition identifiers.
     pub fn effective_air_date(&self) -> Option<&str> {
-        if self.schema_version == 2 {
+        if self.schema_version >= 2 {
             return self.air_date.as_deref();
         }
         if self.schema_version != 1 || self.edition_id.len() <= 10 {
@@ -85,6 +102,14 @@ mod tests {
         manifest.validate().unwrap();
         assert_eq!(manifest.air_date.as_deref(), Some("2026-01-15"));
         assert_eq!(manifest.effective_air_date(), Some("2026-01-15"));
+    }
+    #[test]
+    fn parses_shared_v3_fixture_with_story_chapters() {
+        let manifest: PublicationManifest = serde_json::from_str(include_str!("../../contracts/publication-manifest-v3.json")).unwrap();
+        manifest.validate().unwrap();
+        assert_eq!(manifest.chapters.len(), 2);
+        assert_eq!(manifest.chapters[1].title, "Local report");
+        assert_eq!(manifest.chapters[1].start_millis, 650);
     }
     #[test]
     fn legacy_ids_without_a_safe_date_suffix_have_no_effective_air_date() {
