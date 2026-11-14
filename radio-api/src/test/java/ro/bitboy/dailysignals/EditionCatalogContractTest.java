@@ -34,8 +34,8 @@ class EditionCatalogContractTest {
 
     @Test void newestEditionFirstAndTitlesEscaped() throws Exception {
         var catalog = new EditionCatalog(List.of(
-                new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Plain", "/editions/older/audio"),
-                new EditionCatalog.Entry("newer", LocalDate.of(2026, 1, 2), "Quote \" and \\ slash", "/editions/newer/audio")));
+                new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Plain", "/editions/older/audio", "audio/wav", 12),
+                new EditionCatalog.Entry("newer", LocalDate.of(2026, 1, 2), "Quote \" and \\ slash", "/editions/newer/audio", "audio/wav", 14)));
         var json = mapper.readTree(catalog.toJson());
         assertEquals(EditionCatalog.SCHEMA_VERSION, json.get("schemaVersion").asInt());
         assertEquals("newer", json.get("editions").get(0).get("editionId").asText());
@@ -44,8 +44,8 @@ class EditionCatalogContractTest {
 
     @Test void filtersTheArchiveByExactAirDate() throws Exception {
         var catalog = new EditionCatalog(List.of(
-                new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Older", "/editions/older/audio"),
-                new EditionCatalog.Entry("newer", LocalDate.of(2026, 1, 2), "Newer", "/editions/newer/audio")));
+                new EditionCatalog.Entry("older", LocalDate.of(2026, 1, 1), "Older", "/editions/older/audio", "audio/wav", 12),
+                new EditionCatalog.Entry("newer", LocalDate.of(2026, 1, 2), "Newer", "/editions/newer/audio", "audio/wav", 14)));
         var selected = mapper.readTree(catalog.toJson(LocalDate.of(2026, 1, 1))).get("editions");
         assertEquals(1, selected.size());
         assertEquals("older", selected.get(0).get("editionId").asText());

@@ -81,10 +81,22 @@ public final class DailySignals {
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
                                    PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow,
                                    VoiceProvider voiceProvider) throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
+                workflow, voiceProvider, new PodcastFeedSettings(true));
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow,
+                                   VoiceProvider voiceProvider, PodcastFeedSettings feedSettings) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
+        if (feedSettings.enabled()) {
+            server.createContext("/feed.xml", exchange -> respondReadable(exchange, 200,
+                    "application/rss+xml; charset=utf-8", PodcastFeed.from(catalog).getBytes(StandardCharsets.UTF_8)));
+        }
         server.createContext("/api/editions", exchange -> {
             String query = exchange.getRequestURI().getRawQuery();
             if (query == null || query.isBlank()) {
@@ -421,6 +433,18 @@ public final class DailySignals {
         }
     }
 
+    private static void respondReadable(HttpExchange exchange, int status, String contentType, byte[] body)
+            throws IOException {
+        if ("HEAD".equals(exchange.getRequestMethod())) {
+            exchange.getResponseHeaders().set("Content-Type", contentType);
+            exchange.getResponseHeaders().set("Content-Length", Integer.toString(body.length));
+            exchange.sendResponseHeaders(status, -1);
+            exchange.close();
+            return;
+        }
+        respond(exchange, status, contentType, body);
+    }
+
     public static void main(String[] args) throws Exception {
         int port = args.length == 0 ? 8151 : Integer.parseInt(args[0]);
         String webRoot = System.getenv("DAILY_SIGNALS_WEB_ROOT");
@@ -444,7 +468,7 @@ public final class DailySignals {
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
                 FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow,
-                VoiceProviderFactory.fromEnvironment(environment));
+                VoiceProviderFactory.fromEnvironment(environment), PodcastFeedSettings.fromEnvironment(environment));
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

@@ -11,6 +11,8 @@
   },
   "targets": [
     {"name": "api-catalog", "service": "api", "path": "/api/editions"},
-    {"name": "stream-audio", "service": "stream", "path": "/editions/{editionId}/audio"}
+    {"name": "podcast-feed-head", "service": "api", "method": "HEAD", "path": "/feed.xml"},
+    {"name": "stream-audio", "service": "stream", "path": "/editions/{editionId}/audio"},
+    {"name": "podcast-enclosure-head", "service": "stream", "method": "HEAD", "path": "/editions/{editionId}/audio"}
   ]
 }

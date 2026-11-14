@@ -30,6 +30,7 @@ assert 1 <= profile["startupTimeoutSeconds"] <= 120
 assert 1 <= profile["maximumP95Milliseconds"] <= 60_000
 assert 0 <= profile["maximumErrorRate"] <= 1
 assert {target["service"] for target in profile["targets"]} == {"api", "stream"}
+assert all(target.get("method", "GET") in {"GET", "HEAD"} for target in profile["targets"])
 assert profile["producerFlow"]["enabled"] is True
 assert 1 <= profile["producerFlow"]["maximumStepMilliseconds"] <= 60_000
 
@@ -50,10 +51,10 @@ def free_port():
         return sock.getsockname()[1]
 
 
-def fetch(url):
+def fetch(url, method="GET"):
     started = time.monotonic()
     try:
-        with urllib.request.urlopen(url, timeout=5) as response:
+        with urllib.request.urlopen(urllib.request.Request(url, method=method), timeout=5) as response:
             response.read()
             ok = response.status == 200
     except Exception:
@@ -82,6 +83,7 @@ java_classpath = ":".join(str(ROOT / module / "target/classes") for module in (
 producer_token = "nightly-load-" + uuid.uuid4().hex
 api_environment = dict(os.environ)
 api_environment["DAILY_SIGNALS_REVIEW_TOKENS"] = f"{producer_token}=PRODUCER"
+api_environment["DAILY_SIGNALS_PODCAST_FEED_ENABLED"] = "true"
 object_store, object_store_endpoint, object_store_bucket, manifest_key = start_object_store(manifest, audio)
 api = subprocess.Popen([
     "java", "-cp", java_classpath,
@@ -123,7 +125,8 @@ try:
         path = target["path"].format(editionId=manifest["editionId"])
         url = bases[target["service"]] + path
         with concurrent.futures.ThreadPoolExecutor(max_workers=profile["concurrency"]) as pool:
-            samples = list(pool.map(lambda _: fetch(url), range(profile["requestsPerTarget"])))
+            samples = list(pool.map(lambda _: fetch(url, target.get("method", "GET")),
+                                    range(profile["requestsPerTarget"])))
         durations = sorted(sample[0] for sample in samples)
         failures = sum(not sample[1] for sample in samples)
         p95 = durations[max(0, math.ceil(.95 * len(durations)) - 1)]

@@ -13,8 +13,10 @@ import subprocess
 import sys
 import time
 import urllib.request
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -111,12 +113,24 @@ def probe(api, stream):
         assert b'<main id="content">' in page.read(), 'listener UI not served'
     with urllib.request.urlopen(f'{api}/api/editions') as editions:
         assert json.load(editions)['schemaVersion'] == 2
-    audio = f'{stream}/editions/{manifest["editionId"]}/audio'
+    with urllib.request.urlopen(f'{api}/feed.xml') as feed:
+        assert feed.headers.get_content_type() == 'application/rss+xml'
+        rss = ET.parse(feed).getroot()
+        assert rss.tag == 'rss' and rss.attrib['version'] == '2.0'
+        assert rss.findtext('./channel/title') == 'Daily Signals'
+        assert len(rss.findall('./channel/item')) == 1
+        enclosure = rss.find('./channel/item/enclosure')
+        enclosure_url = urllib.parse.urlparse(enclosure.attrib['url'])
+        assert enclosure_url.netloc == 'stream.daily-signals.example'
+        assert enclosure.attrib['length'] == str(manifest['sizeBytes'])
+        assert enclosure.attrib['type'] == manifest['contentType']
+    audio = f'{stream}{enclosure_url.path}'
     with urllib.request.urlopen(audio) as response:
         body = response.read()
         assert len(body) == manifest['sizeBytes'] and response.headers['ETag'] == f'"{manifest["checksumSha256"]}"'
     with urllib.request.urlopen(urllib.request.Request(audio, headers={'Range': 'bytes=0-3'})) as response:
         assert response.status == 206 and response.read() == b'RIFF'
+        assert response.headers['Content-Range'] == f'bytes 0-3/{manifest["sizeBytes"]}'
 
 
 def host_run():

@@ -2,7 +2,8 @@
 """Run Java API and Rust streamer together against the same pinned fixture."""
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-import json, socket, subprocess, threading, time, urllib.request
+import json, os, socket, subprocess, threading, time, urllib.parse, urllib.request
+import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[1]
 manifest_bytes = (ROOT / 'contracts/publication-manifest-v2.json').read_bytes()
 manifest = json.loads(manifest_bytes)
@@ -34,7 +35,8 @@ object_thread = threading.Thread(target=object_store.serve_forever, daemon=True)
 object_thread.start()
 java_classpath = ':'.join(str(ROOT / module / 'target/classes') for module in (
     'radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion', 'radio-persistence'))
-java = subprocess.Popen(['java', '-cp', java_classpath, 'ro.bitboy.dailysignals.DailySignals', str(java_port)], stdout=subprocess.DEVNULL)
+java = subprocess.Popen(['java', '-cp', java_classpath, 'ro.bitboy.dailysignals.DailySignals', str(java_port)],
+                        env={**os.environ, 'DAILY_SIGNALS_PODCAST_FEED_ENABLED': 'true'}, stdout=subprocess.DEVNULL)
 rust = subprocess.Popen([str(ROOT / 'streamer/target/debug/daily-signals-streamer'), str(rust_port), f'http://127.0.0.1:{object_port}', 'radio', 'editions/demo.json'], stdout=subprocess.DEVNULL)
 try:
     for _ in range(50):
@@ -49,10 +51,17 @@ try:
     with urllib.request.urlopen(f'http://127.0.0.1:{java_port}/editions/demo/audio') as j, urllib.request.urlopen(f'http://127.0.0.1:{rust_port}/editions/{manifest["editionId"]}/audio') as r:
         assert j.read() == r.read()
         assert r.headers['ETag'] == '"' + manifest['checksumSha256'] + '"'
-    request = urllib.request.Request(f'http://127.0.0.1:{rust_port}/editions/{manifest["editionId"]}/audio', headers={'Range': 'bytes=0-3'})
+    with urllib.request.urlopen(f'http://127.0.0.1:{java_port}/feed.xml') as response:
+        enclosure = ET.parse(response).find('./channel/item/enclosure')
+        enclosure_url = urllib.parse.urlparse(enclosure.attrib['url'])
+        assert enclosure_url.scheme == 'https' and enclosure_url.netloc == 'stream.daily-signals.example'
+        assert enclosure.attrib['length'] == str(manifest['sizeBytes'])
+        assert enclosure.attrib['type'] == manifest['contentType']
+    request = urllib.request.Request(f'http://127.0.0.1:{rust_port}{enclosure_url.path}', headers={'Range': 'bytes=0-3'})
     with urllib.request.urlopen(request) as response:
         assert response.status == 206 and response.read() == b'RIFF'
-    print('Java fixture and Rust object-store playback matched; range and ETag validated')
+        assert response.headers['Content-Range'] == f'bytes 0-3/{manifest["sizeBytes"]}'
+    print('Podcast enclosure resolved to Rust playback; range, length, type and ETag validated')
 finally:
     for process in (java, rust):
         process.terminate()

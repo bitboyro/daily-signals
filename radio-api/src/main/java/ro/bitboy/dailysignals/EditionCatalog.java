@@ -6,10 +6,12 @@ import java.util.List;
 
 /** Archived editions offered to listeners; a fixed synthetic catalog until persistence is wired in. */
 public final class EditionCatalog {
-    public record Entry(String editionId, LocalDate airDate, String title, String audioPath) {
+    public record Entry(String editionId, LocalDate airDate, String title, String audioPath,
+                        String contentType, long sizeBytes) {
         public Entry {
             if (editionId == null || !editionId.matches("[a-z0-9-]+") || airDate == null
-                    || title == null || title.isBlank() || audioPath == null || !audioPath.startsWith("/"))
+                    || title == null || title.isBlank() || audioPath == null || !audioPath.startsWith("/")
+                    || contentType == null || !contentType.startsWith("audio/") || sizeBytes <= 0)
                 throw new IllegalArgumentException("invalid catalog entry");
         }
     }
@@ -22,7 +24,7 @@ public final class EditionCatalog {
 
     public static EditionCatalog fixture() {
         return new EditionCatalog(List.of(new Entry("demo-2026-01-15", LocalDate.of(2026, 1, 15),
-                "Daily Signals demo edition", "/editions/demo-2026-01-15/audio")));
+                "Daily Signals demo edition", "/editions/demo-2026-01-15/audio", "audio/wav", 16_044)));
     }
 
     public List<Entry> entries() { return entries; }
