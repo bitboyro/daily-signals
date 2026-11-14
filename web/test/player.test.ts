@@ -30,6 +30,11 @@ test('player is labelled, described and keyboard operable', () => {
   assert.match(html, /aria-label="Retry Morning &amp; &quot;late&quot; news"/);
 });
 
+test('player displays the configured locale while retaining the ISO air date', () => {
+  const html = renderPlayer(readConfig('http://listener.test/', { locale: 'ro-RO' }), edition);
+  assert.match(html, /datetime="2026-01-15">15 ianuarie 2026/);
+});
+
 test('player keyboard map covers playback, seek and chapter movement', () => {
   assert.equal(playbackKeyAction(' '), 'toggle');
   assert.equal(playbackKeyAction('ArrowLeft'), 'seek-back');

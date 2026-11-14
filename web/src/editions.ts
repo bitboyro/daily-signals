@@ -1,4 +1,5 @@
 import { escapeHtml } from './html.ts';
+import { formatDate, type Locale } from './i18n.ts';
 import { readEnvelope } from './schema.ts';
 
 export interface EditionSummary {
@@ -75,19 +76,19 @@ export function selectListenerEdition(editions: EditionSummary[], requestedId?: 
   return editions.find((edition) => edition.editionId === requestedId) ?? selectTodaysEdition(editions, today);
 }
 
-export function renderEditionList(editions: EditionSummary[], filtered = false): string {
+export function renderEditionList(editions: EditionSummary[], filtered = false, locale: Locale = 'en'): string {
   if (editions.length === 0 && filtered) {
     return '<div class="empty archive-empty"><strong>No broadcast on that date.</strong><p>Choose another day or show all published editions.</p></div>';
   }
   if (editions.length === 0) return '<div class="empty archive-empty"><strong>The archive is still quiet.</strong><p>No editions have been published yet. Please check back after the next scheduled broadcast.</p></div>';
   const items = editions.map((e) =>
     `<li><a href="${escapeHtml(editionSharePath(e.editionId))}#edition-${escapeHtml(e.editionId)}" data-edition="${escapeHtml(e.editionId)}">`
-    + `<time datetime="${escapeHtml(e.airDate)}">${escapeHtml(e.airDate)}</time> ${escapeHtml(e.title)}</a></li>`);
+    + `<time datetime="${escapeHtml(e.airDate)}">${escapeHtml(formatDate(e.airDate, locale))}</time> ${escapeHtml(e.title)}</a></li>`);
   return `<ul class="editions">${items.join('')}</ul>`;
 }
 
 /** Context shown above a selected edition without duplicating the player controls. */
-export function renderDailyEdition(edition: EditionSummary): string {
+export function renderDailyEdition(edition: EditionSummary, locale: Locale = 'en'): string {
   const sharePath = escapeHtml(editionSharePath(edition.editionId));
-  return `<p class="daily-edition" aria-live="polite">Today’s listening: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time> — ${escapeHtml(edition.title)} <a class="edition-share" href="${sharePath}">Share this edition</a></p>`;
+  return `<p class="daily-edition" aria-live="polite">Today’s listening: <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(formatDate(edition.airDate, locale))}</time> — ${escapeHtml(edition.title)} <a class="edition-share" href="${sharePath}">Share this edition</a></p>`;
 }

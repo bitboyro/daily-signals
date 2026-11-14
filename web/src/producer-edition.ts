@@ -1,4 +1,5 @@
 import { escapeHtml } from './html.ts';
+import { formatDateTime, type Locale } from './i18n.ts';
 
 export type EditionStatus = 'DRAFT' | 'READY' | 'PUBLISHED' | 'FAILED';
 export interface EditionState { editionId: string; status: EditionStatus; revision: number; }
@@ -40,12 +41,12 @@ export async function fetchApprovalAudit(apiBase: string, token: string, edition
   return parseAudit(await response.json());
 }
 
-export function renderApprovalHistory(audit: ApprovalAudit): string {
+export function renderApprovalHistory(audit: ApprovalAudit, locale: Locale = 'en'): string {
   const items = audit.approvals.length === 0
     ? '<p>No approval has been recorded for this edition.</p>'
     : '<ol class="approval-history">' + audit.approvals.map((event) => '<li>'
       + `<strong>${escapeHtml(event.actor)}</strong> approved revision ${event.editionRevision} `
-      + `<time datetime="${escapeHtml(event.approvedAt)}">${escapeHtml(event.approvedAt)}</time>`
+      + `<time datetime="${escapeHtml(event.approvedAt)}">${escapeHtml(formatDateTime(event.approvedAt, locale))}</time>`
       + '</li>').join('') + '</ol>';
   return '<section aria-labelledby="approval-history-heading">'
     + '<h2 id="approval-history-heading">Approval history</h2>' + items + '</section>';

@@ -1,6 +1,7 @@
 import type { ListenerConfig } from './config.ts';
 import type { EditionSummary } from './editions.ts';
 import { escapeHtml } from './html.ts';
+import { formatDate } from './i18n.ts';
 
 export function audioUrl(config: ListenerConfig, edition: EditionSummary): string {
   return `${config.streamBase}${edition.audioPath}`;
@@ -60,7 +61,7 @@ export function renderPlayer(config: ListenerConfig, edition: EditionSummary): s
   const src = escapeHtml(audioUrl(config, edition));
   const controls = playbackControls(config, edition);
   return `<article class="daily-edition" data-edition="${id}" aria-labelledby="player-title-${id}"><figure class="player" aria-labelledby="player-title-${id}">`
-    + `<figcaption id="player-title-${id}">${title} <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(edition.airDate)}</time></figcaption>`
+    + `<figcaption id="player-title-${id}">${title} <time datetime="${escapeHtml(edition.airDate)}">${escapeHtml(formatDate(edition.airDate, config.locale))}</time></figcaption>`
     + `<audio controls preload="${controls.preload}" src="${src}" aria-labelledby="player-title-${id}" aria-describedby="player-help-${id}" aria-keyshortcuts="Space Enter ArrowLeft ArrowRight N P">`
     + `<a href="${src}">Download the ${title} recording</a></audio>`
     + `<p id="player-help-${id}" class="player-help">Space or Enter plays and pauses; arrow keys seek 10 seconds; N and P move between chapters. Playback does not start automatically.</p>`
