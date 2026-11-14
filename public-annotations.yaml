@@ -3500,13 +3500,14 @@
     "web/visual/listener.visual.spec.ts",
     "web/visual/__screenshots__/listener-home.png",
     "web/visual/__screenshots__/listener-archive.png",
-    "web/visual/__screenshots__/listener-player.png"
+    "web/visual/__screenshots__/listener-player.png",
+    "web/visual/__screenshots__/listener-empty.png"
    ],
    "features": [
     { "id": "WEB-01", "relation": "tests" },
     { "id": "WEB-02", "relation": "tests" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "cebd30d73626fe63224c388c13bd162bd58cf74d", "retiredIn": null
   },
   {
    "paths": ["tools/enrich_nightly_report.py", "tools/test_enrich_nightly_report.py"],

@@ -1,4 +1,4 @@
-const CACHE = 'daily-signals-shell-v2';
+const CACHE = 'daily-signals-shell-v3';
 const EDITION_CACHE = 'daily-signals-edition-v1';
 const APP_MODULES = [
   'chapters', 'config', 'editions', 'fetch-schedule', 'html', 'main', 'playback-position', 'player',

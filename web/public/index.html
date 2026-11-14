@@ -10,23 +10,31 @@
 </head>
 <body>
   <a class="skip" href="#content">Skip to editions</a>
-  <header>
-    <h1>Daily Signals</h1>
+  <header class="site-header">
+    <div class="station-mark" aria-label="Daily Signals public radio">
+      <span class="signal-dot" aria-hidden="true"></span>
+      <div><p>Independent public radio</p><h1>Daily Signals</h1></div>
+    </div>
     <nav aria-label="Sections">
       <a href="#content">Listen</a>
+      <a href="#archive">Archive</a>
       <a href="#producer">Produce</a>
     </nav>
   </header>
-  <main id="content">
-    <section aria-labelledby="player-heading">
+  <main id="content" class="site-main">
+    <section class="listener-panel" aria-labelledby="player-heading">
+      <p class="section-kicker">Fresh each morning</p>
       <h2 id="player-heading">Today’s edition</h2>
-      <div id="player"></div>
+      <p class="section-intro">A concise, human-reviewed briefing you can listen to at your own pace.</p>
+      <div id="player"><p class="empty listener-empty">Loading today’s edition…</p></div>
     </section>
-    <section aria-labelledby="archive-heading">
+    <section id="archive" class="archive-panel" aria-labelledby="archive-heading">
+      <p class="section-kicker">Listen again</p>
       <h2 id="archive-heading">Edition archive</h2>
       <div id="editions" aria-live="polite">Loading editions…</div>
     </section>
-    <section id="producer" aria-labelledby="producer-heading">
+    <section id="producer" class="producer-panel" aria-labelledby="producer-heading">
+      <p class="section-kicker">Station workspace</p>
       <h2 id="producer-heading">Producer review</h2>
       <div class="producer-auth">
         <button id="producer-sign-in" type="button" hidden>Sign in with station account</button>

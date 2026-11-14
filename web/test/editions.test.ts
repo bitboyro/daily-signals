@@ -53,6 +53,8 @@ test('requests and renders an exact archive date', async () => {
 
 test('renders an empty archive message', () => {
   assert.match(renderEditionList([]), /next scheduled broadcast/);
+  assert.match(renderEditionList([], true), /No broadcast on that date/);
+  assert.doesNotMatch(renderEditionList([], true), /archive is still quiet/);
 });
 
 test('renders a station-local schedule preview', () => {
