@@ -13,7 +13,8 @@
     "release:package": "npm run build && python3 ../tools/package-listener.py",
     "test": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-unit.xml --test-reporter=lcov --test-reporter-destination=reports/web-unit.lcov test/*.test.ts",
     "e2e": "mkdir -p reports && node --test --experimental-test-coverage --test-coverage-include='src/**' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/web-e2e.xml --test-reporter=lcov --test-reporter-destination=reports/web-e2e.lcov e2e/*.test.ts",
-    "browser:e2e": "playwright test"
+    "browser:e2e": "playwright test",
+    "visual": "playwright test --config=playwright.visual.config.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",
