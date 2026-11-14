@@ -123,7 +123,7 @@ a { color: #165e78; text-underline-offset: 0.16em; }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 [hidden] { display: none !important; }
 
-@media (max-width: 42rem) {
+@media (max-width: 32rem) {
   .site-header, body > header { align-items: flex-start; flex-direction: column; gap: 1rem; padding-block: 1.3rem; }
   .site-main, body > main { width: min(100% - 1.25rem, 68rem); padding-top: 1rem; }
   .site-main > section, body > main > section { padding: 1.15rem; border-radius: 0.7rem; }

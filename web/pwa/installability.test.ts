@@ -33,7 +33,7 @@ test('listener advertises the manifest and registers the root service worker', a
 
 test('service worker owns a versioned shell lifecycle', () => {
   const worker = read('public/service-worker.js');
-  assert.match(worker, /daily-signals-shell-v2/);
+  assert.match(worker, /daily-signals-shell-v3/);
   for (const event of ['install', 'activate', 'fetch']) assert.match(worker, new RegExp(`addEventListener\\('${event}'`));
   for (const asset of ['/', '/styles.css', '/runtime-config.js', '/manifest.webmanifest']) assert.ok(worker.includes(`'${asset}'`));
   for (const module of ['chapters', 'config', 'editions', 'main', 'playback-position', 'player', 'pwa', 'schema']) {
