@@ -3627,7 +3627,7 @@
    "features": [
     { "id": "WEB-05", "relation": "tests" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "ac0bbfaf3abd909e067746441081706f46ab975f", "retiredIn": null
   },
   {
    "paths": [
@@ -3636,7 +3636,7 @@
    "features": [
     { "id": "WEB-05", "relation": "configures" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "ac0bbfaf3abd909e067746441081706f46ab975f", "retiredIn": null
   }
  ],
  "intersections": [
