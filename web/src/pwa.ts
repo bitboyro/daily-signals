@@ -23,7 +23,9 @@ export async function cacheEditionForOffline(
   worker.postMessage({
     type: 'CACHE_EDITION',
     editionId: edition.editionId,
+    edition,
     manifestUrl: `${config.streamBase}/editions/${encodeURIComponent(edition.editionId)}/manifest`,
+    chaptersUrl: `${config.streamBase}/editions/${encodeURIComponent(edition.editionId)}/chapters`,
     audioUrl: `${config.streamBase}${edition.audioPath}`,
   });
   return true;

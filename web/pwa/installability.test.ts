@@ -33,9 +33,12 @@ test('listener advertises the manifest and registers the root service worker', a
 
 test('service worker owns a versioned shell lifecycle', () => {
   const worker = read('public/service-worker.js');
-  assert.match(worker, /daily-signals-shell-v1/);
+  assert.match(worker, /daily-signals-shell-v2/);
   for (const event of ['install', 'activate', 'fetch']) assert.match(worker, new RegExp(`addEventListener\\('${event}'`));
-  for (const asset of ['/', '/styles.css', '/runtime-config.js', '/app/main.js', '/manifest.webmanifest']) assert.ok(worker.includes(`'${asset}'`));
+  for (const asset of ['/', '/styles.css', '/runtime-config.js', '/manifest.webmanifest']) assert.ok(worker.includes(`'${asset}'`));
+  for (const module of ['chapters', 'config', 'editions', 'main', 'playback-position', 'player', 'pwa', 'schema']) {
+    assert.match(worker, new RegExp(`(?:'|, )${module}(?:'|,)`));
+  }
 });
 
 test('today\'s manifest and audio are handed to the active worker', async () => {
@@ -50,7 +53,9 @@ test('today\'s manifest and audio are handed to the active worker', async () => 
   assert.deepEqual(message, {
     type: 'CACHE_EDITION',
     editionId: 'morning-2026-11-14',
+    edition: { editionId: 'morning-2026-11-14', airDate: '2026-11-14', title: 'Morning', audioPath: '/editions/morning-2026-11-14/audio' },
     manifestUrl: 'https://radio.example/editions/morning-2026-11-14/manifest',
+    chaptersUrl: 'https://radio.example/editions/morning-2026-11-14/chapters',
     audioUrl: 'https://radio.example/editions/morning-2026-11-14/audio',
   });
   assert.equal(await cacheEditionForOffline(
@@ -68,4 +73,13 @@ test('service worker replaces the retained edition with same-origin manifest and
   assert.match(worker, /offline edition must be same-origin/);
   assert.match(worker, /cache\.delete/);
   assert.match(worker, /cache\.put/);
+  assert.match(worker, /'\/api\/editions'/);
+  assert.match(worker, /schemaVersion: 2/);
+});
+
+test('service worker retains the loaded listener graph without caching producer data', () => {
+  const worker = read('public/service-worker.js');
+  assert.doesNotMatch(worker, /\/api\/producer/);
+  assert.match(worker, /caches\.match\(event\.request/);
+  assert.match(worker, /event\.request\.mode === 'navigate'/);
 });

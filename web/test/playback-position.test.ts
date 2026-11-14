@@ -18,7 +18,7 @@ test('stores positions independently for each edition', () => {
   const storage = new MemoryStorage();
   savePlaybackPosition(storage, 'morning', 42.9);
   savePlaybackPosition(storage, 'evening', 7);
-  assert.equal(readPlaybackPosition(storage, 'morning'), 42);
+  assert.equal(readPlaybackPosition(storage, 'morning'), 42.9);
   assert.equal(readPlaybackPosition(storage, 'evening'), 7);
   clearPlaybackPosition(storage, 'morning');
   assert.equal(readPlaybackPosition(storage, 'morning'), 0);
@@ -46,7 +46,7 @@ test('restores an in-range position, updates it and clears it at the end', () =>
   assert.equal(audio.currentTime, 90);
   audio.currentTime = 123.8;
   audio.dispatchEvent(new Event('timeupdate'));
-  assert.equal(readPlaybackPosition(storage, 'morning'), 123);
+  assert.equal(readPlaybackPosition(storage, 'morning'), 123.8);
   audio.dispatchEvent(new Event('ended'));
   assert.equal(readPlaybackPosition(storage, 'morning'), 0);
 });

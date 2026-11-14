@@ -8,7 +8,7 @@ function key(editionId: string): string {
 export function readPlaybackPosition(storage: Pick<Storage, 'getItem'>, editionId: string): number {
   try {
     const value = Number(storage.getItem(key(editionId)));
-    return Number.isFinite(value) && value >= 1 ? value : 0;
+    return Number.isFinite(value) && value >= 0.25 ? value : 0;
   } catch {
     return 0;
   }
@@ -17,7 +17,7 @@ export function readPlaybackPosition(storage: Pick<Storage, 'getItem'>, editionI
 export function savePlaybackPosition(storage: Pick<Storage, 'setItem'>, editionId: string, seconds: number): void {
   if (!Number.isFinite(seconds) || seconds < 0) return;
   try {
-    storage.setItem(key(editionId), String(Math.floor(seconds)));
+    storage.setItem(key(editionId), String(Math.round(seconds * 1000) / 1000));
   } catch {
     // Playback remains available when browser storage is disabled or full.
   }
@@ -38,7 +38,8 @@ export function bindPlaybackPosition(root: ParentNode, editionId: string,
   if (!audio) return;
   audio.addEventListener('loadedmetadata', () => {
     const saved = readPlaybackPosition(storage, editionId);
-    if (saved > 0 && (!Number.isFinite(audio.duration) || saved < audio.duration - 1)) audio.currentTime = saved;
+    const endBuffer = Number.isFinite(audio.duration) ? Math.min(1, Math.max(0.25, audio.duration * 0.01)) : 0;
+    if (saved > 0 && (!Number.isFinite(audio.duration) || saved < audio.duration - endBuffer)) audio.currentTime = saved;
   });
   audio.addEventListener('timeupdate', () => savePlaybackPosition(storage, editionId, audio.currentTime));
   audio.addEventListener('ended', () => clearPlaybackPosition(storage, editionId));

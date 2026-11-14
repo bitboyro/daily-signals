@@ -21,7 +21,53 @@ test('listener archive, audio and producer queue work in a real browser', async 
   await expect(page.locator('#producer-panel-queue')).toContainText('Approve');
 });
 
-test('producer prepares a narrated edition across the complete workspace', async ({ page }) => {
+test('listener plays, seeks, resumes and replays today\'s edition offline', async ({ page, context }) => {
+  await page.goto('/');
+  const audio = page.locator('#player audio');
+  await expect(audio).toBeVisible();
+  await page.waitForFunction(async () => {
+    await navigator.serviceWorker.ready;
+    const cache = await caches.open('daily-signals-edition-v1');
+    return (await cache.keys()).length === 4;
+  });
+
+  await audio.evaluate(async (element) => {
+    element.muted = true;
+    await element.play();
+    element.pause();
+    element.play = async () => { (window as Window & { chapterPlayRequested?: boolean }).chapterPlayRequested = true; };
+  });
+  await page.getByRole('button', { name: /Local report/ }).click();
+  const chapterState = await audio.evaluate((element) => ({
+    currentTime: element.currentTime,
+    duration: element.duration,
+    playRequested: (window as Window & { chapterPlayRequested?: boolean }).chapterPlayRequested,
+  }));
+  expect(chapterState.playRequested).toBe(true);
+  expect(chapterState.currentTime).toBeGreaterThanOrEqual(0.6);
+  await audio.evaluate((element) => element.dispatchEvent(new Event('timeupdate')));
+
+  await page.reload();
+  const resumed = page.locator('#player audio');
+  await expect(resumed).toBeVisible();
+  await resumed.evaluate((element) => element.load());
+  await expect.poll(() => resumed.evaluate((element) => element.currentTime)).toBeGreaterThanOrEqual(0.6);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Daily Signals' })).toBeVisible();
+  const offline = await page.locator('#player audio').evaluate(async (element) => {
+    const response = await fetch(element.src);
+    return { ok: response.ok, type: response.headers.get('content-type'), bytes: (await response.arrayBuffer()).byteLength };
+  });
+  expect(offline.ok).toBeTruthy();
+  expect(offline.type).toContain('audio/wav');
+  expect(offline.bytes).toBeGreaterThan(44);
+  await context.setOffline(false);
+});
+
+test('producer prepares a narrated edition across the complete workspace', async ({ page, browserName }, testInfo) => {
+  test.skip(browserName !== 'chromium' || testInfo.project.name !== 'chromium-desktop',
+    'the stateful producer journey runs once; the listener journey owns the cross-browser matrix');
   await page.goto('/');
   await page.getByLabel('Reviewer token').fill('nightly-producer-token-0001');
 
