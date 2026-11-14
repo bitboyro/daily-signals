@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { registerServiceWorker } from '../src/pwa.ts';
+import { cacheEditionForOffline, registerServiceWorker } from '../src/pwa.ts';
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
@@ -36,4 +36,36 @@ test('service worker owns a versioned shell lifecycle', () => {
   assert.match(worker, /daily-signals-shell-v1/);
   for (const event of ['install', 'activate', 'fetch']) assert.match(worker, new RegExp(`addEventListener\\('${event}'`));
   for (const asset of ['/', '/styles.css', '/runtime-config.js', '/app/main.js', '/manifest.webmanifest']) assert.ok(worker.includes(`'${asset}'`));
+});
+
+test('today\'s manifest and audio are handed to the active worker', async () => {
+  let message: Record<string, string> | undefined;
+  const active = { postMessage: (value: Record<string, string>) => { message = value; } } as unknown as ServiceWorker;
+  const navigator = { serviceWorker: { ready: Promise.resolve({ active }), controller: null } } as unknown as Pick<Navigator, 'serviceWorker'>;
+  assert.equal(await cacheEditionForOffline(
+    { apiBase: 'https://radio.example', streamBase: 'https://radio.example' },
+    { editionId: 'morning-2026-11-14', airDate: '2026-11-14', title: 'Morning', audioPath: '/editions/morning-2026-11-14/audio' },
+    navigator,
+  ), true);
+  assert.deepEqual(message, {
+    type: 'CACHE_EDITION',
+    editionId: 'morning-2026-11-14',
+    manifestUrl: 'https://radio.example/editions/morning-2026-11-14/manifest',
+    audioUrl: 'https://radio.example/editions/morning-2026-11-14/audio',
+  });
+  assert.equal(await cacheEditionForOffline(
+    { apiBase: '', streamBase: '' },
+    { editionId: 'demo', airDate: '2026-11-14', title: 'Demo', audioPath: '/editions/demo/audio' },
+    {},
+  ), false);
+});
+
+test('service worker replaces the retained edition with same-origin manifest and audio', () => {
+  const worker = read('public/service-worker.js');
+  assert.match(worker, /daily-signals-edition-v1/);
+  assert.match(worker, /addEventListener\('message'/);
+  assert.match(worker, /CACHE_EDITION/);
+  assert.match(worker, /offline edition must be same-origin/);
+  assert.match(worker, /cache\.delete/);
+  assert.match(worker, /cache\.put/);
 });

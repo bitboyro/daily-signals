@@ -1,5 +1,5 @@
 import { readConfig } from './config.ts';
-import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, type EditionSummary } from './editions.ts';
+import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, selectTodaysEdition, type EditionSummary } from './editions.ts';
 import { bindPlaybackRecovery, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
@@ -12,7 +12,7 @@ import { fetchPronunciations, renderPronunciationEditor, savePronunciations } fr
 import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transitionEdition } from './producer-edition.ts';
 import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
 import { bindPlaybackPosition } from './playback-position.ts';
-import { registerServiceWorker } from './pwa.ts';
+import { cacheEditionForOffline, registerServiceWorker } from './pwa.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -20,7 +20,8 @@ function element(id: string): HTMLElement {
   return found;
 }
 
-async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string): Promise<void> {
+async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string,
+  retainOffline?: (edition: EditionSummary) => void): Promise<void> {
   const target = element('editions');
   try {
     const editions = await fetchEditions(apiBase, fetch, airDate || undefined);
@@ -46,6 +47,10 @@ async function showEditions(apiBase: string, play: (edition: EditionSummary) => 
     });
     const selected = selectListenerEdition(editions, requestedId);
     if (selected) play(selected);
+    if (!airDate) {
+      const daily = selectTodaysEdition(editions);
+      if (daily) retainOffline?.(daily);
+    }
   } catch {
     target.textContent = 'Editions are unavailable right now.';
   }
@@ -242,6 +247,8 @@ if (typeof document !== 'undefined') {
       player.insertAdjacentHTML('beforeend', renderChapters(chapters));
       bindChapterSeeking(player);
     }).catch(() => { /* v1/v2 editions remain playable without chapter metadata. */ });
-  }, '', editionIdFromSearch(window.location.search));
+  }, '', editionIdFromSearch(window.location.search), (edition) => {
+    void cacheEditionForOffline(config, edition).catch(() => { /* Online playback remains available. */ });
+  });
   void showProducerPanel(config.apiBase, 'candidates');
 }

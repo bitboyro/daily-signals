@@ -3427,6 +3427,8 @@
    ],
    "features": [
     { "id": "WEB-01", "relation": "implements" },
+    { "id": "WEB-02", "relation": "implements" },
+    { "id": "STR-03", "relation": "calls" },
     { "id": "PLT-05", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
@@ -3724,7 +3726,7 @@
    ]
   },
   {
-   "features": ["WEB-01", "PLT-05"],
+   "features": ["WEB-01", "WEB-02", "STR-03", "PLT-05"],
    "check": "web.yml:pwa-check",
    "tests": [
     { "path": "web/pwa/installability.test.ts" }
