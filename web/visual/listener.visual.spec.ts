@@ -20,13 +20,13 @@ test('home baseline', async ({ page }) => {
     `<section id="listen"><h2>Today’s edition</h2>${renderDailyEdition(editions[0])}${renderPlayer(config, editions[0])}${renderChapters([
       { title: 'World desk', startMillis: 0 }, { title: 'Technology', startMillis: 95000 }, { title: 'Culture', startMillis: 188000 },
     ])}</section><section id="archive"><h2>Recent editions</h2>${renderEditionList(editions)}</section>`));
-  await expect(page).toHaveScreenshot('listener-home.png', { fullPage: true });
+  await expect(page).toHaveScreenshot('listener-home.png');
 });
 
 test('archive baseline', async ({ page }) => {
   await page.setContent(document('Daily Signals — Archive',
     `<section id="archive"><h2>Edition archive</h2>${renderArchiveFilter('2026-11-14')}${renderEditionList(editions)}</section>`));
-  await expect(page).toHaveScreenshot('listener-archive.png', { fullPage: true });
+  await expect(page).toHaveScreenshot('listener-archive.png');
 });
 
 test('player baseline', async ({ page }) => {
@@ -34,12 +34,12 @@ test('player baseline', async ({ page }) => {
     `<section id="listen"><h2>Today’s edition</h2>${renderDailyEdition(editions[0])}${renderPlayer(config, editions[0])}${renderChapters([
       { title: 'World desk', startMillis: 0 }, { title: 'Technology', startMillis: 95000 }, { title: 'Culture', startMillis: 188000 },
     ])}</section>`));
-  await expect(page).toHaveScreenshot('listener-player.png', { fullPage: true });
+  await expect(page).toHaveScreenshot('listener-player.png');
 });
 
 test('empty listener baseline', async ({ page }) => {
   await page.setContent(document('Daily Signals — Waiting for broadcast',
     `<section class="listener-panel" id="listen"><p class="section-kicker">Fresh each morning</p><h2>Today’s edition</h2>${renderNoEditionGuidance()}</section>`
     + `<section class="archive-panel" id="archive"><p class="section-kicker">Listen again</p><h2>Edition archive</h2>${renderArchiveFilter('2026-11-12')}${renderEditionList([], true)}</section>`));
-  await expect(page).toHaveScreenshot('listener-empty.png', { fullPage: true });
+  await expect(page).toHaveScreenshot('listener-empty.png');
 });

@@ -10,7 +10,7 @@ export default defineConfig({
   expect: { toHaveScreenshot: { animations: 'disabled', maxDiffPixelRatio: 0.04, threshold: 0.2 } },
   use: {
     browserName: 'chromium',
-    viewport: { width: 1280, height: 900 },
+    viewport: { width: 1280, height: 1200 },
     colorScheme: 'light',
     deviceScaleFactor: 1,
     locale: 'en-GB',
