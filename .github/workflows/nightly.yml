@@ -158,12 +158,19 @@ jobs:
       - run: npm --prefix web ci
       - name: Run bounded nightly soak
         run: python3 tools/nightly-soak.py --iterations 5
+      - name: Prove backup recovery after destroying all persistent volumes
+        run: python3 tools/backup-roundtrip.py --report backup-roundtrip-report.json
+      - name: Stop backup qualification services
+        if: always()
+        run: docker compose --env-file deploy/runtime.env -f deploy/compose.yaml down --volumes --remove-orphans
       - name: Upload soak evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: nightly-soak-${{ github.run_attempt }}
-          path: nightly-soak-report.json
+          path: |
+            nightly-soak-report.json
+            backup-roundtrip-report.json
           if-no-files-found: warn
   editorial-mutation:
     runs-on: ubuntu-latest

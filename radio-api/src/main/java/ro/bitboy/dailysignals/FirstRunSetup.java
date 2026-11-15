@@ -16,20 +16,28 @@ import java.util.Objects;
 
 /** Durable first-run station configuration shared by the setup page and scheduler projection. */
 final class FirstRunSetup {
+    interface Store {
+        java.util.Optional<String> load() throws IOException;
+        void save(String document) throws IOException;
+    }
     record Source(String id, String name, String url, int priority) {}
     record Configuration(int schemaVersion, boolean configured, List<Source> sources,
                          String voice, String zone, String window) {}
 
     private static final ObjectMapper JSON = new ObjectMapper();
-    private final Path path;
+    private final Store store;
     private Configuration configuration;
 
     FirstRunSetup(Path path) {
-        this.path = path;
-        this.configuration = load(path);
+        this(path == null ? null : new FileStore(path));
     }
 
-    static FirstRunSetup inMemory() { return new FirstRunSetup(null); }
+    FirstRunSetup(Store store) {
+        this.store = store;
+        this.configuration = load(store);
+    }
+
+    static FirstRunSetup inMemory() { return new FirstRunSetup((Store) null); }
 
     static FirstRunSetup fromEnvironment(Map<String, String> environment) {
         String value = environment.get("DAILY_SIGNALS_SETUP_PATH");
@@ -51,8 +59,8 @@ final class FirstRunSetup {
         try {
             Configuration candidate = JSON.readValue(body, Configuration.class);
             validate(candidate);
+            if (store != null) store.save(JSON.writerWithDefaultPrettyPrinter().writeValueAsString(candidate));
             configuration = candidate;
-            if (path != null) persist(candidate);
             return toJson();
         } catch (IOException invalid) {
             throw new IllegalArgumentException("invalid setup payload", invalid);
@@ -71,26 +79,34 @@ final class FirstRunSetup {
                 configuration.sources().stream().map(Source::id).toList(), () -> java.util.Optional.of(next)).toJson();
     }
 
-    private void persist(Configuration value) throws IOException {
-        Path parent = path.toAbsolutePath().getParent();
-        if (parent != null) Files.createDirectories(parent);
-        Path temporary = path.resolveSibling("." + path.getFileName() + ".tmp");
-        JSON.writerWithDefaultPrettyPrinter().writeValue(temporary.toFile(), value);
+    private static Configuration load(Store store) {
+        if (store == null) return defaults();
         try {
-            Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
-            Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING);
-        }
-    }
-
-    private static Configuration load(Path path) {
-        if (path == null || !Files.isRegularFile(path)) return defaults();
-        try {
-            Configuration value = JSON.readValue(path.toFile(), Configuration.class);
+            var document = store.load();
+            if (document.isEmpty()) return defaults();
+            Configuration value = JSON.readValue(document.orElseThrow(), Configuration.class);
             validate(value);
             return value;
         } catch (IOException | IllegalArgumentException invalid) {
-            throw new IllegalStateException("invalid persisted setup at " + path, invalid);
+            throw new IllegalStateException("invalid persisted station settings", invalid);
+        }
+    }
+
+    private record FileStore(Path path) implements Store {
+        @Override public java.util.Optional<String> load() throws IOException {
+            return Files.isRegularFile(path) ? java.util.Optional.of(Files.readString(path)) : java.util.Optional.empty();
+        }
+
+        @Override public void save(String document) throws IOException {
+            Path parent = path.toAbsolutePath().getParent();
+            if (parent != null) Files.createDirectories(parent);
+            Path temporary = path.resolveSibling("." + path.getFileName() + ".tmp");
+            Files.writeString(temporary, document);
+            try {
+                Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.nio.file.AtomicMoveNotSupportedException unsupported) {
+                Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING);
+            }
         }
     }
 

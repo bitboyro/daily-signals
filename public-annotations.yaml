@@ -2444,6 +2444,26 @@
   },
   {
    "paths": [
+    "web/src/admin-settings.ts"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "implements" },
+    { "id": "WEB-04", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "web/test/admin-settings.test.ts"
+   ],
+   "features": [
+    { "id": "PLT-03", "relation": "tests" },
+    { "id": "WEB-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/test_object_store.py"
    ],
    "features": [
@@ -2513,6 +2533,63 @@
    "features": [
     {
      "id": "PLT-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/backup.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/restore.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_backup_restore.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-04",
      "relation": "tests"
     }
    ],
@@ -3664,6 +3741,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["tools/backup-roundtrip.py", "tools/test_backup_roundtrip.py"],
+   "features": [
+    { "id": "PLT-07", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" },
+    { "id": "OBJ-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": [
     "*/src/main/java/*/ProducerAuthenticator.java",
     "*/src/main/java/*/OidcProducerAuthenticator.java",
@@ -3799,6 +3885,29 @@
    ],
    "features": [
     { "id": "WEB-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PostgresStationSettings.java",
+    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/StationSettingsRepository.java"
+   ],
+   "features": [
+    { "id": "WEB-04", "relation": "implements" },
+    { "id": "PLT-02", "relation": "implements" },
+    { "id": "SRC-01", "relation": "configures" },
+    { "id": "PLT-04", "relation": "configures" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/test/java/ro/bitboy/dailysignals/persistence/StationSettingsRepositoryPostgresTest.java"
+   ],
+   "features": [
+    { "id": "WEB-04", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
@@ -3965,6 +4074,13 @@
    "check": "java.yml:feed-contract",
    "tests": [
     { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/PodcastFeedContractTest.java" }
+   ]
+  },
+  {
+   "features": ["PLT-02", "OBJ-04"],
+   "check": "container.yml:backup-restore",
+   "tests": [
+    { "path": "tools/test_backup_restore.py" }
    ]
   }
  ]

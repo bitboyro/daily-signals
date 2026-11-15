@@ -8,19 +8,20 @@ test('producer workspace identifies supported panels', () => {
   assert.equal(isProducerPanel('pronunciations'), true);
   assert.equal(isProducerPanel('queue'), true);
   assert.equal(isProducerPanel('history'), true);
-  assert.equal(isProducerPanel('sources'), true);
+  assert.equal(isProducerPanel('settings'), true);
   assert.equal(isProducerPanel('publish'), false);
 });
 
 test('producer workspace exposes an accessible active panel', () => {
-  const html = renderProducerWorkspace('sources');
+  const html = renderProducerWorkspace('settings');
   assert.match(html, /role="tablist" aria-label="Producer workspace"/);
-  assert.match(html, /data-producer-panel="sources" aria-selected="true"/);
+  assert.match(html, /data-producer-panel="settings" aria-selected="true"/);
   assert.match(html, /data-producer-panel="queue" aria-selected="false" aria-controls="producer-panel-queue" tabindex="-1"/);
   assert.match(html, /Today’s candidates/);
   assert.match(html, /Pronunciations/);
   assert.match(html, /Approval history/);
-  assert.match(html, /id="producer-panel-sources" role="tabpanel" aria-labelledby="producer-tab-sources"/);
+  assert.match(html, /Admin settings/);
+  assert.match(html, /id="producer-panel-settings" role="tabpanel" aria-labelledby="producer-tab-settings"/);
 });
 
 test('producer tabs expose reciprocal keyboard navigation metadata', () => {

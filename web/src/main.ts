@@ -4,7 +4,6 @@ import { bindPlaybackAnnouncements, bindPlaybackKeyboard, bindPlaybackRecovery, 
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
-import { renderSourceEditor, validateSources, type SourceConfig } from './source-editor.ts';
 import { beginProducerSignIn, completeProducerSignIn, producerBearer, signOutProducer } from './producer-auth.ts';
 import { fetchTodaysCandidates, renderTodaysCandidates } from './producer-candidates.ts';
 import { fetchScript, generateScriptAudio, renderScriptEditor, saveScript } from './producer-script.ts';
@@ -15,6 +14,7 @@ import { bindPlaybackPosition } from './playback-position.ts';
 import { cacheEditionForOffline, registerServiceWorker } from './pwa.ts';
 import { localeTag, type Locale } from './i18n.ts';
 import { fetchSetup, renderSetup, saveSetup, setupFromForm } from './setup.ts';
+import { loadAdminSettings, renderAdminSettings, saveAdminSettings } from './admin-settings.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -58,10 +58,6 @@ async function showEditions(apiBase: string, locale: Locale, play: (edition: Edi
     target.innerHTML = '<div class="empty archive-empty"><strong>The archive is temporarily unavailable.</strong><p>Your saved edition may still be playable offline. Please try the archive again shortly.</p></div>';
   }
 }
-
-const DEFAULT_SOURCES: SourceConfig[] = [
-  { id: 'public-desk', name: 'Public desk', url: 'https://news.example.invalid/public.xml', priority: 10 },
-];
 
 async function showQueue(apiBase: string, target: HTMLElement, locale: Locale, filter: QueueFilter = 'ALL', query = ''): Promise<void> {
   const status = element('queue-status');
@@ -182,22 +178,23 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel, locale: 
     } catch (error) {
       target.textContent = error instanceof Error ? error.message : 'Approval history is unavailable.';
     }
-  } else {
-    target.innerHTML = renderSourceEditor(DEFAULT_SOURCES);
-    const form = target.querySelector<HTMLFormElement>('form.source-editor');
-    const status = target.querySelector<HTMLElement>('.source-problems');
-    form?.addEventListener('submit', (event) => {
+  } else if (panel === 'settings') {
+    try {
+      target.innerHTML = renderAdminSettings(await loadAdminSettings(apiBase));
+    } catch {
+      target.textContent = 'Station settings are unavailable.';
+      return;
+    }
+    target.querySelector<HTMLFormElement>('form.station-setup')?.addEventListener('submit', (event) => {
       event.preventDefault();
-      const sources = Array.from(form.querySelectorAll<HTMLFieldSetElement>('fieldset[data-source-index]')).map((fieldset) => ({
-        id: fieldset.querySelector<HTMLInputElement>('input[name="id"]')!.value,
-        name: fieldset.querySelector<HTMLInputElement>('input[name="name"]')!.value,
-        url: fieldset.querySelector<HTMLInputElement>('input[name="url"]')!.value,
-        priority: Number(fieldset.querySelector<HTMLInputElement>('input[name="priority"]')!.value),
-      }));
-      const problems = validateSources(sources);
-      if (status) status.textContent = problems.length === 0
-        ? 'Source configuration preview is valid. Server-side saving arrives with scheduling.'
-        : problems.join('. ');
+      const form = event.currentTarget as HTMLFormElement;
+      const status = form.querySelector<HTMLElement>('.setup-status');
+      const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+      void saveAdminSettings(apiBase, form, token).then(() => {
+        if (status) status.textContent = 'Station settings saved.';
+      }).catch((error) => {
+        if (status) status.textContent = error instanceof Error ? error.message : 'Settings save failed.';
+      });
     });
   }
   workspace.querySelectorAll<HTMLButtonElement>('button[data-producer-panel]').forEach((button) => {
