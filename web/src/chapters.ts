@@ -34,7 +34,7 @@ export function chapterSeconds(chapter: EditionChapter): number {
 
 export function renderChapters(chapters: EditionChapter[]): string {
   if (chapters.length === 0) return '';
-  const items = chapters.map((chapter) => `<li><button type="button" data-seek-millis="${chapter.startMillis}">`
+  const items = chapters.map((chapter) => `<li><button type="button" data-seek-millis="${chapter.startMillis}" aria-label="Play chapter ${escapeHtml(chapter.title)} at ${formatOffset(chapter.startMillis)}">`
     + `${escapeHtml(chapter.title)} <span>${formatOffset(chapter.startMillis)}</span></button></li>`).join('');
   return `<nav class="chapters" aria-label="Edition chapters"><h3>Chapters</h3><ol>${items}</ol></nav>`;
 }

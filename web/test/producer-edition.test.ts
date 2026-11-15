@@ -62,3 +62,10 @@ test('shows an explicit empty approval history and rejects malformed events', as
     new Response(JSON.stringify({ schemaVersion: 1, editionId: 'producer-today', approvals: [{ actor: '' }] }))),
   /unexpected approval event/);
 });
+
+test('renders producer audit times in the configured locale', () => {
+  const audit = { editionId: 'producer-today', approvals: [
+    { editionRevision: 1, actor: 'EDITOR', approvedAt: '2026-11-09T19:40:00Z' },
+  ] };
+  assert.match(renderApprovalHistory(audit, 'ro'), /datetime="2026-11-09T19:40:00Z">9 nov\. 2026/);
+});

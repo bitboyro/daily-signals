@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,13 +71,29 @@ class PodcastFeedContractTest {
 
     @Test
     void settingIsOptInAndRejectsAmbiguousValues() {
-        assertEquals(new PodcastFeedSettings(false), PodcastFeedSettings.fromEnvironment(Map.of()));
+        assertEquals(new PodcastFeedSettings(false, Locale.UK), PodcastFeedSettings.fromEnvironment(Map.of()));
         assertEquals(new PodcastFeedSettings(true), PodcastFeedSettings.fromEnvironment(
                 Map.of(PodcastFeedSettings.ENVIRONMENT_KEY, "true")));
         assertEquals(new PodcastFeedSettings(false), PodcastFeedSettings.fromEnvironment(
                 Map.of(PodcastFeedSettings.ENVIRONMENT_KEY, "FALSE")));
         org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
                 () -> PodcastFeedSettings.fromEnvironment(Map.of(PodcastFeedSettings.ENVIRONMENT_KEY, "yes")));
+        assertEquals("ro", PodcastFeedSettings.fromEnvironment(Map.of(
+                PodcastFeedSettings.LOCALE_ENVIRONMENT_KEY, "ro-RO")).locale().getLanguage());
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class,
+                () -> PodcastFeedSettings.fromEnvironment(Map.of(PodcastFeedSettings.LOCALE_ENVIRONMENT_KEY, "fr")));
+    }
+
+    @Test
+    void localizesHumanTitlesWithoutChangingProtocolDates() throws Exception {
+        var entry = new EditionCatalog.Entry("edition-1", LocalDate.of(2026, 1, 15), "Morning news",
+                "/editions/edition-1/audio", "audio/mpeg", 42);
+        Document romanian = parse(PodcastFeed.from(new EditionCatalog(java.util.List.of(entry)),
+                Locale.forLanguageTag("ro-RO")));
+        var item = (org.w3c.dom.Element) romanian.getElementsByTagName("item").item(0);
+        assertEquals("Morning news — 15 ianuarie 2026", item.getElementsByTagName("title").item(0).getTextContent());
+        assertEquals("ro", romanian.getElementsByTagName("language").item(0).getTextContent());
+        assertEquals("Thu, 15 Jan 2026 00:00:00 GMT", item.getElementsByTagName("pubDate").item(0).getTextContent());
     }
 
     @Test

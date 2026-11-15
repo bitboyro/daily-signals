@@ -94,3 +94,10 @@ test('formats air dates with an explicit locale and stable timezone', () => {
   assert.match(formatAirDate('2026-01-16', 'ro-RO'), /16 ianuarie 2026/);
   assert.throws(() => formatAirDate('today'), /invalid air date/);
 });
+
+test('renders listener dates for English and Romanian while preserving datetime', () => {
+  const edition = { editionId: 'today', airDate: '2026-01-16', title: 'Morning', audioPath: '/today' };
+  assert.match(renderEditionList([edition], false, 'en'), /16 January 2026/);
+  assert.match(renderEditionList([edition], false, 'ro'), /16 ianuarie 2026/);
+  assert.match(renderDailyEdition(edition, 'ro'), /datetime="2026-01-16">16 ianuarie 2026/);
+});

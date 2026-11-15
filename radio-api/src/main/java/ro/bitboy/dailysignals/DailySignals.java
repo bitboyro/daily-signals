@@ -95,7 +95,8 @@ public final class DailySignals {
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
         if (feedSettings.enabled()) {
             server.createContext("/feed.xml", exchange -> respondReadable(exchange, 200,
-                    "application/rss+xml; charset=utf-8", PodcastFeed.from(catalog).getBytes(StandardCharsets.UTF_8)));
+                    "application/rss+xml; charset=utf-8",
+                    PodcastFeed.from(catalog, feedSettings.locale()).getBytes(StandardCharsets.UTF_8)));
         }
         server.createContext("/api/editions", exchange -> {
             String query = exchange.getRequestURI().getRawQuery();

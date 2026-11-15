@@ -1,6 +1,6 @@
 import { readConfig } from './config.ts';
 import { editionIdFromSearch, editionSharePath, fetchEditions, renderArchiveFilter, renderDailyEdition, renderEditionList, selectListenerEdition, selectTodaysEdition, type EditionSummary } from './editions.ts';
-import { bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
+import { bindPlaybackAnnouncements, bindPlaybackKeyboard, bindPlaybackRecovery, renderNoEditionGuidance, renderPlayer } from './player.ts';
 import { fetchQueue, renderQueue, submitDecision, type QueueFilter } from './producer-queue.ts';
 import { fetchSchedule, renderFetchSchedule } from './fetch-schedule.ts';
 import { isProducerPanel, renderProducerWorkspace, type ProducerPanel } from './producer-workspace.ts';
@@ -13,6 +13,7 @@ import { fetchApprovalAudit, pollEditionState, renderApprovalHistory, transition
 import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts';
 import { bindPlaybackPosition } from './playback-position.ts';
 import { cacheEditionForOffline, registerServiceWorker } from './pwa.ts';
+import { localeTag, type Locale } from './i18n.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -20,20 +21,20 @@ function element(id: string): HTMLElement {
   return found;
 }
 
-async function showEditions(apiBase: string, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string,
+async function showEditions(apiBase: string, locale: Locale, play: (edition: EditionSummary) => void, airDate = '', requestedId?: string,
   retainOffline?: (edition: EditionSummary) => void, showEmpty?: () => void): Promise<void> {
   const target = element('editions');
   try {
     const editions = await fetchEditions(apiBase, fetch, airDate || undefined);
-    target.innerHTML = renderArchiveFilter(airDate) + renderEditionList(editions, Boolean(airDate));
+    target.innerHTML = renderArchiveFilter(airDate) + renderEditionList(editions, Boolean(airDate), locale);
     target.querySelector<HTMLFormElement>('form.archive-filter')?.addEventListener('submit', (event) => {
       event.preventDefault();
       const form = event.currentTarget as HTMLFormElement;
       const date = (form.elements.namedItem('date') as HTMLInputElement).value;
-      void showEditions(apiBase, play, date, undefined, retainOffline, showEmpty);
+      void showEditions(apiBase, locale, play, date, undefined, retainOffline, showEmpty);
     });
     target.querySelector<HTMLButtonElement>('button[data-clear-date]')?.addEventListener('click', () => {
-      void showEditions(apiBase, play, '', undefined, retainOffline, showEmpty);
+      void showEditions(apiBase, locale, play, '', undefined, retainOffline, showEmpty);
     });
     target.querySelectorAll<HTMLAnchorElement>('a[data-edition]').forEach((link) => {
       link.addEventListener('click', (event) => {
@@ -61,11 +62,11 @@ const DEFAULT_SOURCES: SourceConfig[] = [
   { id: 'public-desk', name: 'Public desk', url: 'https://news.example.invalid/public.xml', priority: 10 },
 ];
 
-async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilter = 'ALL', query = ''): Promise<void> {
+async function showQueue(apiBase: string, target: HTMLElement, locale: Locale, filter: QueueFilter = 'ALL', query = ''): Promise<void> {
   const status = element('queue-status');
   try {
     const [items, schedule] = await Promise.all([fetchQueue(apiBase), fetchSchedule(apiBase)]);
-    target.innerHTML = renderFetchSchedule(schedule) + renderQueue(items, filter, query);
+    target.innerHTML = renderFetchSchedule(schedule, localeTag(locale)) + renderQueue(items, filter, query);
   } catch {
     target.textContent = 'The review queue is unavailable.';
   }
@@ -74,7 +75,7 @@ async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilt
     const form = event.currentTarget as HTMLFormElement;
     const nextFilter = form.elements.namedItem('decision') as HTMLSelectElement;
     const nextQuery = form.elements.namedItem('query') as HTMLInputElement;
-    void showQueue(apiBase, target, nextFilter.value as QueueFilter, nextQuery.value);
+    void showQueue(apiBase, target, locale, nextFilter.value as QueueFilter, nextQuery.value);
   });
   target.querySelectorAll<HTMLButtonElement>('button[data-action]').forEach((button) => {
     button.addEventListener('click', async () => {
@@ -82,7 +83,7 @@ async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilt
       try {
         const receipt = await submitDecision(apiBase, button.dataset.story!, button.dataset.action as 'APPROVED' | 'REJECTED', token);
         status.textContent = `${receipt.decision} saved for ${receipt.storyId}.`;
-        await showQueue(apiBase, target, filter, query);
+        await showQueue(apiBase, target, locale, filter, query);
       } catch (error) {
         status.textContent = error instanceof Error ? error.message : 'Decision failed.';
       }
@@ -90,7 +91,7 @@ async function showQueue(apiBase: string, target: HTMLElement, filter: QueueFilt
   });
 }
 
-async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise<void> {
+async function showProducerPanel(apiBase: string, panel: ProducerPanel, locale: Locale): Promise<void> {
   const workspace = element('producer-workspace');
   workspace.innerHTML = renderProducerWorkspace(panel);
   const target = element(`producer-panel-${panel}`);
@@ -172,11 +173,11 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
       target.textContent = error instanceof Error ? error.message : 'Pronunciations are unavailable.';
     }
   } else if (panel === 'queue') {
-    await showQueue(apiBase, target);
+    await showQueue(apiBase, target, locale);
   } else if (panel === 'history') {
     const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
     try {
-      target.innerHTML = renderApprovalHistory(await fetchApprovalAudit(apiBase, token));
+      target.innerHTML = renderApprovalHistory(await fetchApprovalAudit(apiBase, token), locale);
     } catch (error) {
       target.textContent = error instanceof Error ? error.message : 'Approval history is unavailable.';
     }
@@ -201,7 +202,7 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
   workspace.querySelectorAll<HTMLButtonElement>('button[data-producer-panel]').forEach((button) => {
     button.addEventListener('click', () => {
       const next = button.dataset.producerPanel;
-      if (isProducerPanel(next)) void showProducerPanel(apiBase, next);
+      if (isProducerPanel(next)) void showProducerPanel(apiBase, next, locale);
     });
     button.addEventListener('keydown', (event) => {
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -212,7 +213,7 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel): Promise
         : (index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
       tabs[next].focus();
       const selected = tabs[next].dataset.producerPanel;
-      if (isProducerPanel(selected)) void showProducerPanel(apiBase, selected);
+      if (isProducerPanel(selected)) void showProducerPanel(apiBase, selected, locale);
     });
   });
 }
@@ -221,6 +222,7 @@ if (typeof document !== 'undefined') {
   void registerServiceWorker().catch(() => { /* Installation is optional; listening stays available. */ });
   const runtime = (window as Window & { DAILY_SIGNALS_CONFIG?: Parameters<typeof readConfig>[1] }).DAILY_SIGNALS_CONFIG;
   const config = readConfig(window.location.origin, runtime);
+  document.documentElement.lang = config.locale;
   const signIn = element('producer-sign-in') as HTMLButtonElement;
   const signOut = element('producer-sign-out') as HTMLButtonElement;
   const authStatus = element('producer-auth-status');
@@ -240,9 +242,11 @@ if (typeof document !== 'undefined') {
     });
   }
   const player = element('player');
-  void showEditions(config.apiBase, (edition) => {
-    player.innerHTML = renderDailyEdition(edition) + renderPlayer(config, edition);
+  void showEditions(config.apiBase, config.locale, (edition) => {
+    player.innerHTML = renderDailyEdition(edition, config.locale) + renderPlayer(config, edition);
+    bindPlaybackAnnouncements(player, edition.title);
     bindPlaybackRecovery(player);
+    bindPlaybackKeyboard(player);
     bindPlaybackPosition(player, edition.editionId);
     void fetchChapters(config.streamBase, edition.editionId).then((chapters) => {
       player.insertAdjacentHTML('beforeend', renderChapters(chapters));
@@ -253,5 +257,5 @@ if (typeof document !== 'undefined') {
   }, () => {
     player.innerHTML = renderNoEditionGuidance();
   });
-  void showProducerPanel(config.apiBase, 'candidates');
+  void showProducerPanel(config.apiBase, 'candidates', config.locale);
 }
