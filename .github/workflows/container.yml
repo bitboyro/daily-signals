@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate backup and restore contracts
-        run: python3 -m unittest tools/test_backup_restore.py
+        run: python3 -m unittest tools/test_backup_restore.py tools/test_backup_roundtrip.py
   upgrade-smoke:
     runs-on: ubuntu-latest
     services:

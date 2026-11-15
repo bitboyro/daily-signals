@@ -3741,6 +3741,15 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["tools/backup-roundtrip.py", "tools/test_backup_roundtrip.py"],
+   "features": [
+    { "id": "PLT-07", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" },
+    { "id": "OBJ-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": [
     "*/src/main/java/*/ProducerAuthenticator.java",
     "*/src/main/java/*/OidcProducerAuthenticator.java",
