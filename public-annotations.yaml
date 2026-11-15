@@ -2684,6 +2684,15 @@
    "retiredIn": null
   },
   {
+   "paths": ["radio-persistence/src/test/java/ro/bitboy/dailysignals/persistence/V0ReleaseUpgradePostgresTest.java"],
+   "features": [
+    { "id": "PLT-05", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" },
+    { "id": "EDI-01", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": [
     "tools/kokoro-integration-smoke.py"
    ],
