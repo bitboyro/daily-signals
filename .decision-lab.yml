@@ -52,6 +52,8 @@ graph:
     - {from: "examples/**", to: "java.yml:java-unit"}
     - {from: "examples/**", to: web}
     - {from: "examples/operations/**", to: "java.yml:java-unit"}
+    # java-unit owns tools/check-docs.py, so documentation changes must reach it.
+    - {from: "docs/**", to: "java.yml:java-unit"}
     - {from: "public-annotations.yaml", to: "java.yml:annotation-audit"}
 
 safety:
