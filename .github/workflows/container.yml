@@ -71,14 +71,16 @@ jobs:
       DAILY_SIGNALS_TEST_DATABASE_PASSWORD: test-password
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
-      - name: Prior release configuration contract
-        run: python3 tools/upgrade-smoke.py
-      - name: Prior database migration contract
-        run: mvn -B -ntp -pl radio-persistence -am test -Dtest='PopulatedMigrationPostgresTest,LegacyMigrationPostgresTest' -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Materialize tagged v0.x release state
+        run: python3 tools/upgrade-smoke.py --prepare-state target/v0-upgrade
+      - name: Upgrade tagged state and prior database schemas
+        run: mvn -B -ntp -pl radio-persistence -am test -Dtest='V0ReleaseUpgradePostgresTest,PopulatedMigrationPostgresTest,LegacyMigrationPostgresTest' -Ddaily.signals.v0.state="${{ github.workspace }}/target/v0-upgrade/state" -Dsurefire.failIfNoSpecifiedTests=false
   container-smoke:
     runs-on: ubuntu-latest
     steps:

@@ -17,8 +17,7 @@ public final class StationSettingsRepository {
     }
 
     public Snapshot save(Connection connection, String document) throws SQLException {
-        if (document == null || document.isBlank() || document.length() > 50_000)
-            throw new IllegalArgumentException("station settings document must be nonempty and at most 50 KB");
+        validate(document);
         try (var statement = connection.prepareStatement("""
                 INSERT INTO station_settings(singleton, document, revision)
                 VALUES (TRUE, CAST(? AS JSONB), 1)
@@ -34,5 +33,25 @@ public final class StationSettingsRepository {
                 return new Snapshot(rows.getString(1), rows.getInt(2));
             }
         }
+    }
+
+    public Optional<Snapshot> createIfAbsent(Connection connection, String document) throws SQLException {
+        validate(document);
+        try (var statement = connection.prepareStatement("""
+                INSERT INTO station_settings(singleton, document, revision)
+                VALUES (TRUE, CAST(? AS JSONB), 1)
+                ON CONFLICT (singleton) DO NOTHING
+                RETURNING document::text, revision
+                """)) {
+            statement.setString(1, document);
+            try (var rows = statement.executeQuery()) {
+                return rows.next() ? Optional.of(new Snapshot(rows.getString(1), rows.getInt(2))) : Optional.empty();
+            }
+        }
+    }
+
+    private static void validate(String document) {
+        if (document == null || document.isBlank() || document.length() > 50_000)
+            throw new IllegalArgumentException("station settings document must be nonempty and at most 50 KB");
     }
 }
