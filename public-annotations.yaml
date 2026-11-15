@@ -3915,7 +3915,8 @@
   {
    "paths": [
     "radio-api/src/main/java/ro/bitboy/dailysignals/PostgresStationSettings.java",
-    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/StationSettingsRepository.java"
+    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/StationSettingsRepository.java",
+    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/V0FileStateImporter.java"
    ],
    "features": [
     { "id": "WEB-04", "relation": "implements" },
@@ -3923,7 +3924,7 @@
     { "id": "SRC-01", "relation": "configures" },
     { "id": "PLT-04", "relation": "configures" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "5ea29e5e25c6c98b8e6238c29d04ca9c4670e076", "retiredIn": null
   },
   {
    "paths": [
