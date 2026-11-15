@@ -8,6 +8,7 @@ rust-test.log
 release-manifest.json
 nightly-load-report.json
 install-health.json
+backups/
 web/node_modules/
 web/dist/
 web/reports/

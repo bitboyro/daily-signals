@@ -43,6 +43,12 @@ jobs:
         run: docker compose -f deploy/compose.yaml config --quiet
       - name: Explain startup configuration failures before launch
         run: python3 tools/startup_preflight.py
+  backup-restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate backup and restore contracts
+        run: python3 -m unittest tools/test_backup_restore.py
   upgrade-smoke:
     runs-on: ubuntu-latest
     services:

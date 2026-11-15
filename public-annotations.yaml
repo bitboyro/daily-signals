@@ -2523,6 +2523,44 @@
   },
   {
    "paths": [
+    "tools/backup.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-04",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_backup_restore.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/startup_preflight.py"
    ],
    "features": [
@@ -3965,6 +4003,13 @@
    "check": "java.yml:feed-contract",
    "tests": [
     { "path": "radio-api/src/test/java/ro/bitboy/dailysignals/PodcastFeedContractTest.java" }
+   ]
+  },
+  {
+   "features": ["PLT-02", "OBJ-04"],
+   "check": "container.yml:backup-restore",
+   "tests": [
+    { "path": "tools/test_backup_restore.py" }
    ]
   }
  ]
