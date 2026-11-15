@@ -36,6 +36,24 @@ public final class EditionRepository {
         }
     }
 
+    public boolean importIfAbsent(Connection connection, String id, LocalDate day, String zoneId,
+                                  Status status, int revision) throws SQLException {
+        if (id == null || !id.matches("[a-z0-9-]+") || day == null || zoneId == null || zoneId.isBlank()
+                || status == null || revision < 0) throw new IllegalArgumentException("invalid imported edition");
+        try (var statement = connection.prepareStatement("""
+                INSERT INTO edition_lifecycle (edition_id, air_date, zone_id, status, revision)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (edition_id) DO NOTHING
+                """)) {
+            statement.setString(1, id);
+            statement.setDate(2, Date.valueOf(day));
+            statement.setString(3, zoneId);
+            statement.setString(4, status.name());
+            statement.setInt(5, revision);
+            return statement.executeUpdate() == 1;
+        }
+    }
+
     public Optional<StoredEdition> get(Connection connection, String id) throws SQLException {
         try (var statement = connection.prepareStatement(
                 "SELECT edition_id, air_date, zone_id, status, revision FROM edition_lifecycle WHERE edition_id = ?")) {

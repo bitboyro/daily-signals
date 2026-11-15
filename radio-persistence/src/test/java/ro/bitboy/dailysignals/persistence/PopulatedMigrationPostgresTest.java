@@ -41,6 +41,13 @@ class PopulatedMigrationPostgresTest {
                 "name":"Public desk","url":"https://news.example.invalid/public.xml","priority":10}],
                 "voice":"fixture","zone":"Europe/Bucharest","window":"06:30"}
                 """);
+        Files.writeString(legacyState.resolve(V0FileStateImporter.EDITIONS), """
+                [
+                  {"editionId":"morning-2026-01-14","airDate":"2026-01-14"},
+                  {"editionId":"morning-2026-01-15","airDate":"2026-01-15","zoneId":"Europe/Bucharest",
+                   "status":"READY","revision":2}
+                ]
+                """);
         try (var connection = DriverManager.getConnection(System.getenv("DAILY_SIGNALS_TEST_DATABASE_URL"),
                 System.getenv("DAILY_SIGNALS_TEST_DATABASE_USER"), System.getenv("DAILY_SIGNALS_TEST_DATABASE_PASSWORD"))) {
             var schema = "v0_state_" + java.util.UUID.randomUUID().toString().replace("-", "");
@@ -49,11 +56,20 @@ class PopulatedMigrationPostgresTest {
                 statement.execute("SET search_path TO " + schema);
                 MigrationRunner.migrate(connection);
                 var importer = new V0FileStateImporter();
-                assertTrue(importer.importFrom(connection, legacyState).stationSettingsImported());
-                assertFalse(importer.importFrom(connection, legacyState).stationSettingsImported());
+                var first = importer.importFrom(connection, legacyState);
+                assertTrue(first.stationSettingsImported());
+                assertEquals(2, first.editionsImported());
+                var rerun = importer.importFrom(connection, legacyState);
+                assertFalse(rerun.stationSettingsImported());
+                assertEquals(0, rerun.editionsImported());
                 var imported = new StationSettingsRepository().load(connection).orElseThrow();
                 assertEquals(1, imported.revision());
                 assertTrue(imported.document().contains("Europe/Bucharest"));
+                var morning = new EditionRepository().get(connection, "morning-2026-01-15").orElseThrow();
+                assertEquals(EditionRepository.Status.READY, morning.status());
+                assertEquals(2, morning.revision());
+                assertEquals(2, statement.executeUpdate("UPDATE edition_lifecycle SET updated_at = updated_at "
+                        + "WHERE edition_id LIKE 'morning-%'"));
                 statement.execute("SET search_path TO public");
                 statement.execute("DROP SCHEMA " + schema + " CASCADE");
             }
