@@ -5,10 +5,13 @@ from __future__ import annotations
 import argparse
 import datetime
 import hashlib
+import io
 import json
 from pathlib import Path
+import posixpath
 import shutil
 import subprocess
+import tarfile
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ["docker", "compose", "--env-file", "deploy/runtime.env", "-f", "deploy/compose.yaml"]
@@ -16,6 +19,25 @@ COMPOSE = ["docker", "compose", "--env-file", "deploy/runtime.env", "-f", "deplo
 
 def digest(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def object_checksums(archive: bytes) -> dict[str, dict[str, object]]:
+    checksums: dict[str, dict[str, object]] = {}
+    with tarfile.open(fileobj=io.BytesIO(archive), mode="r:*") as bundle:
+        for member in bundle.getmembers():
+            name = posixpath.normpath(member.name.removeprefix("./"))
+            if member.issym() or member.islnk() or name.startswith("/") or name == ".." or name.startswith("../"):
+                raise ValueError(f"unsafe object archive member: {member.name}")
+            if not member.isfile():
+                continue
+            source = bundle.extractfile(member)
+            if source is None:
+                raise ValueError(f"object archive member cannot be read: {member.name}")
+            payload = source.read()
+            checksums[name] = {"sha256": digest(payload), "sizeBytes": len(payload)}
+    if not checksums:
+        raise ValueError("object-store archive contains no objects")
+    return dict(sorted(checksums.items()))
 
 
 def write_backup(output: Path, database: bytes, objects: bytes, created_at: str | None = None) -> dict:
@@ -39,6 +61,7 @@ def write_backup(output: Path, database: bytes, objects: bytes, created_at: str 
                 name: {"sha256": digest(payload), "sizeBytes": len(payload)}
                 for name, payload in files.items()
             },
+            "objects": object_checksums(objects),
         }
         (temporary / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
         temporary.replace(output)

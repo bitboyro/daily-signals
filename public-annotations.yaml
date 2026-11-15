@@ -2542,6 +2542,25 @@
   },
   {
    "paths": [
+    "tools/restore.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-02",
+     "relation": "implements"
+    },
+    {
+     "id": "OBJ-02",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "tools/test_backup_restore.py"
    ],
    "features": [
