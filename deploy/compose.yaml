@@ -13,6 +13,7 @@ services:
       retries: 10
     volumes:
       - daily-signals-postgres:/var/lib/postgresql/data
+    restart: unless-stopped
   kokoro:
     profiles: ["kokoro"]
     image: ghcr.io/remsky/kokoro-fastapi-cpu:v0.8.0@sha256:d32322c61254a871e0bc9c38d4e60cd18539cf9b1a2fc8f3ae04409061d0793b
@@ -22,6 +23,7 @@ services:
     volumes:
       - ${KOKORO_MODEL_DIR:-./kokoro/models}:/models:ro
       - ${KOKORO_VOICES_DIR:-./kokoro/voices}:/voices:ro
+    restart: unless-stopped
   api:
     build:
       context: ..
@@ -35,19 +37,18 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      object-store:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8151:8151"
+    restart: unless-stopped
   object-store:
-    image: python:3.14.0-slim-bookworm
-    command: ["python3", "-m", "http.server", "9000", "--directory", "/srv/objects"]
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/daily-signals/editions/demo.json')"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+    build:
+      context: ..
+      dockerfile: deploy/object-store.Containerfile
     volumes:
-      - ../contracts/publication-manifest-v2.json:/srv/objects/daily-signals/editions/demo.json:ro
-      - ../radio-api/src/main/resources/fixtures:/srv/objects/daily-signals/fixtures:ro
+      - daily-signals-objects:/data
+    restart: unless-stopped
   streamer:
     build:
       context: ..
@@ -58,6 +59,8 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:8152:8152"
+    restart: unless-stopped
 
 volumes:
   daily-signals-postgres:
+  daily-signals-objects:

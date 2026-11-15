@@ -9,17 +9,26 @@ manifest = json.loads((ROOT / "deploy/install-manifest.json").read_text())
 compose = (ROOT / "deploy/compose.yaml").read_text()
 runtime = (ROOT / "deploy/runtime.env").read_text()
 
-assert manifest["schemaVersion"] == 1
-assert {item["name"] for item in manifest["services"]} == {"api", "streamer"}
+assert manifest["schemaVersion"] == 2
+assert {item["name"] for item in manifest["services"]} == {"postgres", "object-store", "api", "streamer", "kokoro"}
+assert {item["name"] for item in manifest["services"] if item["optional"]} == {"kokoro"}
 assert "  postgres:" in compose
+assert "  object-store:" in compose
 assert "condition: service_healthy" in compose
 for variable in ("DAILY_SIGNALS_DATABASE_URL", "DAILY_SIGNALS_DATABASE_USER", "DAILY_SIGNALS_DATABASE_PASSWORD"):
     assert variable in compose, f"compose does not configure {variable}"
 for service in manifest["services"]:
-    assert 1 <= service["port"] <= 65535
-    assert service["healthPath"].startswith("/")
-    assert f'{service["port"]}:{service["port"]}' in compose
     assert f"  {service['name']}:" in compose
+    if "port" in service:
+        assert 1 <= service["port"] <= 65535
+    if "healthPath" in service:
+        assert service["healthPath"].startswith("/")
+        assert f'{service["port"]}:{service["port"]}' in compose
+
+for volume in manifest["persistentVolumes"]:
+    assert compose.count(f"{volume}:") >= 2, f"{volume} is not declared and mounted"
+assert "dockerfile: deploy/object-store.Containerfile" in compose
+assert "daily-signals-objects:/data" in compose
 
 declared = {match.group(1) for match in re.finditer(r"^([A-Z][A-Z0-9_]*)=", runtime, re.MULTILINE)}
 assert set(manifest["runtimeVariables"]) <= declared
@@ -29,4 +38,5 @@ for item in manifest["immutableMountInputs"]:
 
 for forbidden in ("target/", "node_modules/", str(ROOT)):
     assert forbidden not in json.dumps(manifest)
-print(f"installation smoke passed: {len(manifest['services'])} services, {len(declared)} variables")
+print(f"installation smoke passed: {len(manifest['services'])} services, "
+      f"{len(manifest['persistentVolumes'])} durable volumes, {len(declared)} variables")

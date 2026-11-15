@@ -2397,6 +2397,45 @@
   },
   {
    "paths": [
+    "deploy/object_store.py",
+    "deploy/object-store.Containerfile"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_object_store.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "deploy/install-manifest.json"
    ],
    "features": [

@@ -1,9 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "services": [
-    {"name": "api", "port": 8151, "healthPath": "/health"},
-    {"name": "streamer", "port": 8152, "healthPath": "/health"}
+    {"name": "postgres", "role": "database", "optional": false},
+    {"name": "object-store", "role": "recordings", "optional": false},
+    {"name": "api", "role": "application", "optional": false, "port": 8151, "healthPath": "/health"},
+    {"name": "streamer", "role": "playback", "optional": false, "port": 8152, "healthPath": "/health"},
+    {"name": "kokoro", "role": "speech", "optional": true, "profile": "kokoro", "port": 8880}
   ],
+  "persistentVolumes": ["daily-signals-postgres", "daily-signals-objects"],
   "runtimeVariables": [
     "DAILY_SIGNALS_BIND_ADDRESS",
     "DAILY_SIGNALS_WEB_ROOT",
