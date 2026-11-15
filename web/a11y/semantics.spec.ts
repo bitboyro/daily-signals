@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test('listener and producer expose labelled landmarks and announcements', async ({ page }) => {
   await page.goto('/');
@@ -24,4 +25,14 @@ test('listener and producer expose labelled landmarks and announcements', async 
     return ids.filter((id, index) => ids.indexOf(id) !== index);
   });
   expect(duplicateIds).toEqual([]);
+
+  const accessibility = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .analyze();
+  const findings = accessibility.violations.map((violation) => ({
+    id: violation.id,
+    impact: violation.impact,
+    targets: violation.nodes.flatMap((node) => node.target),
+  }));
+  expect(findings, JSON.stringify(findings, null, 2)).toEqual([]);
 });

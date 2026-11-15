@@ -162,7 +162,7 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
           npm run build
-      - name: Verify semantic accessibility contract
+      - name: Verify semantic and axe accessibility contracts
         working-directory: web
         run: npm run a11y
       - name: Upload accessibility report

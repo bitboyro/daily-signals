@@ -126,6 +126,10 @@ jobs:
       - name: Run ${{ matrix.browser }} ${{ matrix.viewport }} journey
         working-directory: web
         run: npm run browser:e2e -- --project=${{ matrix.browser }}-${{ matrix.viewport }}
+      - name: Run WCAG axe audit
+        if: matrix.browser == 'chromium' && matrix.viewport == 'desktop'
+        working-directory: web
+        run: npm run a11y
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -134,6 +138,8 @@ jobs:
           path: |
             web/reports/playwright.xml
             web/reports/playwright-results/**
+            web/reports/web-a11y.xml
+            web/reports/a11y-results/**
           if-no-files-found: warn
   nightly-soak:
     runs-on: ubuntu-latest

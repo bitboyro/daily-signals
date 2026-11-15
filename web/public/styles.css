@@ -6,7 +6,7 @@
   --surface: #fffdf8;
   --navy: #13243a;
   --navy-soft: #203b58;
-  --signal: #e05a47;
+  --signal: #b74432;
   --signal-soft: #f8ded6;
   --line: #d9d4c8;
   --focus: #176b87;
@@ -47,7 +47,7 @@ body > header {
 
 .station-mark { display: flex; align-items: center; gap: 0.9rem; }
 .station-mark p { margin: 0 0 0.1rem; color: #b9c8d8; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-.signal-dot { width: 1rem; height: 1rem; flex: 0 0 auto; border-radius: 50%; background: var(--signal); box-shadow: 0 0 0 0.4rem rgb(224 90 71 / 18%); }
+.signal-dot { width: 1rem; height: 1rem; flex: 0 0 auto; border-radius: 50%; background: var(--signal); box-shadow: 0 0 0 0.4rem rgb(183 68 50 / 18%); }
 h1, h2, h3, h4 { font-family: Georgia, "Times New Roman", serif; line-height: 1.12; }
 h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); letter-spacing: -0.035em; }
 h2 { margin: 0; font-size: clamp(2rem, 5vw, 3.4rem); letter-spacing: -0.04em; }
