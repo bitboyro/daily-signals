@@ -206,8 +206,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Structured API log contract
-        run: mvn -B -ntp -pl radio-api -am test -Dtest=StructuredLogContractTest -Dsurefire.failIfNoSpecifiedTests=false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: API health, metrics and structured log contracts
+        run: mvn -B -ntp -pl radio-api -am test -Dtest=OperationalEndpointsContractTest,StructuredLogContractTest -Dsurefire.failIfNoSpecifiedTests=false
+      - name: Streamer structured log contract
+        run: cargo test --manifest-path streamer/Cargo.toml structured_log
       - name: Upload schedule-test coverage
         if: always()
         uses: actions/upload-artifact@v4

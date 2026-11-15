@@ -62,6 +62,12 @@ try:
     with urllib.request.urlopen(request) as response:
         assert response.status == 206 and response.read() == b'RIFF'
         assert response.headers['Content-Range'] == f'bytes 0-3/{manifest["sizeBytes"]}'
+    with urllib.request.urlopen(f'http://127.0.0.1:{rust_port}/metrics') as response:
+        metrics = response.read().decode()
+        assert response.headers['Content-Type'].startswith('text/plain')
+        assert 'daily_signals_stream_requests_total' in metrics
+        assert 'daily_signals_stream_bytes_total' in metrics
+        assert 'daily_signals_stream_client_errors_total 0' in metrics
     print('Podcast enclosure resolved to Rust playback; range, length, type and ETag validated')
 finally:
     for process in (java, rust):

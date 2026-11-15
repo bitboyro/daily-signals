@@ -5,6 +5,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let port: u16 = args[1].parse()?;
     let bind = std::env::var("STREAMER_BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1".into());
+    println!(
+        "{}",
+        daily_signals_streamer::structured_log::event(
+            "INFO",
+            "daily-signals-streamer",
+            env!("CARGO_PKG_VERSION"),
+            "startup",
+            "streamer.main",
+            "streamer.started",
+            &format!("Daily Signals streamer listening on {bind}:{port}"),
+        )?
+    );
     if args.len() == 2 {
         let endpoint = std::env::var("OBJECT_STORE_ENDPOINT")?;
         let bucket = std::env::var("OBJECT_STORE_BUCKET")?;

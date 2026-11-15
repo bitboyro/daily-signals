@@ -1,5 +1,5 @@
 # Java API with the built listener UI. Build context: repository root.
-FROM node:24.15.0-alpine3.22 AS web
+FROM node:24.22.3-alpine3.24 AS web
 WORKDIR /src/web
 COPY web/package.json web/package-lock.json ./
 RUN npm ci
@@ -18,7 +18,7 @@ COPY radio-api/ radio-api/
 COPY contracts/ contracts/
 RUN mvn -B -ntp -DskipTests package
 
-FROM eclipse-temurin:21.0.10_7-jre
+FROM eclipse-temurin:21.0.13_9-jre
 WORKDIR /app
 COPY --from=java /src/radio-api/target/classes classes/radio-api
 COPY --from=java /src/radio-edition/target/classes classes/radio-edition

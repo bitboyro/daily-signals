@@ -101,7 +101,12 @@ public final class DailySignals {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
+        ApiMetrics metrics = new ApiMetrics(Clock.systemUTC(), setup::configured);
         server.createContext("/health", exchange -> respond(exchange, 200, "application/json", "{\"status\":\"ok\"}".getBytes(StandardCharsets.UTF_8)));
+        server.createContext("/actuator/health", exchange -> respond(exchange, 200, "application/json",
+                metrics.healthJson().getBytes(StandardCharsets.UTF_8)));
+        server.createContext("/actuator/prometheus", exchange -> respond(exchange, 200,
+                "text/plain; version=0.0.4; charset=utf-8", metrics.prometheus().getBytes(StandardCharsets.UTF_8)));
         if (feedSettings.enabled()) {
             server.createContext("/feed.xml", exchange -> respondReadable(exchange, 200,
                     "application/rss+xml; charset=utf-8",
@@ -515,7 +520,9 @@ public final class DailySignals {
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;
-        System.out.println(StructuredLog.event("INFO", "api.started", "Daily Signals listening on " + address,
+        System.out.println(StructuredLog.event(Clock.systemUTC(), "INFO", "daily-signals-api",
+                environment.getOrDefault("DAILY_SIGNALS_VERSION", "development"), "startup",
+                DailySignals.class.getName(), "api.started", "Daily Signals listening on " + address,
                 java.util.Map.of("address", address, "port", actualPort)));
     }
 }
