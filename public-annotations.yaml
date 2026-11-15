@@ -2398,6 +2398,7 @@
   {
    "paths": [
     "radio-api/src/main/java/ro/bitboy/dailysignals/FirstRunSetup.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/SetupVoiceProvider.java",
     "web/src/setup.ts"
    ],
    "features": [
@@ -2406,11 +2407,12 @@
     { "id": "VOC-04", "relation": "configures" },
     { "id": "PLT-04", "relation": "configures" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "9c1b251afb8e8a4ff9d08e2d0206de2e1c15c42a", "retiredIn": null
   },
   {
    "paths": [
     "radio-api/src/test/java/ro/bitboy/dailysignals/FirstRunSetupTest.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/SetupVoiceProviderTest.java",
     "web/test/setup.test.ts"
    ],
    "features": [
@@ -2418,7 +2420,7 @@
     { "id": "SRC-01", "relation": "tests" },
     { "id": "PLT-04", "relation": "tests" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "9c1b251afb8e8a4ff9d08e2d0206de2e1c15c42a", "retiredIn": null
   },
   {
    "paths": [

@@ -504,11 +504,12 @@ public final class DailySignals {
         }
         var environment = System.getenv();
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
+        var setup = FirstRunSetup.fromEnvironment(environment);
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
                 FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow,
-                VoiceProviderFactory.fromEnvironment(environment), PodcastFeedSettings.fromEnvironment(environment),
-                FirstRunSetup.fromEnvironment(environment));
+                SetupVoiceProvider.fromEnvironment(setup, environment), PodcastFeedSettings.fromEnvironment(environment),
+                setup);
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

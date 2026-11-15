@@ -29,6 +29,10 @@ for volume in manifest["persistentVolumes"]:
     assert compose.count(f"{volume}:") >= 2, f"{volume} is not declared and mounted"
 assert "dockerfile: deploy/object-store.Containerfile" in compose
 assert "daily-signals-objects:/data" in compose
+assert "--profile kokoro up --build" in runtime
+for variable in ("DAILY_SIGNALS_KOKORO_ENDPOINT", "DAILY_SIGNALS_KOKORO_MODEL_REVISION",
+                 "DAILY_SIGNALS_KOKORO_MODEL_SHA256", "DAILY_SIGNALS_KOKORO_VOICE_ID"):
+    assert variable in runtime, f"runtime does not configure {variable}"
 
 declared = {match.group(1) for match in re.finditer(r"^([A-Z][A-Z0-9_]*)=", runtime, re.MULTILINE)}
 assert set(manifest["runtimeVariables"]) <= declared

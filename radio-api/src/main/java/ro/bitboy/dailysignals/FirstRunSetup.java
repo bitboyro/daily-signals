@@ -38,6 +38,8 @@ final class FirstRunSetup {
 
     synchronized boolean configured() { return configuration.configured(); }
 
+    synchronized String voice() { return configuration.voice(); }
+
     synchronized String toJson() {
         try { return JSON.writeValueAsString(configuration); }
         catch (IOException impossible) { throw new IllegalStateException(impossible); }

@@ -14,6 +14,7 @@ test('parses and renders the three guided setup steps', () => {
   assert.match(html, /1\. News source/);
   assert.match(html, /2\. Station voice/);
   assert.match(html, /3\. Daily schedule/);
+  assert.match(html, /docker compose --profile kokoro up --build/);
   assert.match(html, /Europe\/Bucharest/);
   assert.throws(() => parseSetup({ ...setup, voice: 'cloud' }), /unexpected setup/);
 });

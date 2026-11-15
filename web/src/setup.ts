@@ -47,7 +47,8 @@ export function renderSetup(setup: StationSetup): string {
     + `<label for="setup-source-url">HTTPS feed URL</label><input id="setup-source-url" name="sourceUrl" type="url" value="${escapeHtml(source.url)}" required></fieldset>`
     + '<fieldset><legend>2. Station voice</legend><label for="setup-voice">Voice provider</label>'
     + `<select id="setup-voice" name="voice"><option value="fixture"${setup.voice === 'fixture' ? ' selected' : ''}>Built-in test voice</option>`
-    + `<option value="kokoro"${setup.voice === 'kokoro' ? ' selected' : ''}>Local Kokoro</option></select></fieldset>`
+    + `<option value="kokoro"${setup.voice === 'kokoro' ? ' selected' : ''}>Local Kokoro (requires the kokoro install profile)</option></select>`
+    + '<p class="field-help">To use Kokoro, start Daily Signals with <code>docker compose --profile kokoro up --build</code>.</p></fieldset>'
     + '<fieldset><legend>3. Daily schedule</legend>'
     + `<label for="setup-window">Fetch time</label><input id="setup-window" name="window" type="time" value="${escapeHtml(setup.window)}" required>`
     + `<label for="setup-zone">Timezone</label><input id="setup-zone" name="zone" value="${escapeHtml(setup.zone)}" required></fieldset>`

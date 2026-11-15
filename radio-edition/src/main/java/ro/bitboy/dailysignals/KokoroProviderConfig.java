@@ -6,7 +6,8 @@ import java.net.URI;
 public record KokoroProviderConfig(URI endpoint, String modelRevision, String modelSha256, String voiceId) {
     public KokoroProviderConfig {
         if (endpoint == null || !"http".equals(endpoint.getScheme()) || endpoint.getHost() == null
-                || !(endpoint.getHost().equals("127.0.0.1") || endpoint.getHost().equals("localhost")))
+                || !(endpoint.getHost().equals("127.0.0.1") || endpoint.getHost().equals("localhost")
+                || endpoint.getHost().equals("kokoro")))
             throw new IllegalArgumentException("local HTTP Kokoro endpoint required");
         if (modelRevision == null || !modelRevision.matches("[a-zA-Z0-9._-]{6,80}")
                 || "latest".equalsIgnoreCase(modelRevision))
