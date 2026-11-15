@@ -3551,12 +3551,16 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
-   "paths": ["*/src/main/java/*/StructuredLog.java", "*/src/test/java/*/StructuredLogContractTest.java"],
+   "paths": [
+    "*/src/main/java/*/StructuredLog.java",
+    "*/src/test/java/*/StructuredLogContractTest.java",
+    "streamer/src/structured_log.rs"
+   ],
    "features": [
     { "id": "PLT-01", "relation": "implements" },
     { "id": "PLT-05", "relation": "tests" }
    ],
-   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "1b7b4f9a52b08c258463b008b1b0d223962c7e5f", "retiredIn": null
   },
   {
    "paths": [

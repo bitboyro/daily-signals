@@ -520,7 +520,9 @@ public final class DailySignals {
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;
-        System.out.println(StructuredLog.event("INFO", "api.started", "Daily Signals listening on " + address,
+        System.out.println(StructuredLog.event(Clock.systemUTC(), "INFO", "daily-signals-api",
+                environment.getOrDefault("DAILY_SIGNALS_VERSION", "development"), "startup",
+                DailySignals.class.getName(), "api.started", "Daily Signals listening on " + address,
                 java.util.Map.of("address", address, "port", actualPort)));
     }
 }

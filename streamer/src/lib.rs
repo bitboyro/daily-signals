@@ -1,7 +1,10 @@
-pub mod server;
 pub mod manifest;
+pub mod server;
+pub mod structured_log;
 /// Published-audio streaming boundary. Editorial decisions remain in Java.
-pub fn health_body() -> &'static str { r#"{"status":"ok"}"# }
+pub fn health_body() -> &'static str {
+    r#"{"status":"ok"}"#
+}
 
 #[cfg(test)]
 mod tests {
