@@ -22,8 +22,20 @@ class ProducerEndpointAuthorizationTest {
         server.start();
         try {
             String queue = "http://127.0.0.1:" + server.getAddress().getPort() + "/api/review-queue";
+            String setup = queue.replace("/api/review-queue", "/api/setup");
             HttpClient client = HttpClient.newHttpClient();
+            String settings = """
+                    {"schemaVersion":1,"configured":true,"sources":[
+                      {"id":"desk","name":"Desk","url":"https://news.example/rss","priority":10}
+                    ],"voice":"fixture","zone":"UTC","window":"06:00"}
+                    """;
+            assertEquals(200, client.send(HttpRequest.newBuilder(URI.create(setup))
+                            .PUT(HttpRequest.BodyPublishers.ofString(settings)).build(),
+                    HttpResponse.BodyHandlers.discarding()).statusCode(), "first-run setup remains public");
             for (String token : new String[]{PRODUCER, EDITOR}) {
+                assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(setup))
+                                .PUT(HttpRequest.BodyPublishers.ofString(settings)), token),
+                        HttpResponse.BodyHandlers.discarding()).statusCode());
                 assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue + "/audit")).GET(), token),
                         HttpResponse.BodyHandlers.discarding()).statusCode());
                 assertEquals(200, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/script")))
@@ -57,6 +69,12 @@ class ProducerEndpointAuthorizationTest {
                             .POST(HttpRequest.BodyPublishers.noBody()), LISTENER),
                     HttpResponse.BodyHandlers.discarding()).statusCode());
             assertEquals(403, client.send(withToken(HttpRequest.newBuilder(URI.create(queue.replace("/review-queue", "/producer/edition"))).GET(), LISTENER),
+                    HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(403, client.send(withToken(HttpRequest.newBuilder(URI.create(setup))
+                            .PUT(HttpRequest.BodyPublishers.ofString(settings)), LISTENER),
+                    HttpResponse.BodyHandlers.discarding()).statusCode());
+            assertEquals(401, client.send(HttpRequest.newBuilder(URI.create(setup))
+                            .PUT(HttpRequest.BodyPublishers.ofString(settings)).build(),
                     HttpResponse.BodyHandlers.discarding()).statusCode());
             HttpResponse<Void> anonymous = client.send(HttpRequest.newBuilder(URI.create(queue + "/audit")).GET().build(),
                     HttpResponse.BodyHandlers.discarding());
