@@ -20,7 +20,7 @@ with tempfile.TemporaryDirectory() as directory:
         ROOT / "contracts/publication-manifest-v2.json",
         ROOT / "radio-api/src/main/resources/fixtures/demo-edition.wav",
     )
-    assert (root / "daily-signals/editions/demo-2026-01-15.json").is_file()
+    assert (root / "daily-signals/editions/demo.json").is_file()
     assert (root / "daily-signals/fixtures/demo-edition.wav").is_file()
     server = module.ThreadingHTTPServer(("127.0.0.1", 0), module.handler(root))
     thread = threading.Thread(target=server.serve_forever, daemon=True)

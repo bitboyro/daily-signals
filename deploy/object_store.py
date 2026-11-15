@@ -29,10 +29,12 @@ def object_path(root: Path, request_path: str) -> Path:
     return target
 
 
-def seed(root: Path, manifest_path: Path, audio_path: Path) -> None:
+def seed(root: Path, manifest_path: Path, audio_path: Path, manifest_key: str = "editions/demo.json") -> None:
     manifest = json.loads(manifest_path.read_text())
+    if not KEY.fullmatch(manifest_key) or ".." in manifest_key.split("/"):
+        raise ValueError("unsafe seed manifest key")
     objects = {
-        root / "daily-signals" / "editions" / f"{manifest['editionId']}.json": manifest_path,
+        root / "daily-signals" / manifest_key: manifest_path,
         root / "daily-signals" / manifest["audioPath"]: audio_path,
     }
     for target, source in objects.items():
@@ -121,12 +123,13 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=9000)
     parser.add_argument("--seed-manifest", type=Path)
     parser.add_argument("--seed-audio", type=Path)
+    parser.add_argument("--seed-manifest-key", default="editions/demo.json")
     args = parser.parse_args()
     args.root.mkdir(parents=True, exist_ok=True)
     if bool(args.seed_manifest) != bool(args.seed_audio):
         parser.error("--seed-manifest and --seed-audio must be supplied together")
     if args.seed_manifest:
-        seed(args.root, args.seed_manifest, args.seed_audio)
+        seed(args.root, args.seed_manifest, args.seed_audio, args.seed_manifest_key)
     ThreadingHTTPServer((args.host, args.port), handler(args.root)).serve_forever()
 
 
