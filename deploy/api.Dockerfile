@@ -27,6 +27,7 @@ COPY --from=java /src/radio-ingestion/target/classes classes/radio-ingestion
 COPY --from=java /src/radio-persistence/target/classes classes/radio-persistence
 COPY --from=java /src/radio-api/target/runtime-libs/ lib/
 COPY --from=web /src/web/dist web
+RUN mkdir -p /data && chown 10001:10001 /data
 USER 10001
 EXPOSE 8151
 ENTRYPOINT ["java", "-cp", "/app/classes/radio-api:/app/classes/radio-edition:/app/classes/radio-editorial:/app/classes/radio-ingestion:/app/classes/radio-persistence:/app/lib/*", "ro.bitboy.dailysignals.DailySignals"]

@@ -35,6 +35,7 @@ object_thread = threading.Thread(target=object_store.serve_forever, daemon=True)
 object_thread.start()
 java_classpath = ':'.join(str(ROOT / module / 'target/classes') for module in (
     'radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion', 'radio-persistence'))
+java_classpath += ':' + str(ROOT / 'radio-api/target/runtime-libs/*')
 java = subprocess.Popen(['java', '-cp', java_classpath, 'ro.bitboy.dailysignals.DailySignals', str(java_port)],
                         env={**os.environ, 'DAILY_SIGNALS_PODCAST_FEED_ENABLED': 'true'}, stdout=subprocess.DEVNULL)
 rust = subprocess.Popen([str(ROOT / 'streamer/target/debug/daily-signals-streamer'), str(rust_port), f'http://127.0.0.1:{object_port}', 'radio', 'editions/demo.json'], stdout=subprocess.DEVNULL)

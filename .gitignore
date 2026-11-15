@@ -7,6 +7,7 @@ streamer/target/
 rust-test.log
 release-manifest.json
 nightly-load-report.json
+install-health.json
 web/node_modules/
 web/dist/
 web/reports/

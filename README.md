@@ -6,6 +6,8 @@ The repository history is intentionally authored as small, identifiable product 
 
 ## Build and run
 
+For the quickest complete local installation, run `./install.sh`; it validates prerequisites, starts the durable Compose stack, verifies playback, and directs you to the guided setup. The target is less than 30 minutes from a clean checkout. Use `./install.sh --dry-run` to preview it or `./install.sh --profile kokoro` after provisioning the pinned local speech assets.
+
 - Java: `mvn -B -ntp verify`. Run the API with `java -cp radio-api/target/classes:radio-edition/target/classes:radio-editorial/target/classes:radio-ingestion/target/classes ro.bitboy.dailysignals.DailySignals [PORT]` (default `8151`). Set `DAILY_SIGNALS_WEB_ROOT=web/dist` to serve the listener UI at `/`.
 - Rust: `cargo test --manifest-path streamer/Cargo.toml`; `streamer PORT MANIFEST_PATH AUDIO_ROOT` serves one published manifest.
 - Web: `npm --prefix web ci`, then `npm --prefix web run build`, `npm --prefix web test`, and `npm --prefix web run e2e` (needs the Java build).

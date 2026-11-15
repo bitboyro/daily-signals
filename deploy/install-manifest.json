@@ -1,12 +1,24 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "installCommand": "./install.sh",
+  "quickStartTargetMinutes": 30,
   "services": [
-    {"name": "api", "port": 8151, "healthPath": "/health"},
-    {"name": "streamer", "port": 8152, "healthPath": "/health"}
+    {"name": "postgres", "role": "database", "optional": false},
+    {"name": "object-store", "role": "recordings", "optional": false},
+    {"name": "api", "role": "application", "optional": false, "port": 8151, "healthPath": "/health"},
+    {"name": "streamer", "role": "playback", "optional": false, "port": 8152, "healthPath": "/health"},
+    {"name": "kokoro", "role": "speech", "optional": true, "profile": "kokoro", "port": 8880}
   ],
+  "persistentVolumes": ["daily-signals-postgres", "daily-signals-objects", "daily-signals-config"],
   "runtimeVariables": [
     "DAILY_SIGNALS_BIND_ADDRESS",
     "DAILY_SIGNALS_WEB_ROOT",
+    "DAILY_SIGNALS_SETUP_PATH",
+    "DAILY_SIGNALS_KOKORO_ENDPOINT",
+    "DAILY_SIGNALS_KOKORO_MODEL_REVISION",
+    "DAILY_SIGNALS_KOKORO_MODEL_SHA256",
+    "DAILY_SIGNALS_KOKORO_VOICE_ID",
+    "DAILY_SIGNALS_KOKORO_TIMEOUT_SECONDS",
     "STREAMER_BIND_ADDRESS",
     "STREAMER_PUBLIC_PREFIXES",
     "OBJECT_STORE_ENDPOINT",

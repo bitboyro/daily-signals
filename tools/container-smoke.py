@@ -27,6 +27,7 @@ HOST_PATHS = [
     ('/srv/published/manifest.json', ROOT / 'contracts/publication-manifest-v2.json'),
     ('/srv/published', ROOT / 'radio-api/src/main/resources'),
     ('/app/web', ROOT / 'web/dist'),
+    ('/app/lib', ROOT / 'radio-api/target/runtime-libs'),
     ('/usr/local/bin/daily-signals-streamer', ROOT / 'streamer/target/debug/daily-signals-streamer'),
     *[(f'/app/classes/{m}', ROOT / m / 'target/classes') for m in MODULES],
 ]

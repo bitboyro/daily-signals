@@ -13,6 +13,8 @@ class KokoroProviderConfigTest {
         var config = new KokoroProviderConfig(URI.create("http://127.0.0.1:8880"),
                 "9e1746465742d780a70ac81d01a334c9f8e0bbb3", SHA, "af_heart");
         assertEquals("af_heart", config.voiceId());
+        assertEquals("kokoro", new KokoroProviderConfig(URI.create("http://kokoro:8880"),
+                "9e1746465742d780a70ac81d01a334c9f8e0bbb3", SHA, "af_heart").endpoint().getHost());
     }
 
     @Test void rejectsRemoteEndpointsAndMutableModels() {

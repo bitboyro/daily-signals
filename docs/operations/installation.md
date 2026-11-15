@@ -1,6 +1,6 @@
 # Installation and upgrade
 
-Daily Signals installs two services from `deploy/compose.yaml`: the Java API/listener on port 8151 and the Rust streamer on port 8152. Both expose `GET /health`. The installation manifest at `deploy/install-manifest.json` is the machine-readable contract checked from a clean checkout.
+Daily Signals installs PostgreSQL, a durable local object store, the Java API/listener on port 8151 and the Rust streamer on port 8152. The optional Kokoro profile adds local speech synthesis. The installation manifest at `deploy/install-manifest.json` is the machine-readable contract checked from a clean checkout.
 
 ## Runtime variables
 
@@ -8,6 +8,7 @@ Daily Signals installs two services from `deploy/compose.yaml`: the Java API/lis
 | --- | --- | --- | --- |
 | `DAILY_SIGNALS_BIND_ADDRESS` | `0.0.0.0` | no | API listener address inside the container |
 | `DAILY_SIGNALS_WEB_ROOT` | `/app/web` | no | Built listener asset directory |
+| `DAILY_SIGNALS_SETUP_PATH` | `/data/setup.json` | no | Durable first-run station configuration |
 | `STREAMER_BIND_ADDRESS` | `0.0.0.0` | no | Streamer listener address inside the container |
 | `STREAMER_PUBLIC_PREFIXES` | `editions/,fixtures/` | no | Object-key prefixes visible to listeners |
 | `DAILY_SIGNALS_REVIEW_TOKENS` | unset | yes | Optional `token=ROLE` producer authorization pairs; supply through a secret store |
@@ -18,13 +19,20 @@ The checked-in `runtime.env` contains only non-secret defaults. Do not add revie
 ## Clean installation
 
 ```sh
-python3 tools/install-smoke.py
-docker compose -f deploy/compose.yaml config --quiet
-docker compose -f deploy/compose.yaml up -d --build
-python3 tools/post-deploy-health.py --revision local-install
+./install.sh
 ```
 
-The streamer mounts the publication manifest and fixture recording read-only. A production deployment replaces those inputs with its published object-store integration.
+The script checks prerequisites before changing anything, builds and starts the five-service Compose model, verifies API, listener and playback health, and writes `install-health.json`. The quick-start target is less than 30 minutes. When it finishes, open [http://127.0.0.1:8151/](http://127.0.0.1:8151/) and complete the guided source, voice and schedule setup.
+
+Preview the exact commands without starting containers:
+
+```sh
+./install.sh --dry-run
+```
+
+To use local Kokoro, first provision the pinned model and voice assets described in [local Kokoro speech](kokoro.md), then run `./install.sh --profile kokoro`. The preflight refuses to start that profile when either asset is missing.
+
+For manual diagnosis, run `python3 tools/startup_preflight.py --json`. The script reports missing tools, malformed variables, invalid Compose configuration and occupied ports without a Java stack trace.
 
 ## Upgrade and rollback
 

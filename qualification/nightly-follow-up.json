@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "report": "https://github.com/bitboyro/daily-signals/issues/24#issuecomment-6736342210",
-  "publishedAt": "2026-11-09T09:11:27Z",
+  "report": "https://github.com/bitboyro/daily-signals/issues/24#issuecomment-6874697423",
+  "publishedAt": "2026-11-14T08:42:16Z",
   "status": "no_action",
   "observations": {
     "referenceAndSlowTier": "passed",
-    "auditedChanges": 47,
-    "failingPullRequestRuns": 10,
+    "auditedChanges": 70,
+    "failingPullRequestRuns": 13,
     "missedFailingRuns": 0
   },
   "followUps": [],
   "limitations": [
-    "The report predates the final day-2 merge fcd5e24.",
+    "The report's reference head 13ec40b predates the day-3 product merges.",
     "The combined frozen-config v2 and v3 replay is not complete."
   ]
 }

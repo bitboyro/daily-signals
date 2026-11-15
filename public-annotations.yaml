@@ -2397,6 +2397,72 @@
   },
   {
    "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/FirstRunSetup.java",
+    "radio-api/src/main/java/ro/bitboy/dailysignals/SetupVoiceProvider.java",
+    "web/src/setup.ts"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "implements" },
+    { "id": "SRC-01", "relation": "configures" },
+    { "id": "VOC-04", "relation": "configures" },
+    { "id": "PLT-04", "relation": "configures" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "9c1b251afb8e8a4ff9d08e2d0206de2e1c15c42a", "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/test/java/ro/bitboy/dailysignals/FirstRunSetupTest.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/SetupVoiceProviderTest.java",
+    "web/test/setup.test.ts"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "tests" },
+    { "id": "SRC-01", "relation": "tests" },
+    { "id": "PLT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": "9c1b251afb8e8a4ff9d08e2d0206de2e1c15c42a", "retiredIn": null
+  },
+  {
+   "paths": [
+    "deploy/object_store.py",
+    "deploy/object-store.Containerfile"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "configures"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_object_store.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "deploy/install-manifest.json"
    ],
    "features": [
@@ -2417,6 +2483,74 @@
    "features": [
     {
      "id": "PLT-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "install.sh"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "implements"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_install_script.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/startup_preflight.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "implements"
+    },
+    {
+     "id": "VOC-04",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_startup_preflight.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "VOC-04",
      "relation": "tests"
     }
    ],
