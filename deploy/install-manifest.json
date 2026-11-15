@@ -1,5 +1,7 @@
 {
   "schemaVersion": 2,
+  "installCommand": "./install.sh",
+  "quickStartTargetMinutes": 30,
   "services": [
     {"name": "postgres", "role": "database", "optional": false},
     {"name": "object-store", "role": "recordings", "optional": false},

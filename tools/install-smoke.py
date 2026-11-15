@@ -10,6 +10,9 @@ compose = (ROOT / "deploy/compose.yaml").read_text()
 runtime = (ROOT / "deploy/runtime.env").read_text()
 
 assert manifest["schemaVersion"] == 2
+assert manifest["installCommand"] == "./install.sh"
+assert manifest["quickStartTargetMinutes"] == 30
+assert (ROOT / "install.sh").is_file()
 assert {item["name"] for item in manifest["services"]} == {"postgres", "object-store", "api", "streamer", "kokoro"}
 assert {item["name"] for item in manifest["services"] if item["optional"]} == {"kokoro"}
 assert "  postgres:" in compose
