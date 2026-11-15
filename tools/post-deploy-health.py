@@ -35,6 +35,7 @@ for name, url in (
     ("api-actuator-health", f"{args.api_base}/actuator/health"),
     ("api-prometheus", f"{args.api_base}/actuator/prometheus"),
     ("stream-health", f"{args.stream_base}/health"),
+    ("stream-prometheus", f"{args.stream_base}/metrics"),
     ("listener", f"{args.api_base}/"),
     ("listener-module", f"{args.api_base}/app/main.js"),
     ("listener-style", f"{args.api_base}/styles.css"),
@@ -46,6 +47,9 @@ for name, url in (
 assert json.loads(fetch(f"{args.api_base}/actuator/health")[2])["status"] == "UP"
 metrics = fetch(f"{args.api_base}/actuator/prometheus")[2].decode()
 assert "daily_signals_api_up 1" in metrics and "daily_signals_metrics_scrapes_total" in metrics
+stream_metrics = fetch(f"{args.stream_base}/metrics")[2].decode()
+assert "daily_signals_stream_requests_total" in stream_metrics
+assert "daily_signals_stream_bytes_total" in stream_metrics
 
 status, _, body = fetch(f"{args.api_base}/api/editions")
 catalog = json.loads(body)

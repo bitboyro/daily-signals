@@ -1833,6 +1833,10 @@
     {
      "id": "OBJ-05",
      "relation": "implements"
+    },
+    {
+     "id": "STR-05",
+     "relation": "implements"
     }
    ],
    "confidence": "high",
@@ -1959,6 +1963,10 @@
     },
     {
      "id": "STR-03",
+     "relation": "tests"
+    },
+    {
+     "id": "STR-05",
      "relation": "tests"
     },
     {

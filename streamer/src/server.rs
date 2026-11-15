@@ -1,6 +1,7 @@
 use crate::manifest::PublicationManifest;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 pub struct Response {
     pub status: u16,
@@ -13,6 +14,56 @@ pub struct Response {
 pub struct ThroughputProfile {
     pub requests: usize,
     pub bytes: usize,
+}
+
+#[derive(Default)]
+pub struct StreamMetrics {
+    requests: AtomicU64,
+    bytes: AtomicU64,
+    client_errors: AtomicU64,
+    server_errors: AtomicU64,
+    scrapes: AtomicU64,
+}
+
+impl StreamMetrics {
+    fn observe(&self, response: &Response) {
+        self.requests.fetch_add(1, Ordering::Relaxed);
+        self.bytes
+            .fetch_add(response.content_length as u64, Ordering::Relaxed);
+        if (400..500).contains(&response.status) {
+            self.client_errors.fetch_add(1, Ordering::Relaxed);
+        } else if response.status >= 500 {
+            self.server_errors.fetch_add(1, Ordering::Relaxed);
+        }
+    }
+
+    pub fn prometheus(&self) -> String {
+        let scrapes = self.scrapes.fetch_add(1, Ordering::Relaxed) + 1;
+        format!(
+            concat!(
+                "# HELP daily_signals_stream_requests_total Streamer responses.\n",
+                "# TYPE daily_signals_stream_requests_total counter\n",
+                "daily_signals_stream_requests_total {}\n",
+                "# HELP daily_signals_stream_bytes_total Response body bytes served.\n",
+                "# TYPE daily_signals_stream_bytes_total counter\n",
+                "daily_signals_stream_bytes_total {}\n",
+                "# HELP daily_signals_stream_client_errors_total Streamer 4xx responses.\n",
+                "# TYPE daily_signals_stream_client_errors_total counter\n",
+                "daily_signals_stream_client_errors_total {}\n",
+                "# HELP daily_signals_stream_server_errors_total Streamer 5xx responses.\n",
+                "# TYPE daily_signals_stream_server_errors_total counter\n",
+                "daily_signals_stream_server_errors_total {}\n",
+                "# HELP daily_signals_stream_metrics_scrapes_total Metrics endpoint scrapes.\n",
+                "# TYPE daily_signals_stream_metrics_scrapes_total counter\n",
+                "daily_signals_stream_metrics_scrapes_total {}\n"
+            ),
+            self.requests.load(Ordering::Relaxed),
+            self.bytes.load(Ordering::Relaxed),
+            self.client_errors.load(Ordering::Relaxed),
+            self.server_errors.load(Ordering::Relaxed),
+            scrapes,
+        )
+    }
 }
 
 fn object_store_get(
@@ -120,9 +171,7 @@ impl Response {
         };
         let mut wire = format!(
             "HTTP/1.1 {} {}\r\nContent-Length: {}\r\nConnection: close\r\n",
-            self.status,
-            reason,
-            self.content_length
+            self.status, reason, self.content_length
         )
         .into_bytes();
         for (key, value) in &self.headers {
@@ -176,6 +225,28 @@ pub fn route_with_policy(
         return Response::new(403, vec![], "text/plain");
     }
     route_for_object(request, manifest, audio)
+}
+
+pub fn route_with_metrics(
+    request: &str,
+    manifest: &PublicationManifest,
+    audio: Option<&[u8]>,
+    policy: &AccessPolicy,
+    metrics: &StreamMetrics,
+) -> Response {
+    let mut parts = request.lines().next().unwrap_or("").split_whitespace();
+    let method = parts.next().unwrap_or("");
+    let path = parts.next().unwrap_or("");
+    if method == "GET" && path == "/metrics" {
+        return Response::new(
+            200,
+            metrics.prometheus().into_bytes(),
+            "text/plain; version=0.0.4",
+        );
+    }
+    let response = route_with_policy(request, manifest, audio, policy);
+    metrics.observe(&response);
+    response
 }
 pub fn route_for_object(
     request: &str,
@@ -278,11 +349,12 @@ fn serve(
     manifest: &PublicationManifest,
     audio: Option<&[u8]>,
     policy: &AccessPolicy,
+    metrics: &StreamMetrics,
 ) -> std::io::Result<()> {
     let mut buffer = [0_u8; 8192];
     let size = stream.read(&mut buffer)?;
     let request = String::from_utf8_lossy(&buffer[..size]);
-    stream.write_all(&route_with_policy(&request, manifest, audio, policy).wire())
+    stream.write_all(&route_with_metrics(&request, manifest, audio, policy, metrics).wire())
 }
 pub fn listen_from_object_store(
     bind: &str,
@@ -303,9 +375,10 @@ fn listen_loaded(
     let policy =
         AccessPolicy::from_prefixes(std::env::var("STREAMER_PUBLIC_PREFIXES").ok().as_deref());
     let listener = TcpListener::bind((bind, port))?;
+    let metrics = StreamMetrics::default();
     for incoming in listener.incoming() {
         if let Ok(stream) = incoming {
-            let _ = serve(stream, &manifest, audio.as_deref(), &policy);
+            let _ = serve(stream, &manifest, audio.as_deref(), &policy, &metrics);
         }
     }
     Ok(())
@@ -503,6 +576,50 @@ mod tests {
                 bytes: 900
             }
         );
+    }
+
+    #[test]
+    fn exposes_prometheus_stream_request_byte_and_error_counters() {
+        let manifest: PublicationManifest =
+            serde_json::from_str(include_str!("../../contracts/publication-manifest-v2.json"))
+                .unwrap();
+        let metrics = StreamMetrics::default();
+        let policy = AccessPolicy::default();
+        assert_eq!(
+            route_with_metrics(
+                "GET /editions/demo-2026-01-15/audio HTTP/1.1\r\n",
+                &manifest,
+                Some(b"RIFF-demo"),
+                &policy,
+                &metrics
+            )
+            .status,
+            200
+        );
+        assert_eq!(
+            route_with_metrics(
+                "GET /missing HTTP/1.1\r\n",
+                &manifest,
+                Some(b"RIFF-demo"),
+                &policy,
+                &metrics
+            )
+            .status,
+            404
+        );
+        let response = route_with_metrics(
+            "GET /metrics HTTP/1.1\r\n",
+            &manifest,
+            Some(b"RIFF-demo"),
+            &policy,
+            &metrics,
+        );
+        let body = String::from_utf8(response.body).unwrap();
+        assert!(body.contains("daily_signals_stream_requests_total 2"));
+        assert!(body.contains("daily_signals_stream_bytes_total 9"));
+        assert!(body.contains("daily_signals_stream_client_errors_total 1"));
+        assert!(body.contains("daily_signals_stream_server_errors_total 0"));
+        assert!(body.contains("daily_signals_stream_metrics_scrapes_total 1"));
     }
 
     #[test]
