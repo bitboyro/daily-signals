@@ -7,10 +7,11 @@
     {"name": "streamer", "role": "playback", "optional": false, "port": 8152, "healthPath": "/health"},
     {"name": "kokoro", "role": "speech", "optional": true, "profile": "kokoro", "port": 8880}
   ],
-  "persistentVolumes": ["daily-signals-postgres", "daily-signals-objects"],
+  "persistentVolumes": ["daily-signals-postgres", "daily-signals-objects", "daily-signals-config"],
   "runtimeVariables": [
     "DAILY_SIGNALS_BIND_ADDRESS",
     "DAILY_SIGNALS_WEB_ROOT",
+    "DAILY_SIGNALS_SETUP_PATH",
     "STREAMER_BIND_ADDRESS",
     "STREAMER_PUBLIC_PREFIXES",
     "OBJECT_STORE_ENDPOINT",

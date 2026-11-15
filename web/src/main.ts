@@ -14,6 +14,7 @@ import { bindChapterSeeking, fetchChapters, renderChapters } from './chapters.ts
 import { bindPlaybackPosition } from './playback-position.ts';
 import { cacheEditionForOffline, registerServiceWorker } from './pwa.ts';
 import { localeTag, type Locale } from './i18n.ts';
+import { fetchSetup, renderSetup, saveSetup, setupFromForm } from './setup.ts';
 
 function element(id: string): HTMLElement {
   const found = document.getElementById(id);
@@ -218,6 +219,30 @@ async function showProducerPanel(apiBase: string, panel: ProducerPanel, locale: 
   });
 }
 
+async function showStationSetup(apiBase: string): Promise<void> {
+  const target = element('station-setup');
+  try {
+    const setup = await fetchSetup(apiBase);
+    target.innerHTML = renderSetup(setup);
+    target.querySelector<HTMLFormElement>('form.station-setup')?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const form = event.currentTarget as HTMLFormElement;
+      const status = form.querySelector<HTMLElement>('.setup-status');
+      try {
+        const next = setupFromForm(form);
+        const token = producerBearer(sessionStorage, (element('reviewer-token') as HTMLInputElement).value);
+        void saveSetup(apiBase, next, setup.configured ? token : '').then(() => {
+          if (status) status.textContent = 'Station setup saved. The next fetch uses this schedule.';
+        }).catch((error) => { if (status) status.textContent = error instanceof Error ? error.message : 'Setup save failed.'; });
+      } catch (error) {
+        if (status) status.textContent = error instanceof Error ? error.message : 'Setup is invalid.';
+      }
+    });
+  } catch {
+    target.textContent = 'Station setup is unavailable.';
+  }
+}
+
 if (typeof document !== 'undefined') {
   void registerServiceWorker().catch(() => { /* Installation is optional; listening stays available. */ });
   const runtime = (window as Window & { DAILY_SIGNALS_CONFIG?: Parameters<typeof readConfig>[1] }).DAILY_SIGNALS_CONFIG;
@@ -258,4 +283,5 @@ if (typeof document !== 'undefined') {
     player.innerHTML = renderNoEditionGuidance();
   });
   void showProducerPanel(config.apiBase, 'candidates', config.locale);
+  void showStationSetup(config.apiBase);
 }

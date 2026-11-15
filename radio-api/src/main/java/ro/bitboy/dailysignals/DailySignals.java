@@ -89,6 +89,15 @@ public final class DailySignals {
                                    FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
                                    PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow,
                                    VoiceProvider voiceProvider, PodcastFeedSettings feedSettings) throws IOException {
+        return createServer(bindAddress, port, webRoot, authenticator, fetchSchedule, reviewQueue, pronunciations,
+                workflow, voiceProvider, feedSettings, FirstRunSetup.inMemory());
+    }
+
+    static HttpServer createServer(String bindAddress, int port, Path webRoot, ProducerAuthenticator authenticator,
+                                   FetchScheduleView fetchSchedule, ReviewQueueBackend reviewQueue,
+                                   PronunciationLexiconBackend pronunciations, EditionWorkflowBackend workflow,
+                                   VoiceProvider voiceProvider, PodcastFeedSettings feedSettings,
+                                   FirstRunSetup setup) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(bindAddress, port), 0);
         EditionCatalog catalog = EditionCatalog.fixture();
         EditionScriptStore script = new EditionScriptStore("Daily Signals. Add today’s approved stories here.");
@@ -116,7 +125,36 @@ public final class DailySignals {
             }
         });
         server.createContext("/api/schedule", exchange -> respond(exchange, 200, "application/json",
-                fetchSchedule.toJson().getBytes(StandardCharsets.UTF_8)));
+                setup.scheduleJson(Clock.systemUTC().instant(), fetchSchedule).getBytes(StandardCharsets.UTF_8)));
+        server.createContext("/api/setup", exchange -> {
+            if ("GET".equals(exchange.getRequestMethod())) {
+                respond(exchange, 200, "application/json", setup.toJson().getBytes(StandardCharsets.UTF_8));
+                return;
+            }
+            if (!"PUT".equals(exchange.getRequestMethod())) {
+                reply(exchange, 405);
+                return;
+            }
+            if (setup.configured()) {
+                var identity = authenticator.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+                if (identity.isEmpty()) {
+                    exchange.getResponseHeaders().set("WWW-Authenticate", "Bearer");
+                    reply(exchange, 401);
+                    return;
+                }
+                if (!ProducerEndpointPolicy.permits(ProducerEndpointPolicy.Operation.CONFIGURE_STATION,
+                        identity.orElseThrow().role())) {
+                    reply(exchange, 403);
+                    return;
+                }
+            }
+            try (var body = exchange.getRequestBody()) {
+                String saved = setup.saveJson(new String(body.readNBytes(50_001), StandardCharsets.UTF_8));
+                respondWrite(exchange, 200, "application/json", saved.getBytes(StandardCharsets.UTF_8));
+            } catch (IllegalArgumentException invalid) {
+                reply(exchange, 400);
+            }
+        });
         server.createContext("/editions/", exchange -> {
             String path = exchange.getRequestURI().getPath();
             var legacy = LegacyRoutes.redirectFor(path);
@@ -469,7 +507,8 @@ public final class DailySignals {
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
                 FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow,
-                VoiceProviderFactory.fromEnvironment(environment), PodcastFeedSettings.fromEnvironment(environment));
+                VoiceProviderFactory.fromEnvironment(environment), PodcastFeedSettings.fromEnvironment(environment),
+                FirstRunSetup.fromEnvironment(environment));
         server.start();
         int actualPort = server.getAddress().getPort();
         String address = "http://" + bind + ":" + actualPort;

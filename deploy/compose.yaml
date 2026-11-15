@@ -41,6 +41,8 @@ services:
         condition: service_healthy
     ports:
       - "127.0.0.1:8151:8151"
+    volumes:
+      - daily-signals-config:/data
     restart: unless-stopped
   object-store:
     build:
@@ -64,3 +66,4 @@ services:
 volumes:
   daily-signals-postgres:
   daily-signals-objects:
+  daily-signals-config:

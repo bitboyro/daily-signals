@@ -2397,6 +2397,31 @@
   },
   {
    "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/FirstRunSetup.java",
+    "web/src/setup.ts"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "implements" },
+    { "id": "SRC-01", "relation": "configures" },
+    { "id": "VOC-04", "relation": "configures" },
+    { "id": "PLT-04", "relation": "configures" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/test/java/ro/bitboy/dailysignals/FirstRunSetupTest.java",
+    "web/test/setup.test.ts"
+   ],
+   "features": [
+    { "id": "PLT-05", "relation": "tests" },
+    { "id": "SRC-01", "relation": "tests" },
+    { "id": "PLT-04", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
     "deploy/object_store.py",
     "deploy/object-store.Containerfile"
    ],

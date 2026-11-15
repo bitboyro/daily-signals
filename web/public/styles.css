@@ -104,6 +104,12 @@ button[data-clear-date] { color: var(--navy); background: transparent; }
 .listener-empty { border-left: 0.3rem solid var(--signal); }
 
 .producer-panel { background: #eef1f3 !important; }
+.setup-panel { background: #f4efe5 !important; }
+.station-setup { display: grid; gap: 1rem; }
+.station-setup fieldset { display: grid; grid-template-columns: minmax(9rem, 0.3fr) 1fr; gap: 0.6rem 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: 0.65rem; }
+.station-setup legend { padding-inline: 0.35rem; font-weight: 800; }
+.station-setup button { justify-self: start; }
+.setup-status { min-height: 1.5rem; margin: 0; color: var(--muted); }
 .producer-auth { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-top: 1.5rem; }
 .producer-auth p { flex-basis: 100%; margin: 0; }
 #reviewer-token { width: min(100%, 28rem); display: block; margin-top: 0.35rem; }
@@ -131,6 +137,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .edition-share { display: block; margin-top: 0.5rem; }
   .editions a { grid-template-columns: 1fr; gap: 0.2rem; }
   .archive-filter input { width: 100%; }
+  .station-setup fieldset { grid-template-columns: 1fr; }
   table, thead, tbody, tr, th, td { display: block; }
   thead { position: absolute; left: -999px; }
   td::before { content: attr(data-label); display: block; font-weight: 750; }
