@@ -2,14 +2,19 @@ package ro.bitboy.dailysignals;
 
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LocalS3ObjectAdapterTest {
+    @TempDir Path temporary;
+
     @Test void writesAndReadsByBucketAndKeyAgainstLocalProtocolFixture() throws Exception {
         var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         var stored = new java.util.concurrent.atomic.AtomicReference<byte[]>();
@@ -99,6 +104,40 @@ class LocalS3ObjectAdapterTest {
             assertTrue(manifestJson.contains("\"editionId\":\"edition-2\""));
             assertTrue(manifestJson.contains("\"audioPath\":\"editions/edition-2.wav\""));
             assertArrayEquals(wav, objects.get("/radio-fixtures/editions/edition-2.wav"));
+        } finally { server.stop(0); }
+    }
+
+    @Test void importsMountedV0RecordingsOnceAndVerifiesTheirChecksums() throws Exception {
+        byte[] wav = new byte[]{'R','I','F','F',9,8,7,6};
+        Path recordings = Files.createDirectories(temporary.resolve(V0RecordingImporter.RECORDINGS));
+        Files.write(recordings.resolve("legacy-edition.wav"), wav);
+        Map<String, byte[]> objects = new ConcurrentHashMap<>();
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/radio-fixtures/editions/", exchange -> {
+            String path = exchange.getRequestURI().getPath();
+            if ("PUT".equals(exchange.getRequestMethod())) {
+                objects.put(path, exchange.getRequestBody().readAllBytes());
+                exchange.sendResponseHeaders(200, -1);
+            } else if ("GET".equals(exchange.getRequestMethod()) && objects.containsKey(path)) {
+                byte[] object = objects.get(path);
+                exchange.sendResponseHeaders(200, object.length);
+                exchange.getResponseBody().write(object);
+            } else exchange.sendResponseHeaders(404, -1);
+            exchange.close();
+        });
+        server.start();
+        try {
+            var store = new LocalS3ObjectAdapter(
+                    URI.create("http://127.0.0.1:" + server.getAddress().getPort()), "radio-fixtures");
+            var importer = new V0RecordingImporter();
+            assertEquals(new V0RecordingImporter.Result(1, 0), importer.importFrom(temporary, store));
+            assertArrayEquals(wav, objects.get("/radio-fixtures/editions/legacy-edition.wav"));
+            assertEquals(V0RecordingImporter.sha256(wav),
+                    V0RecordingImporter.sha256(store.get("editions/legacy-edition.wav")));
+            assertEquals(new V0RecordingImporter.Result(0, 1), importer.importFrom(temporary, store));
+
+            objects.put("/radio-fixtures/editions/legacy-edition.wav", new byte[]{'R','I','F','F',0});
+            assertThrows(java.io.IOException.class, () -> importer.importFrom(temporary, store));
         } finally { server.stop(0); }
     }
 }

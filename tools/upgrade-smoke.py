@@ -51,6 +51,12 @@ def prepare_state(destination: pathlib.Path) -> None:
                     raise AssertionError(f"release file has no content: {member.name}")
                 target.write_bytes(source.read())
     shutil.copyfile(release_root / "contracts/edition-list-v1.json", state_root / "editions.json")
+    recordings = state_root / "recordings"
+    recordings.mkdir()
+    shutil.copyfile(
+        release_root / "radio-api/src/main/resources/fixtures/demo-edition.wav",
+        recordings / "demo-2026-01-15.wav",
+    )
     (state_root / "station-settings.json").write_text(json.dumps({
         "schemaVersion": 1,
         "configured": True,

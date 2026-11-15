@@ -2676,6 +2676,10 @@
     {
      "id": "PLT-02",
      "relation": "tests"
+    },
+    {
+     "id": "OBJ-03",
+     "relation": "tests"
     }
    ],
    "confidence": "high",
@@ -2688,7 +2692,8 @@
    "features": [
     { "id": "PLT-05", "relation": "tests" },
     { "id": "PLT-02", "relation": "tests" },
-    { "id": "EDI-01", "relation": "tests" }
+    { "id": "EDI-01", "relation": "tests" },
+    { "id": "OBJ-03", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
@@ -3941,6 +3946,14 @@
     { "id": "EDI-01", "relation": "implements" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": "10d9e309d97b21cc6081a8ecaa461c6618334541", "retiredIn": null
+  },
+  {
+   "paths": ["radio-edition/src/main/java/ro/bitboy/dailysignals/V0RecordingImporter.java"],
+   "features": [
+    { "id": "OBJ-03", "relation": "implements" },
+    { "id": "PLT-05", "relation": "implements" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
    "paths": [

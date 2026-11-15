@@ -7,6 +7,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /** Path-style PUT/GET adapter for an unauthenticated local S3-compatible endpoint. */
 public final class LocalS3ObjectAdapter implements PublishOutbox.ObjectWriter {
@@ -47,9 +48,13 @@ public final class LocalS3ObjectAdapter implements PublishOutbox.ObjectWriter {
         put(key, json.getBytes(StandardCharsets.UTF_8), "application/json");
     }
     public byte[] get(String key) throws IOException, InterruptedException {
+        return getIfPresent(key).orElseThrow(() -> new IOException("object GET failed: 404"));
+    }
+    public Optional<byte[]> getIfPresent(String key) throws IOException, InterruptedException {
         var response = client.send(HttpRequest.newBuilder(objectUri(key)).timeout(Duration.ofSeconds(10)).GET().build(),
                 HttpResponse.BodyHandlers.ofByteArray());
+        if (response.statusCode() == 404) return Optional.empty();
         if (response.statusCode() != 200) throw new IOException("object GET failed: " + response.statusCode());
-        return response.body();
+        return Optional.of(response.body());
     }
 }
