@@ -3878,6 +3878,29 @@
     { "id": "WEB-01", "relation": "tests" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/PostgresStationSettings.java",
+    "radio-persistence/src/main/java/ro/bitboy/dailysignals/persistence/StationSettingsRepository.java"
+   ],
+   "features": [
+    { "id": "WEB-04", "relation": "implements" },
+    { "id": "PLT-02", "relation": "implements" },
+    { "id": "SRC-01", "relation": "configures" },
+    { "id": "PLT-04", "relation": "configures" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-persistence/src/test/java/ro/bitboy/dailysignals/persistence/StationSettingsRepositoryPostgresTest.java"
+   ],
+   "features": [
+    { "id": "WEB-04", "relation": "tests" },
+    { "id": "PLT-02", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   }
  ],
  "intersections": [

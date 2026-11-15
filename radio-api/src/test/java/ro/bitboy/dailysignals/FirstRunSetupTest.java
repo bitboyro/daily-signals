@@ -5,6 +5,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -41,5 +42,21 @@ class FirstRunSetupTest {
                 ],"voice":"fixture","zone":"UTC","window":"06:00"}
                 """));
         assertEquals(1, FirstRunSetup.fromEnvironment(java.util.Map.of()).toJson().contains("public-desk") ? 1 : 0);
+    }
+
+    @Test void doesNotPublishAConfigurationWhenTheDurableWriteFails() {
+        var setup = new FirstRunSetup(new FirstRunSetup.Store() {
+            @Override public Optional<String> load() { return Optional.empty(); }
+            @Override public void save(String document) throws java.io.IOException {
+                throw new java.io.IOException("storage unavailable");
+            }
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> setup.saveJson("""
+                {"schemaVersion":1,"configured":true,"sources":[
+                  {"id":"desk","name":"Desk","url":"https://news.example/rss","priority":0}
+                ],"voice":"fixture","zone":"UTC","window":"06:00"}
+                """));
+        assertFalse(setup.configured());
     }
 }

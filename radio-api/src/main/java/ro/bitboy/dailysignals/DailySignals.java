@@ -485,26 +485,28 @@ public final class DailySignals {
     }
 
     public static void main(String[] args) throws Exception {
+        var environment = System.getenv();
         int port = args.length == 0 ? 8151 : Integer.parseInt(args[0]);
-        String webRoot = System.getenv("DAILY_SIGNALS_WEB_ROOT");
-        String bind = System.getenv().getOrDefault("DAILY_SIGNALS_BIND_ADDRESS", "127.0.0.1");
-        var database = DatabaseRuntime.fromEnvironment(System.getenv());
+        String webRoot = environment.get("DAILY_SIGNALS_WEB_ROOT");
+        String bind = environment.getOrDefault("DAILY_SIGNALS_BIND_ADDRESS", "127.0.0.1");
+        var database = DatabaseRuntime.fromEnvironment(environment);
         ReviewQueueBackend reviews;
         PronunciationLexiconBackend pronunciations;
         EditionWorkflowBackend workflow;
+        FirstRunSetup setup;
         if (database.isPresent()) {
             database.get().migrate();
             reviews = new PostgresReviewQueue(database.get());
             pronunciations = new PostgresPronunciationLexicon(database.get());
             workflow = new PostgresEditionWorkflow(database.get());
+            setup = new FirstRunSetup(new PostgresStationSettings(database.get()));
         } else {
             reviews = ReviewQueue.fixture();
             pronunciations = new PronunciationLexiconStore();
             workflow = new EditionWorkflowStore();
+            setup = FirstRunSetup.fromEnvironment(environment);
         }
-        var environment = System.getenv();
         var fallback = ReviewerTokens.parse(environment.get("DAILY_SIGNALS_REVIEW_TOKENS"));
-        var setup = FirstRunSetup.fromEnvironment(environment);
         HttpServer server = createServer(bind, port, webRoot == null || webRoot.isBlank() ? null : Path.of(webRoot),
                 ProducerAuthenticator.fromEnvironment(environment, fallback),
                 FetchScheduleView.defaults(Clock.systemUTC().instant()), reviews, pronunciations, workflow,

@@ -14,7 +14,8 @@ public final class MigrationRunner {
                 "V3__editorial_state.sql",
                 "V4__candidate_source_history.sql",
                 "V5__pronunciation_lexicon.sql",
-                "V6__approval_audit.sql"
+                "V6__approval_audit.sql",
+                "V7__station_settings.sql"
         }) {
             try (var input = MigrationRunner.class.getResourceAsStream("/db/migration/" + resource)) {
                 if (input == null) throw new IOException("edition migration resource missing: " + resource);
