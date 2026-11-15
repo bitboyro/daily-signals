@@ -67,7 +67,13 @@ Retain the backup and health report together. The nightly destructive round trip
 
 For a station with mounted v0.x JSON and recordings, follow the complete [v0.x-to-v1 upgrade procedure](upgrade-v0-to-v1.md). It covers immutable backup, tagged-release rehearsal, idempotent database import, recording checksums, cutover validation and rollback.
 
-Before any other upgrade, run `python3 tools/upgrade-smoke.py`. It proves that the v0.1.0 runtime variables and v1 publication manifests remain supported, while the database migration suite checks populated and legacy data.
+Before any other upgrade, run:
+
+```sh
+python3 tools/upgrade-smoke.py
+```
+
+It proves that the v0.1.0 runtime variables and v1 publication manifests remain supported, while the database migration suite checks populated and legacy data.
 
 Keep the previous images and runtime configuration until post-deploy health evidence passes. Roll back both services together if health or playback fails. Database rollback follows the separate [database migration runbook](database-migration.md); never reverse a populated migration by editing schema state manually.
 
