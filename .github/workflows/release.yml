@@ -79,6 +79,22 @@ jobs:
           path: web/artifacts/daily-signals-listener-*.zip
           retention-days: 30
           if-no-files-found: error
+      - name: Build v1 container images
+        run: |
+          docker build -f deploy/api.Dockerfile -t "daily-signals-api:${GITHUB_SHA}" .
+          docker build -f deploy/streamer.Dockerfile -t "daily-signals-streamer:${GITHUB_SHA}" .
+          docker image inspect "daily-signals-api:${GITHUB_SHA}" "daily-signals-streamer:${GITHUB_SHA}" > release-images.json
+      - name: Build source-complete install bundle
+        run: git archive --format=tar.gz --prefix=daily-signals-v1/ -o "daily-signals-install-${GITHUB_SHA}.tar.gz" HEAD
+      - name: Retain v1 install artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: v1-install-artifacts-${{ github.run_attempt }}
+          path: |
+            daily-signals-install-*.tar.gz
+            release-images.json
+          retention-days: 30
+          if-no-files-found: error
       - name: Cross-process and container qualification
         run: |
           cargo build --manifest-path streamer/Cargo.toml
