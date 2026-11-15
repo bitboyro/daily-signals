@@ -41,6 +41,8 @@ jobs:
         run: python3 tools/install-smoke.py
       - name: Validate Compose model
         run: docker compose -f deploy/compose.yaml config --quiet
+      - name: Explain startup configuration failures before launch
+        run: python3 tools/startup_preflight.py
   upgrade-smoke:
     runs-on: ubuntu-latest
     services:

@@ -2493,6 +2493,44 @@
   },
   {
    "paths": [
+    "tools/startup_preflight.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "implements"
+    },
+    {
+     "id": "VOC-04",
+     "relation": "configures"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
+    "tools/test_startup_preflight.py"
+   ],
+   "features": [
+    {
+     "id": "PLT-05",
+     "relation": "tests"
+    },
+    {
+     "id": "VOC-04",
+     "relation": "tests"
+    }
+   ],
+   "confidence": "high",
+   "provenance": "authored-review",
+   "introducedIn": null,
+   "retiredIn": null
+  },
+  {
+   "paths": [
     "examples/upgrade/*/runtime.env",
     "examples/upgrade/*/release.json"
    ],
