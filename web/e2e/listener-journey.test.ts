@@ -10,8 +10,9 @@ import { renderNoEditionGuidance, renderPlayer } from '../src/player.ts';
 import { fetchQueue, filterQueue, renderQueue, submitDecision } from '../src/producer-queue.ts';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
-const classes = ['radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion']
-  .map((module) => `${root}${module}/target/classes`).join(':');
+const classDirectories = ['radio-api', 'radio-edition', 'radio-editorial', 'radio-ingestion', 'radio-persistence']
+  .map((module) => `${root}${module}/target/classes`);
+const classes = classDirectories.concat(`${root}radio-api/target/runtime-libs/*`).join(':');
 // Generated per run; reviewer tokens are configuration, never committed values.
 const producerToken = `producer-${randomUUID()}`;
 const listenerToken = `listener-${randomUUID()}`;
@@ -20,7 +21,7 @@ let api: ChildProcess;
 let apiBase = '';
 
 before(async () => {
-  assert.ok(classes.split(':').every((dir) => existsSync(dir)), 'build the Java API first: mvn -B -ntp -DskipTests package');
+  assert.ok(classDirectories.every((dir) => existsSync(dir)), 'build the Java API first: mvn -B -ntp -DskipTests package');
   assert.ok(existsSync(`${webRoot}/index.html`), 'build the listener first: npm run build');
   api = spawn('java', ['-cp', classes, 'ro.bitboy.dailysignals.DailySignals', '0'], {
     stdio: ['ignore', 'pipe', 'inherit'],

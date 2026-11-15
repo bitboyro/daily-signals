@@ -12,7 +12,7 @@ export default defineConfig({
   reporter: [['line'], ['junit', { outputFile: 'reports/playwright.xml' }]],
   use: { baseURL: 'http://127.0.0.1:8151', trace: 'retain-on-failure' },
   webServer: {
-    command: 'java -cp ../radio-api/target/classes:../radio-edition/target/classes:../radio-editorial/target/classes:../radio-ingestion/target/classes ro.bitboy.dailysignals.DailySignals 8151',
+    command: 'java -cp ../radio-api/target/classes:../radio-edition/target/classes:../radio-editorial/target/classes:../radio-ingestion/target/classes:../radio-persistence/target/classes:../radio-api/target/runtime-libs/* ro.bitboy.dailysignals.DailySignals 8151',
     url: 'http://127.0.0.1:8151/health',
     reuseExistingServer: false,
     timeout: 30_000,

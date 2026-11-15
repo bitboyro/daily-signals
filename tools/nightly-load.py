@@ -80,6 +80,7 @@ def request_json(url, method="GET", body=None, token=None):
 api_port, stream_port = free_port(), free_port()
 java_classpath = ":".join(str(ROOT / module / "target/classes") for module in (
     "radio-api", "radio-edition", "radio-editorial", "radio-ingestion", "radio-persistence"))
+java_classpath += ":" + str(ROOT / "radio-api/target/runtime-libs/*")
 producer_token = "nightly-load-" + uuid.uuid4().hex
 api_environment = dict(os.environ)
 api_environment["DAILY_SIGNALS_REVIEW_TOKENS"] = f"{producer_token}=PRODUCER"
