@@ -3399,6 +3399,7 @@
    ],
    "features": [
     { "id": "PLT-05", "relation": "tests" },
+    { "id": "PLT-01", "relation": "tests" },
     { "id": "WEB-01", "relation": "tests" },
     { "id": "STR-01", "relation": "tests" }
    ],
@@ -3543,6 +3544,17 @@
   },
   {
    "paths": ["*/src/main/java/*/StructuredLog.java", "*/src/test/java/*/StructuredLogContractTest.java"],
+   "features": [
+    { "id": "PLT-01", "relation": "implements" },
+    { "id": "PLT-05", "relation": "tests" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": [
+    "radio-api/src/main/java/ro/bitboy/dailysignals/ApiMetrics.java",
+    "radio-api/src/test/java/ro/bitboy/dailysignals/OperationalEndpointsContractTest.java"
+   ],
    "features": [
     { "id": "PLT-01", "relation": "implements" },
     { "id": "PLT-05", "relation": "tests" }
