@@ -2,6 +2,8 @@
 
 A public radio experiment built progressively from a small Java service into a multi-language system: a Java 21 Maven reactor owns ingestion, editorial review, editions and publication; a Rust streamer serves published audio; a TypeScript client provides the listener and producer UI.
 
+The current qualified product version is **1.0.0**. See the [changelog](CHANGELOG.md) and [v1.0.0 release notes](docs/releases/v1.0.0.md).
+
 The repository history is intentionally authored as small, identifiable product changes so the companion optimizer experiment can replay exact revisions. The product does not require live news, voice, or cloud credentials for its reference checks.
 
 ## Build and run
