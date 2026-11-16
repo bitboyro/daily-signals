@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "release": "1.0.0",
+  "tag": "v1.0.0",
+  "profile": "full-platform",
+  "artifacts": [
+    "api-image",
+    "streamer-image",
+    "listener-zip",
+    "install-tarball",
+    "release-manifest"
+  ],
+  "requiredQualification": [
+    "java-postgresql",
+    "rust",
+    "web-browser",
+    "container",
+    "install-smoke-matrix",
+    "upgrade-smoke",
+    "post-deploy-health",
+    "container-scan"
+  ],
+  "tagAfterMergeOnly": true
+}

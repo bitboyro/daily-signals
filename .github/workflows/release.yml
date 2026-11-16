@@ -51,6 +51,8 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: web/package-lock.json
+      - name: Validate v1 release candidate declaration
+        run: python3 tools/check-release-candidate.py
       - name: Java and PostgreSQL qualification
         run: mvn -B -ntp verify
       - name: Rust qualification
