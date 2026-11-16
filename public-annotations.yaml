@@ -4005,6 +4005,13 @@
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
   },
   {
+   "paths": ["CHANGELOG.md", "docs/releases/v1.0.0.md"],
+   "features": [
+    { "id": "PLT-05", "relation": "documents" }
+   ],
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
    "paths": [
     "radio-persistence/src/test/java/ro/bitboy/dailysignals/persistence/StationSettingsRepositoryPostgresTest.java"
    ],
