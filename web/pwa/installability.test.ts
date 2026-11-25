@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { cacheEditionForOffline, registerServiceWorker } from '../src/pwa.ts';
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
@@ -33,12 +35,23 @@ test('listener advertises the manifest and registers the root service worker', a
 
 test('service worker owns a versioned shell lifecycle', () => {
   const worker = read('public/service-worker.js');
-  assert.match(worker, /daily-signals-shell-v3/);
+  assert.match(worker, /daily-signals-shell-v4/);
   for (const event of ['install', 'activate', 'fetch']) assert.match(worker, new RegExp(`addEventListener\\('${event}'`));
   for (const asset of ['/', '/styles.css', '/runtime-config.js', '/manifest.webmanifest']) assert.ok(worker.includes(`'${asset}'`));
-  for (const module of ['chapters', 'config', 'editions', 'main', 'playback-position', 'player', 'pwa', 'schema']) {
-    assert.match(worker, new RegExp(`(?:'|, )${module}(?:'|,)`));
-  }
+});
+
+test('service worker precaches every listener module so the app loads offline', () => {
+  const worker = read('public/service-worker.js');
+  const listed = worker.match(/const APP_MODULES = \[([\s\S]*?)\]/)?.[1];
+  assert.ok(listed, 'APP_MODULES list not found');
+  const precached = new Set([...listed.matchAll(/'([^']+)'/g)].map((match) => match[1]));
+  const sourceRoot = fileURLToPath(new URL('../src/', import.meta.url));
+  const modules = readdirSync(sourceRoot, { recursive: true, encoding: 'utf8' })
+    .filter((file) => file.endsWith('.ts'))
+    .map((file) => file.slice(0, -'.ts'.length).split(sep).join('/'));
+  assert.ok(modules.includes('main'));
+  assert.deepEqual(modules.filter((module) => !precached.has(module)), [],
+    'add these modules to APP_MODULES in public/service-worker.js and bump the shell cache version');
 });
 
 test('today\'s manifest and audio are handed to the active worker', async () => {

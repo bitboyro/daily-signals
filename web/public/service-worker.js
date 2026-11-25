@@ -1,9 +1,12 @@
-const CACHE = 'daily-signals-shell-v3';
+const CACHE = 'daily-signals-shell-v4';
 const EDITION_CACHE = 'daily-signals-edition-v1';
+// Every module main.js can import must be listed, or the offline listener cannot load.
+// pwa/installability.test.ts fails when a web/src module is missing here.
 const APP_MODULES = [
-  'chapters', 'config', 'editions', 'fetch-schedule', 'html', 'main', 'playback-position', 'player',
-  'producer-auth', 'producer-candidates', 'producer-edition', 'producer-pronunciations', 'producer-queue',
-  'producer-script', 'producer-workspace', 'pwa', 'schema', 'source-editor',
+  'admin-settings', 'chapters', 'config', 'editions', 'fetch-schedule', 'generated/messages', 'html', 'i18n',
+  'main', 'playback-position', 'player', 'producer-auth', 'producer-candidates', 'producer-edition',
+  'producer-pronunciations', 'producer-queue', 'producer-script', 'producer-workspace', 'pwa', 'schema',
+  'setup', 'source-editor',
 ].map((name) => `/app/${name}.js`);
 const SHELL = ['/', '/styles.css', '/runtime-config.js', '/manifest.webmanifest', ...APP_MODULES];
 
