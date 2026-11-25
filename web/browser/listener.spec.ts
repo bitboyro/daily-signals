@@ -69,19 +69,27 @@ test('listener player supports documented keyboard controls', async ({ page }) =
   await page.goto('/');
   const audio = page.locator('#player audio');
   await expect(audio).toBeVisible();
+  await expect(page.locator('button[data-seek-millis="650"]')).toBeAttached();
+  // The reference edition is 1.0 s long with chapters at 0 and 0.65 s. Load its metadata so every
+  // browser clamps the 10-second seek to the real duration instead of a not-yet-known one.
+  await audio.evaluate((element) => { element.preload = 'metadata'; element.load(); });
+  await expect.poll(() => audio.evaluate((element) => element.duration)).toBeGreaterThan(0.9);
   await audio.evaluate((element) => {
     element.currentTime = 0;
     element.play = async () => { (window as Window & { keyboardPlayRequested?: boolean }).keyboardPlayRequested = true; };
   });
+  const position = () => audio.evaluate((element) => element.currentTime);
   await audio.focus();
   await page.keyboard.press('Space');
   expect(await page.evaluate(() => (window as Window & { keyboardPlayRequested?: boolean }).keyboardPlayRequested)).toBe(true);
   await page.keyboard.press('ArrowRight');
-  expect(await audio.evaluate((element) => element.currentTime)).toBeGreaterThanOrEqual(10);
+  await expect.poll(position).toBeGreaterThan(0.9);
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(position).toBe(0);
   await page.keyboard.press('n');
-  expect(await audio.evaluate((element) => element.currentTime)).toBeGreaterThanOrEqual(30);
+  await expect.poll(position).toBeCloseTo(0.65, 2);
   await page.keyboard.press('p');
-  expect(await audio.evaluate((element) => element.currentTime)).toBeLessThan(30);
+  await expect.poll(position).toBe(0);
 });
 
 test('producer prepares a narrated edition across the complete workspace', async ({ page, browserName }, testInfo) => {
