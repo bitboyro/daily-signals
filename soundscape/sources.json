@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "note": "Candidates only. status becomes downloaded after the fetch, with author and fetchedAt filled from the source API.",
+  "items": [
+    {
+      "role": "material",
+      "title": "My Black Mama (Part 1)",
+      "author": "Son House",
+      "source": "https://archive.org/details/SonHouseMyBlackMamaPart1",
+      "license": "CC0 (uploader-declared)",
+      "attributionRequired": false,
+      "file": "assets/tracks/son-house_my-black-mama-part1.mp3",
+      "status": "downloaded",
+      "fetchedAt": "2026-11-22",
+      "note": "Rights are the uploader's claim; verify recording date and rights before any public stream."
+    },
+    {
+      "role": "bed",
+      "title": "user-supplied bed b90c6271",
+      "author": "unknown",
+      "source": "user-supplied",
+      "license": "not recorded",
+      "file": "assets/beds/user-b90c6271.mp3",
+      "status": "local",
+      "durationSeconds": 34.5,
+      "note": "Record author and license before any public stream."
+    },
+    {
+      "role": "bed",
+      "title": "user-supplied bed 92d4f988",
+      "author": "unknown",
+      "source": "user-supplied",
+      "license": "not recorded",
+      "file": "assets/beds/user-92d4f988.mp3",
+      "status": "local",
+      "durationSeconds": 40.2,
+      "note": "Record author and license before any public stream."
+    },
+    {
+      "role": "bed",
+      "title": "user-supplied bed 6a0976dc",
+      "author": "unknown",
+      "source": "user-supplied",
+      "license": "not recorded",
+      "file": "assets/beds/user-6a0976dc.mp3",
+      "status": "local",
+      "durationSeconds": 83.4,
+      "note": "Record author and license before any public stream."
+    },
+    {
+      "role": "bed",
+      "title": "New York (user field recording, Zoom H1n, 2020-07-12)",
+      "author": "unknown",
+      "source": "user-supplied",
+      "license": "not recorded",
+      "file": "assets/beds/user-e6f34d46.mp3",
+      "status": "local",
+      "durationSeconds": 142.0,
+      "note": "Record author and license before any public stream.",
+      "place": "New York"
+    },
+    {
+      "role": "bed",
+      "title": "user-supplied bed 6b78c2c5",
+      "author": "unknown",
+      "source": "user-supplied",
+      "license": "not recorded",
+      "file": "assets/beds/user-6b78c2c5.mp3",
+      "status": "local",
+      "durationSeconds": 163.0,
+      "note": "Record author and license before any public stream."
+    },
+    {
+      "role": "material",
+      "title": "No, Papa, No",
+      "author": "Victoria Spivey (1928)",
+      "source": "https://archive.org/details/NoPapaNo",
+      "license": "CC0 (uploader-declared)",
+      "attributionRequired": false,
+      "file": "assets/tracks/victoria-spivey_no-papa-no-1928.mp3",
+      "status": "downloaded",
+      "fetchedAt": "2026-11-22",
+      "note": "Rights are the uploader's claim; verify before any public stream."
+    },
+    {
+      "role": "material",
+      "title": "Got To Have My Daddy Blues",
+      "author": "Dolly Kay (1921)",
+      "source": "https://archive.org/details/got-to-have-my-daddy-blues",
+      "license": "CC BY-NC 4.0",
+      "attributionRequired": true,
+      "file": "assets/tracks/user_got-to-have-my-daddy-blues.mp3",
+      "status": "local",
+      "fetchedAt": "2026-11-22",
+      "note": "Non-commercial only; credit Dolly Kay and the uploader. Adaptations allowed."
+    },
+    {
+      "role": "material",
+      "title": "My Buddy",
+      "author": "Fred Fradkin, violin (1922)",
+      "source": "https://archive.org/details/my-buddy_202510",
+      "license": "CC0 (uploader-declared)",
+      "attributionRequired": false,
+      "file": "assets/tracks/user_my-buddy.mp3",
+      "status": "local",
+      "fetchedAt": "2026-11-22",
+      "note": "Rights are the uploader's claim."
+    },
+    {
+      "role": "material",
+      "title": "Kangaroos (Carnival of the Animals)",
+      "author": "Saint-Saens; Philadelphia Orchestra, Stokowski (1939)",
+      "source": "https://archive.org/details/carnival_of_the_animals",
+      "license": "none stated",
+      "attributionRequired": false,
+      "file": "assets/tracks/user_kangaroos.mp3",
+      "status": "local",
+      "fetchedAt": "2026-11-22",
+      "note": "No license on the item and a 1939 recording: keep to private experiments, not a public stream."
+    },
+    {
+      "role": "material",
+      "title": "Burning Hell",
+      "author": "John Lee Hooker (1959, from Burning Hell)",
+      "source": "user-supplied",
+      "license": "commercial recording, all rights reserved",
+      "attributionRequired": true,
+      "file": "assets/tracks/1-01 Burning Hell.mp3",
+      "status": "local",
+      "fetchedAt": "2026-11-22",
+      "note": "Private experiments only; not for a public stream."
+    },
+    {
+      "role": "material",
+      "title": "How Can You Do It?",
+      "author": "John Lee Hooker (1959, from Burning Hell)",
+      "source": "user-supplied",
+      "license": "commercial recording, all rights reserved",
+      "attributionRequired": true,
+      "file": "assets/tracks/1-07 How Can You Do It!.mp3",
+      "status": "local",
+      "fetchedAt": "2026-11-22",
+      "note": "Private experiments only; not for a public stream."
+    },
+    {
+      "role": "material",
+      "title": "The Tokyo Blues",
+      "author": "Horace Silver (1962)",
+      "source": "user-supplied",
+      "license": "commercial recording, all rights reserved",
+      "attributionRequired": true,
+      "file": "assets/tracks/16. Horace Silver - The Tokyo Blues.mp3",
+      "status": "local",
+      "fetchedAt": "2026-11-22",
+      "note": "Private experiments only; not for a public stream."
+    }
+  ]
+}

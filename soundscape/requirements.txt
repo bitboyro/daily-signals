@@ -1,0 +1,4 @@
+pedalboard>=0.9
+numpy
+pyloudnorm
+librosa

@@ -11,3 +11,7 @@ web/dist/
 web/reports/
 web/artifacts/
 rust.lcov
+
+soundscape/.venv/
+soundscape/assets/
+soundscape/out/

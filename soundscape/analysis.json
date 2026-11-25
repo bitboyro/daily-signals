@@ -1,0 +1,154 @@
+{
+  "1-01 Burning Hell.mp3": {
+    "durationSeconds": 194.8,
+    "tempoBpm": 107.7,
+    "tempoAlternatives": [
+      53.8,
+      215.3
+    ],
+    "beatIrregularity": 0.074,
+    "tuningCentsFromA440": 19.0,
+    "key": "D# major",
+    "keyScore": 0.656,
+    "runnerUp": "G# minor",
+    "keyMargin": 0.042,
+    "top3Keys": [
+      "D# major",
+      "G# minor",
+      "G minor"
+    ]
+  },
+  "1-07 How Can You Do It!.mp3": {
+    "durationSeconds": 178.7,
+    "tempoBpm": 161.5,
+    "tempoAlternatives": [
+      80.7,
+      323.0
+    ],
+    "beatIrregularity": 0.064,
+    "tuningCentsFromA440": 1.0,
+    "key": "G# major",
+    "keyScore": 0.77,
+    "runnerUp": "G# minor",
+    "keyMargin": 0.079,
+    "top3Keys": [
+      "G# major",
+      "G# minor",
+      "C minor"
+    ]
+  },
+  "16. Horace Silver - The Tokyo Blues.mp3": {
+    "durationSeconds": 459.5,
+    "tempoBpm": 89.1,
+    "tempoAlternatives": [
+      44.6,
+      178.2
+    ],
+    "beatIrregularity": 0.052,
+    "tuningCentsFromA440": -1.0,
+    "key": "C minor",
+    "keyScore": 0.695,
+    "runnerUp": "C major",
+    "keyMargin": 0.219,
+    "top3Keys": [
+      "C minor",
+      "C major",
+      "G minor"
+    ]
+  },
+  "son-house_my-black-mama-part1.mp3": {
+    "durationSeconds": 186.1,
+    "tempoBpm": 107.7,
+    "tempoAlternatives": [
+      53.8,
+      215.3
+    ],
+    "beatIrregularity": 0.045,
+    "tuningCentsFromA440": -29.0,
+    "key": "A major",
+    "keyScore": 0.746,
+    "runnerUp": "A minor",
+    "keyMargin": 0.025,
+    "top3Keys": [
+      "A major",
+      "A minor",
+      "C# minor"
+    ]
+  },
+  "user_got-to-have-my-daddy-blues.mp3": {
+    "durationSeconds": 159.1,
+    "tempoBpm": 152.0,
+    "tempoAlternatives": [
+      76.0,
+      304.0
+    ],
+    "beatIrregularity": 0.047,
+    "tuningCentsFromA440": 40.0,
+    "key": "F minor",
+    "keyScore": 0.723,
+    "runnerUp": "G# major",
+    "keyMargin": 0.181,
+    "top3Keys": [
+      "F minor",
+      "G# major",
+      "C# major"
+    ]
+  },
+  "user_kangaroos.mp3": {
+    "durationSeconds": 42.6,
+    "tempoBpm": 123.0,
+    "tempoAlternatives": [
+      61.5,
+      246.1
+    ],
+    "beatIrregularity": 0.058,
+    "tuningCentsFromA440": 5.0,
+    "key": "C minor",
+    "keyScore": 0.516,
+    "runnerUp": "G major",
+    "keyMargin": 0.047,
+    "top3Keys": [
+      "C minor",
+      "G major",
+      "D# major"
+    ]
+  },
+  "user_my-buddy.mp3": {
+    "durationSeconds": 179.5,
+    "tempoBpm": 78.3,
+    "tempoAlternatives": [
+      39.2,
+      156.6
+    ],
+    "beatIrregularity": 0.055,
+    "tuningCentsFromA440": 13.0,
+    "key": "E minor",
+    "keyScore": 0.858,
+    "runnerUp": "G major",
+    "keyMargin": 0.081,
+    "top3Keys": [
+      "E minor",
+      "G major",
+      "B minor"
+    ]
+  },
+  "victoria-spivey_no-papa-no-1928.mp3": {
+    "durationSeconds": 186.1,
+    "tempoBpm": 112.3,
+    "tempoAlternatives": [
+      56.2,
+      224.7
+    ],
+    "beatIrregularity": 0.056,
+    "tuningCentsFromA440": -14.0,
+    "key": "C major",
+    "keyScore": 0.812,
+    "runnerUp": "G major",
+    "keyMargin": 0.089,
+    "top3Keys": [
+      "C major",
+      "G major",
+      "A minor"
+    ]
+  }
+}

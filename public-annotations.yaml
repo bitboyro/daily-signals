@@ -3084,6 +3084,12 @@
     { "id": "PLT-06", "relation": "documents" }
    ],
    "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null
+  },
+  {
+   "paths": ["soundscape/*"],
+   "classification": "shared",
+   "confidence": "high", "provenance": "authored-review", "introducedIn": null, "retiredIn": null,
+   "note": "Standalone soundscape experiment, independent of the radio pipeline"
   }
  ],
  "intersections": [
